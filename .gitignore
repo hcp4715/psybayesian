@@ -27,6 +27,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.npm/
+.cache/
 
 # Rope project settings
 .ropeproject

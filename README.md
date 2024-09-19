@@ -100,8 +100,33 @@ docker build -t {username}/{imagename}:2024
 
 之后运行：
 ```bash
-docker run -it --rm -p 8888:8888 wanke/nnub
+docker run -it --rm -p 8888:8888 hcp4715/pybayesian:latest
 ```
+
+<!-- 如何在VS Code打开的jupyter notebook中使用docker container的kernel：
+
+https://medium.com/@FredAsDev/connect-vs-code-jupyter-notebook-to-a-jupyter-container-a63293f29325
+
+1. 运行docker container：
+docker run -it --rm -v ${PWD}:/home/jovyan/ -p 8888:8888 hcp4715/pybayesian:latest
+
+Note: 根据系统不同，有可能需要使用 ${pwd} 来指定的当前目录。
+
+2. 在VS Code中安装jupyter扩展
+
+3. 打开 jupyter notebook,在右上角的选择kernal中选择；
+   
+4. 在正上方的下拉选项中，选择“existing jupyter server”
+
+5. Copy URL with port and add at the end /tree. Like this http://127.0.0.1:8888/tree
+
+6. Press Enter go back to the log, and copy the token value. Paste it when it asks for the password (0cca3493bcfddba8451ecfe0f9e2ccf30cae85026154b397) and hit enter:
+
+7. Confirm if it is correct: 127.0.0.1
+
+8. Select Python Kernel:
+
+ -->
 
 ### 本地 python 配置
 
