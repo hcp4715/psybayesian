@@ -1,0 +1,5 @@
+id,result
+q1,"['Unnamed: 0', 'battery_name', 'condition', 'correct', 'correct_response', 'exp_stage', 'experiment_exp_id', 'finishtime', 'focus_shifts', 'full_screen', 'key_press', 'possible_responses', 'rt', 'stim_color', 'stim_word', 'stimulus', 'time_elapsed', 'trial_id', 'trial_type', 'worker_id']"
+q2,int64
+q3,1020
+q4,53662
