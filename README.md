@@ -68,17 +68,17 @@ PyBayesian/
 
 ## dockerhub镜像使用
 
-我们已经将 docker 镜像上传至 [dockerhub](https://hub.docker.com/repository/docker/wanke/nnub/)，你可以使用以下命令进行使用。
+我们已经将 docker 镜像上传至 [dockerhub](https://hub.docker.com/repository/docker/hcp4715/pybayesian)，你可以使用以下命令进行使用。
 
 如果你已经安装了 docker desktop 或 docker engine，你可以使用以下命令拉取镜：
 ```bash
-docker pull wanke/nnub
+docker pull hcp4715/pybayesian
 ```
 
 并进行运行：
 
 ```bash
-docker run -it --rm -p 8888:8888 wanke/nnub
+docker run -it --rm -p 8888:8888 hcp4715/pybayesian
 ```
 
 
@@ -103,14 +103,12 @@ docker build -t {username}/{imagename}:2024
 docker run -it --rm -p 8888:8888 hcp4715/pybayesian:latest
 ```
 
-<!-- 如何在VS Code打开的jupyter notebook中使用docker container的kernel：
+#### 如何在VS Code打开的jupyter notebook中使用docker container的kernel：
 
 https://medium.com/@FredAsDev/connect-vs-code-jupyter-notebook-to-a-jupyter-container-a63293f29325
 
 1. 运行docker container：
-docker run -it --rm -v ${PWD}:/home/jovyan/ -p 8888:8888 hcp4715/pybayesian:latest
-
-Note: 根据系统不同，有可能需要使用 ${pwd} 来指定的当前目录。
+`docker run -it --rm -v ${PWD}:/home/jovyan/ -p 8888:8888 hcp4715/pybayesian:latest` Note: 根据系统不同，有可能需要使用 `${pwd}` 来指定的当前目录。
 
 2. 在VS Code中安装jupyter扩展
 
@@ -125,8 +123,6 @@ Note: 根据系统不同，有可能需要使用 ${pwd} 来指定的当前目录
 7. Confirm if it is correct: 127.0.0.1
 
 8. Select Python Kernel:
-
- -->
 
 ### 本地 python 配置
 
