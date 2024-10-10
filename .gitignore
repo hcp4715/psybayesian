@@ -3,6 +3,8 @@ BayesianModellingPythonBookCode_Ed1/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+.jupyter/
+.pytensor/
 
 # IPython
 profile_default/
