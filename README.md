@@ -31,9 +31,9 @@ Email: hcp4715@hotmail.com
 |  6   |              MCMC under the Hood               |
 |  7   |        Posterior Inference & Prediction        |
 |  8   |           A Simple Normal Regression           |
-|  9   |         Evaluating Regression Models 1         |
-|  10  |         Evaluating Regression Models 2         |
-|  11  |         Inference: Bayes factors               |
+|  9   |                  Bayes factors                 |
+|  10  |         Multiple Linear Regression             |
+|  11  |         Evaluating Regression Models           |
 |  12  |            GLM: Logistic Regression            |
 |  13  |             Hierarchical Models 1              |
 |  14  |             Hierarchical Models 2              |
