@@ -32,7 +32,7 @@ Email: hcp4715@hotmail.com
 |  7   |        Posterior Inference & Prediction        |
 |  8   |           A Simple Normal Regression           |
 |  9   |                  Bayes factors                 |
-|  10  |         Multiple Linear Regression             |
+|  10  |       multivariable linear regression          |
 |  11  |         Evaluating Regression Models           |
 |  12  |            GLM: Logistic Regression            |
 |  13  |             Hierarchical Models 1              |
