@@ -1,0 +1,166 @@
+---
+title: "Hierarchical model by brms"
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: no
+  pdf_document:
+    toc: yes
+code_folding: show
+number_sections: yes
+---
+
+## 加载所需要的包
+
+```{r}
+# 加载所需要的包
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(brms)
+library(bayesplot)
+library(posterior)
+packageVersion("brms")
+
+set.seed(43201)
+```
+
+## 加载数据
+
+```{r}
+# 加载数据
+df_flanker <- read.csv('data/flanker_1.csv')  # 本地路径
+# df_flanker <- read.csv('/home/mw/input/bayes3797/flanker_1.csv')
+
+df_model <- df_flanker %>%
+  # 筛选有效数据 & 编码Condition
+  dplyr::filter(RT > 0, Condition != 1) %>%
+  # 1=不一致，0=一致
+  dplyr::mutate(Condition = ifelse(Condition == 2, 1, 0)) %>%  
+  # 编码Time
+  dplyr::mutate(Time = ifelse(Time == 1, 0, 1)) %>%
+  dplyr::mutate(Time = factor(Time, levels = c(0, 1))) %>%  
+  # 生成试次索引 & 被试编号
+  dplyr::mutate(trial_idx = dplyr::row_number() - 1) %>%
+  dplyr::mutate(subj_num = subj_num - 1)
+
+df_model <- df_model %>%
+  # 创建交互变量
+  # 将时间 × 条件的组合效应拆解为可单独建模的变量
+  dplyr::mutate(
+    CxT_T0 = ifelse(Time == 0 & Condition == 1, 1, 0),
+    CxT_T1 = ifelse(Time == 1 & Condition == 1, 1, 0)
+  )
+
+# 计算每个被试在不同时间点的RT最小值
+rt_min <- df_model %>%
+  dplyr::group_by(subj_num, Time) %>%
+  dplyr::summarise(min_RT = min(RT), .groups = "drop") %>%  
+  tidyr::pivot_wider(names_from = Time, values_from = min_RT) %>%
+  dplyr::select(-subj_num) %>%
+  as.matrix() 
+```
+
+## 设定模型公式
+
+```{r}
+# 为简化模型，不包含对ndt的建模，使用lognormal，无偏移项
+model_formula <- bf(
+  # mu 部分：固定效应包含两个时间点的条件效应；
+  # 随机效应包含两个独立项（CxT_T0 和 CxT_T1）
+  RT ~ 1 + CxT_T0 + CxT_T1 + 
+    (0 + CxT_T0 + CxT_T1 | subj_num),  # 0 + 表示无随机截距，仅保留两个时间点的随机效应
+  # sigma 部分同理
+  sigma ~ 1 + CxT_T0 + CxT_T1 + 
+    (0 + CxT_T0 + CxT_T1 | subj_num),
+  family = lognormal()
+)
+```
+
+## 设置先验
+
+```{r}
+# 查看模型的所有参数
+get_prior(
+  formula = model_formula,
+  data = df_model,
+  family = lognormal()
+  # family = shifted_lognormal()
+)
+```
+
+
+```{r}
+# 为随机效应的协方差矩阵指定LKJ先验（匹配PyMC的rho_R_mu的先验）
+prior <- c(
+  # mu 的固定效应先验
+  prior(normal(0, 1), class = "b", dpar = "mu"),
+  # mu 的随机效应：标准差 + 相关矩阵
+  prior(normal(0, 1), class = "sd", dpar = "mu", group = "subj_num", lb = 0),
+  prior(lkj(1), class = "cor", dpar = "mu", group = "subj_num"),
+  
+  # sigma 的固定效应先验
+  prior(normal(0, 1), class = "b", dpar = "sigma"),
+  # sigma 的随机效应
+  prior(normal(0, 1), class = "sd", dpar = "sigma", group = "subj_num", lb = 0)
+)
+```
+
+## 模型拟合
+
+```{r}
+# 模型拟合
+model_brms <- brms::brm(
+  formula = model_formula,
+  data = df_model,
+  prior = prior,
+  chains = 4,  
+  iter = 2000,
+  warmup = 500,
+  cores = 4,
+  control = list(adapt_delta = 0.95)
+)
+
+model_brms
+```
+## 结果可视化
+
+```{r}
+# 可视化
+cor_samples <- brms::posterior_samples(model_brms, 
+                                       pars = "cor_subj_num__CxT_T0__CxT_T1",
+                                       add_chain = TRUE)  # 添加链编号列
+
+# 转换为宽格式（每列代表一条链）
+cor_wide <- cor_samples %>%
+  dplyr::group_by(chain) %>%
+  dplyr::mutate(iteration = dplyr::row_number()) %>%  # 为每个链添加迭代序号
+  tidyr::pivot_wider(
+    id_cols = iteration,
+    names_from = chain,
+    values_from = cor_subj_num__CxT_T0__CxT_T1  # 替换为实际参数名
+  ) %>%
+  dplyr::select(-iteration)  # 移除迭代列，仅保留链列
+
+# 转换为矩阵（列=链，行=迭代）
+cor_matrix <- as.matrix(cor_wide)  
+
+# 绘制后验分布
+p_posterior <- bayesplot::mcmc_hist(cor_matrix) +
+  ggplot2::labs(title = "后验分布", x = " ") +
+  ggplot2::theme_minimal()
+
+# 绘制采样轨迹
+p_trace <- bayesplot::mcmc_trace(cor_matrix) +
+  ggplot2::labs(title = "采样轨迹", x = " ", y = " ") +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none"  # 去掉图例
+  )
+
+# 组合图形
+gridExtra::grid.arrange(p_posterior, p_trace, ncol = 1)
+```
+
