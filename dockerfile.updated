@@ -67,19 +67,15 @@ RUN mamba install --yes \
     'r-ggpubr' \
     'r-TOSTER' \
     'r-BH' \
-    # 'r-gridExtra' \
-    # 'r-bruceR' \
-    # 'r-BayesFactor' \
     'r-pacman' \
     'unixodbc' && \
     mamba clean --all -f -y 
 
-RUN R -e "install.packages(c('gridExtra', 'bruceR', 'BayesFactor'), \
+RUN R -e "install.packages(c('gridExtra', 'bruceR', 'BayesFactor', 'papaja'), \
     dependencies = TRUE, \
-    repos = 'https://cloud.r-project.org/')" && \
+    repos = 'https://mirrors.tuna.tsinghua.edu.cn/CRAN/')" && \
     fix-permissions "${CONDA_DIR}" && \
     fix-permissions "/home/${NB_USER}"
-
 
 USER ${NB_UID}
 
