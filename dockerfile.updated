@@ -71,6 +71,7 @@ RUN mamba install --yes \
     'unixodbc' && \
     mamba clean --all -f -y 
 
+# Install specified R packages from Tsinghua CRAN mirror using R command
 RUN R -e "install.packages(c('gridExtra', 'bruceR', 'BayesFactor', 'papaja'), \
     dependencies = TRUE, \
     repos = 'https://mirrors.tuna.tsinghua.edu.cn/CRAN/')" && \
