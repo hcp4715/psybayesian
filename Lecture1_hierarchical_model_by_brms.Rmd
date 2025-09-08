@@ -14,7 +14,7 @@ number_sections: yes
 
 ## 加载所需要的包
 
-```{r}
+```{r, eval=TRUE}
 # 加载所需要的包
 library(dplyr)
 library(tidyr)
@@ -31,8 +31,11 @@ set.seed(43201)
 
 ```{r}
 # 加载数据
-df_flanker <- read.csv('data/flanker_1.csv')  # 本地路径
-# df_flanker <- read.csv('/home/mw/input/bayes3797/flanker_1.csv')
+df_flanker <- tryCatch({
+  read.csv('/home/mw/input/bayes3797/flanker_1.csv')
+}, error = function(e) {
+  read.csv('data/flanker_1.csv')
+}) 
 
 df_model <- df_flanker %>%
   # 筛选有效数据 & 编码Condition

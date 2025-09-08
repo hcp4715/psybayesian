@@ -16,7 +16,12 @@ library(TOSTER)
 
 
 #导入数据
-SMS_data <- read.csv('/Users/liumingyu/Desktop/贝叶斯2025/data/SMS_Well_being.csv')
+SMS_data <- tryCatch({
+  read.csv('/home/mw/input/bayes3797/SMS_Well_being.csv')
+}, error = function(e) {
+  read.csv('data/SMS_Well_being.csv')
+})
+
 #选择需要的列
 SMS_data <- SMS_data %>% select(uID, variable, factor, Country)
 #查看数据
@@ -33,7 +38,7 @@ SMS_high <- SMS_data %>%
 ##绘制小提琴图
 #！！原python文件中设置了画图函数，最后的小提琴图绘图数据是随机生成的，并不是案例数据
 #！！以下使用的是案例数据
-ggplot(data = SMS_data,aes(factor,variable))+
+ggplot(data = SMS_data, aes(factor,variable))+
   geom_violin(aes(fill=factor))+
   geom_boxplot(width=0.2,outlier.shape = NA)+
   guides(col="none")+
@@ -53,18 +58,20 @@ ggplot(data = SMS_data,aes(factor,variable))+
 
 
 ##传统T检验
-#1.方差齐性检验（输出p值）
+# 1.方差齐性检验（输出p值）
 levene_res <- car::leveneTest(variable ~ factor,
                 data = SMS_data)
 levene_p <- levene_res$`Pr(>F)`[1]
 cat("p=", levene_p, "\n")
-#2.独立样本t检验
+
+# 2.独立样本t检验
 ttest_res <- t.test(variable ~ factor, data = SMS_data, var.equal = TRUE)
 #3.各组描述性统计
 mean_low <- mean(SMS_low)     #均值
 mean_high <- mean(SMS_high)
 sd_high <- sd(SMS_high)       #标准差
 sd_low <- sd(SMS_low)
+
 #4.输出结果
 cat("t=", round(ttest_res$statistic, 2), ", p=", round(ttest_res$p.value, 3), "\n")
 cat(sprintf("Low Social Status: %.3f ± %.2f；", mean_low, sd_low),
