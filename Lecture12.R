@@ -1,14 +1,23 @@
 # 安装和加载包
 options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
+if (!require(remotes)) {
+  install.packages("remotes")
+}
+remotes::install_github('njudd/ggrain')
 if (!requireNamespace('pacman', quietly = TRUE)) {
   install.packages('pacman')
 }
+
 pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja", "patchwork","bayesplot",
-               "rstan",'logspline', "easystats") 
+               "rstan",'logspline', "easystats","ggrain") 
 options(warn = -1)  # 抑制警告
 
 # 导入数据
-df <- read_csv('/home/mw/input/bayes3797/evans2020JExpPsycholLearn_exp1_full_data.csv', show_col_types = FALSE)
+df <- tryCatch({
+  read.csv('/home/mw/input/bayes3797/evans2020JExpPsycholLearn_exp1_full_data.csv')
+}, error = function(e) {
+  read.csv('data/evans2020JExpPsycholLearn_exp1_full_data.csv')
+})
 
 # 筛选 subject == 31727 且 percentCoherence 为 10 或 40 的数据
 
@@ -32,13 +41,9 @@ df_clean %>%
   group_by(percentCoherence) %>%
   summarise(mean_correct = mean(correct, na.rm = TRUE)) %>%
   ggplot(aes(x = factor(percentCoherence), y = mean_correct)) +
-  geom_bar(stat = "identity", fill = "steelblue") +  # 使用 stat="identity" 来直接使用 y 值
-  labs(y = "accuracy") +                             # 设置 y 轴标签
-  theme_minimal() +                                  # 使用 minimal 主题作为基础
-  theme(panel.border = element_blank(),              # 移除边框
-        panel.grid.major = element_blank(),          # 移除主网格线
-        panel.grid.minor = element_blank(),          # 移除次网格线
-        axis.line = element_line(colour = "black"))  # 添加轴线以模拟 despine（仅底和左）
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(x = "Percent Coherence", y = "Accuracy") +
+  papaja::theme_apa()
 
 # 数据准备
 Treatment_Coding <- df_clean %>%
@@ -144,7 +149,7 @@ ggplot(prior_df, aes(x = pi, fill = condition)) +
     title = "Prior Predictive Distribution of π (10% vs 40% coherence)",
     y = "Density (approx.)"
   ) +
-  theme_minimal()
+  papaja::theme_apa()
 
 set.seed(123)
 
@@ -197,7 +202,7 @@ ggplot(curve_data, aes(x = percentCoherence, y = prob_correct, group = draw)) +
   ) +
   scale_x_continuous(breaks = seq(0, 50, by = 10)) +
   ylim(0, 1) +
-  theme_minimal() +
+  papaja::theme_apa() +
   theme(
     plot.title = element_text(size = 14),
     axis.title = element_text(size = 12)
@@ -246,7 +251,7 @@ ggplot(curve_data, aes(x = percentCoherence, y = prob_correct, group = draw)) +
   ) +
   scale_x_continuous(breaks = seq(0, 50, by = 10)) +
   ylim(0, 1) +
-  theme_minimal() +
+  papaja::theme_apa() +
   theme(
     plot.title = element_text(size = 14),
     axis.title = element_text(size = 12)
@@ -285,7 +290,7 @@ ggplot(plot_data, aes(x = coherence, y = prob, group = curve_id)) +
   labs(
     title = paste(n_curves, "Posterior Plausible Models")
   ) +
-  theme_minimal() +
+  papaja::theme_apa() +
   theme(plot.title = element_text(hjust = 0.5))
 
 # 1. 提取后验样本（beta_0 和 beta_1）
@@ -319,7 +324,7 @@ ggplot(prop_df, aes(x = factor(correct), y = proportion, fill = factor(correct))
     x = "Correct",
     y = "Proportion"
   ) +
-  theme_minimal() +
+  papaja::theme_apa() +
   theme(
     plot.title = element_text(hjust = 0.5),
     axis.text.x = element_text(size = 12),
@@ -422,7 +427,6 @@ ppc_dens_overlay(y = df_clean$correct, yrep = posterior_predict(model, ndraws = 
   labs(title = "Posterior Predictive Check")
 
 # === 1. 数据加载 ===
-# 尝试两个路径（类似 Python 的 try-except）
 df_raw <- tryCatch({
   read.csv("/home/mw/input/bayes3797/Data_Sum_HPP_Multi_Site_Share.csv")
 }, error = function(e) {
@@ -435,18 +439,23 @@ df <- df_raw %>%
   select(romantic, avoidance_r, sex) %>%
   mutate(
     romantic = ifelse(romantic == 2, 0, 1),  # 2 → "no" → 0; 1 → "yes" → 1
+    romantic = factor(romantic, levels = c(0, 1), labels = c("no", "yes")),  # 转换为因子
     index = 1:n()  # 设置索引（1 到 n）
   )
 
-# === 3. 绘制散点图 ===
-p_scatter <- ggplot(df, aes(x = avoidance_r, y = romantic)) +
-  geom_point(aes(color = factor(romantic)), alpha = 0.6, size = 2) +
-  scale_color_manual(values = c("red", "blue"), labels = c("no", "yes")) +
-  labs(x = "avoidance_r", y = "romantic") +
-  theme_minimal() +
+# === 3. 绘制raincloud图 ===
+p_raincloud <- ggplot(df, aes(x = romantic, y = avoidance_r, fill = romantic)) +
+  geom_rain(alpha = 0.6, rain.side = "l", point.args = list(alpha = 0.4)) +
+  scale_fill_manual(values = c("no" = "red", "yes" = "blue")) +
+  labs(
+    x = "Romantic Relationship",
+    y = "Avoidance (Reversed)",
+    fill = "Romantic"
+  ) +
+  theme_apa() +
   theme(legend.position = "none")
 
-p_scatter
+p_raincloud
 
 # === 4. 准备 Stan 数据 ===
 stan_data <- list(
@@ -537,10 +546,38 @@ p_posterior_line <- ggplot(curve_df, aes(x = avoidance_r, y = pi, group = draw))
     x = "avoidance_r",
     y = "P(romantic = yes)"
   ) +
-  theme_minimal() +
-  theme(legend.position = "top")
+  # === 1. 数据加载 ===
+  df_raw <- tryCatch({
+    read.csv("/home/mw/input/bayes3797/Data_Sum_HPP_Multi_Site_Share.csv")
+  }, error = function(e) {
+    read.csv("data/Data_Sum_HPP_Multi_Site_Share.csv")
+  })
 
-p_posterior_line
+# === 2. 数据筛选与清洗 ===
+df <- df_raw %>%
+  filter(Site == "Tsinghua") %>%
+  select(romantic, avoidance_r, sex) %>%
+  mutate(
+    romantic = ifelse(romantic == 2, 0, 1),  # 2 → "no" → 0; 1 → "yes" → 1
+    romantic = factor(romantic, levels = c(0, 1), labels = c("no", "yes")),  # 转换为因子
+    index = 1:n()  # 设置索引（1 到 n）
+  )
+
+# === 3. 绘制raincloud图 ===
+p_raincloud <- ggplot(df, aes(x = romantic, y = avoidance_r, fill = romantic)) +
+  geom_rain(alpha = 0.6, rain.side = "l", point.args = list(alpha = 0.4)) +
+  scale_fill_manual(values = c("no" = "red", "yes" = "blue")) +
+  labs(
+    x = "Romantic Relationship",
+    y = "Avoidance (Reversed)",
+    fill = "Romantic"
+  ) +
+  theme_apa() +
+  theme(legend.position = "none")
+
+p_raincloud 
+
+
 
 # === 9. 对新数据 X=1 进行预测（柱状图）===
 # 假设新样本的 avoidance_r = 1（标准化后）
@@ -565,7 +602,7 @@ p_prediction_bar <- ggplot(prop_df, aes(x = class, y = proportion, fill = class)
     x = "Romantic",
     y = "Proportion"
   ) +
-  theme_minimal() +
+  papaja::theme_apa() +
   theme(plot.title = element_text(hjust = 0.5))
 
 p_prediction_bar
