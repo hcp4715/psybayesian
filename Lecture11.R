@@ -296,8 +296,24 @@ model0 <- stats::lm(
 # 查看回归结果
 summary(model0)
 
+head(df)
+
+head(X)
+
+contrasts(df$Matching)
+
+contrasts(df$Label) = contr.treatment(3)
+contrasts(df$Label)
+
+model0_alt <- stats::lm(
+    formula = RT_sec ~ Label * Matching,
+    data = df
+)
+
+summary(model0_alt)
+
 # 注意，可以使用bayestestR包中的bayesfactor_parameters函数计算贝叶斯因
-summary(model3_fit, prob = 0.95)  
+summary(model3_fit, par=c("beta_0","beta_1","beta_2","beta_3","beta_4","beta_5","sigma"))$summary 
 
 # 从采样结果中提取后验预测样本
 posterior_predictive <- tidybayes::spread_draws(model1_fit, y_rep[i])
@@ -445,7 +461,7 @@ df <- df_re %>%
 # 1 表示吸烟，2表示不吸烟
 df <- df %>%
   dplyr::mutate(smoke = ifelse(smoke == 2, 0, 1),  # 将 'smoke' 列重新编码 
-                smoke_recode = ifelse(smoke == 1, "yes", "no"))  # 添加新的 'smoke_recode' 列
+                smoke = ifelse(smoke == 1, "yes", "no"))  # 添加新的 'smoke_recode' 列
 
 # 设置索引
 df <- df %>%
@@ -455,26 +471,38 @@ df <- df %>%
 # 查看处理后的数据框
 head(df)
 
-# 定义模型4
+# 定义模型4 （压力预测自我控制）
 stan_model4 <- 
 "
 data {
-  ...    
+  int<lower=0> N;     
+  vector[N] y;                  // scontrol
+  vector[N] X;                  // 连续变量: stress
 }
 
 parameters {
-  ... beta_0;                  
-  ... beta_1;                   
-  ... sigma;          
+  ... beta_0;                   // 截距
+  ... beta_1;                   // stress的斜率
+  ... sigma;                    // 误差标准差       
 }
 
 model {
-  beta_0 ~ ...;         
-  beta_1 ~ ...;        
-  sigma ~ ...;     
+  ...    
   
   // 似然函数
   ... ~ ...
+}
+
+generated quantities {
+  real y_rep[N];             // 后验预测
+  vector[N] log_lik;         // 逐点对数似然
+ 
+  for (n in 1:N) {
+    // 后验预测值  (计算 MAE 需要)
+    y_rep[n] = normal_rng(...);
+    // 逐点对数似然 (计算 loo 和 DIC 需要)
+    log_lik[n] = normal_lpdf(y[n] | ...);
+  }
 }
 "
 # 准备数据列表
@@ -483,27 +511,44 @@ data_list4 <- list(
 )
 
 # 定义模型5
+# 提示：在模型4的基础上增加第二个预测变量：是否吸烟（需要用哑变量编码）
+
+# 将分类变量转换为哑变量（以'no'为基线）
+smoke <- as.integer(df$smoke == 'yes')
+
 stan_model5 <- 
 "
 data {
-  ...    
+  int<lower=0> N;           
+  vector[N] y;            
+  vector[N] X1;                   // 连续变量: stress
+  vector[N] X2;                // 二分类变量: smoke 
 }
 
 parameters {
-  ... beta_0;                  
-  ... beta_1;    
-  ... beta_2;
-  ... sigma;          
+  ... beta_0;                   // 截距
+  ... beta_1;                   // stress的斜率
+  ... beta_2;                   // smoke的斜率
+  ... sigma;           // 误差标准差      
 }
 
 model {
-  beta_0 ~ ...;         
-  beta_1 ~ ...;
-  beta_2 ~ ...;
-  sigma ~ ...;     
+  ...    
   
   // 似然函数
   ... ~ ...
+}
+
+generated quantities {
+  real y_rep[N];             // 后验预测
+  vector[N] log_lik;         // 逐点对数似然
+ 
+  for (n in 1:N) {
+    // 后验预测值
+    y_rep[n] = normal_rng(...);
+    // 逐点对数似然
+    log_lik[n] = normal_lpdf(y[n] | ...);
+  }
 }
 "
 # 准备数据列表
@@ -511,15 +556,28 @@ data_list5 <- list(
   ...
 )
 
-# 定义模型6
+# 定义模型6（交互效应模型：压力×吸烟状态）
+# 提示：基于模型5，新增“压力×吸烟”的交互效应
+
+# 将分类变量转换为哑变量（以'no'为基线）
+smoke <- as.integer(df$smoke == 'yes')
+# 准备交互效应的数据 （外部计算需要交互项的数据，并在后面的stan模型中添加这个变量）
+Interaction <- smoke * df$stress
+
 stan_model6 <- 
 "
 data {
-  ...    
+  int<lower=0> N;          
+  vector[N] y;              // scontrol
+  vector[N] X1;             // 连续变量: stress
+  vector[N] X2;             // 二分类变量: smoke 
 }
 
 parameters {
-  ...           
+  ... beta_0;                   // 截距
+  ... beta_1;                   // stress的斜率
+  ... beta_2;                   // smoke的斜率
+  ... sigma;                    // 误差标准差            
 }
 
 model {
@@ -527,6 +585,18 @@ model {
   
   // 似然函数
   ... ~ ...
+}
+
+generated quantities {
+  real y_rep[N];             // 后验预测
+  vector[N] log_lik;         // 逐点对数似然
+ 
+  for (n in 1:N) {
+    // 后验预测值  (计算 MAE 需要)
+    y_rep[n] = normal_rng(...);
+    // 逐点对数似然 (计算 loo 和 DIC 需要)
+    log_lik[n] = normal_lpdf(y[n] | ...);
+  }
 }
 "
 # 准备数据列表
@@ -591,13 +661,13 @@ run_stan_sampling <- function(save_name, model_code = NULL, data_list = NULL,
 }
 
 # 运行模型4采样
-model4_fit <- run_stan_sampling(save_name = "lec11_model4", model_code = model_code4, data_list = data_list4)
+model4_fit <- run_stan_sampling(save_name = "lec11_model4", model_code = stan_model4, data_list = data_list4)
 
 # 运行模型5采样
-model5_fit <- run_stan_sampling(save_name = "lec11_model5", model_code = model_code5, data_list = data_list5)
+model5_fit <- run_stan_sampling(save_name = "lec11_model5", model_code = stan_model6, data_list = data_list5)
 
 # 运行模型6采样
-model6_fit <- run_stan_sampling(save_name = "lec11_model6", model_code = model_code6, data_list = data_list6)
+model6_fit <- run_stan_sampling(save_name = "lec11_model6", model_code = stan_model6, data_list = data_list6)
 
 calculate_mae <- function(trace, observed_data) {
   # 从stanfit对象中提取所有后验预测样本（适用于任何变量名）
