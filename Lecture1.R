@@ -1,19 +1,13 @@
-#加载必要的包
-install.packages(c("StanHeaders","rstan"),type="source")
-install.packages(c("pacman","tidyverse","ggplot2","dplyr","car","ggpubr",
-                   "BayesFactor","bayestestR","gridExtra","TOSTER"))
-library(ggplot2)    
-library(dplyr)      
-library(car)        
-library(ggpubr)     
-library(BayesFactor)
-library(StanHeaders)
-library(rstan)
-library(bayestestR)
-library(gridExtra)
-library(tidyverse)
-library(TOSTER)
+# 安装Packages
+options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
+if (!requireNamespace('pacman', quietly = TRUE)) {
+    install.packages('pacman')
+}
 
+#加载必要的包
+# install.packages(c("StanHeaders","rstan"),type="source") 如果之前没有安装好rstan，需要先运行这行
+pacman::p_load("tidyverse","ggplot2","dplyr","car","ggpubr",'rstan',
+               "BayesFactor","bayestestR","gridExtra","TOSTER",'papaja')
 
 #导入数据
 SMS_data <- tryCatch({
@@ -23,16 +17,19 @@ SMS_data <- tryCatch({
 })
 
 #选择需要的列
-SMS_data <- SMS_data %>% select(uID, variable, factor, Country)
+SMS_data <- SMS_data %>% 
+  dplyr::select(uID, variable, factor, Country)
+
 #查看数据
 print(head(SMS_data, 2))
 #高低分组
 SMS_low <- SMS_data %>%
-  filter(factor == "Low") %>%
-  pull(variable)
+  dplyr::filter(factor == "Low") %>%
+  dplyr::pull(variable)
+
 SMS_high <- SMS_data %>%
-  filter(factor == "High") %>%
-  pull(variable)
+  dplyr::filter(factor == "High") %>%
+  dplyr::pull(variable)
 
 
 ##绘制小提琴图
@@ -42,20 +39,7 @@ ggplot(data = SMS_data, aes(factor,variable))+
   geom_violin(aes(fill=factor))+
   geom_boxplot(width=0.2,outlier.shape = NA)+
   guides(col="none")+
-  theme(
-    text = element_text(family = "Helvetica", size = 12), # 字体为Helvetica，字号为12
-    axis.title = element_text(size = 12), # 坐标轴标题大小
-    axis.text = element_text(size = 12), # 坐标轴刻度大小
-    axis.line = element_line(linewidth = 0.2, color = "black"), # 坐标轴线条
-    axis.ticks = element_line(linewidth = 0.2, color = "black"), # 坐标轴刻度线
-    panel.background = element_blank(), # 去除背景
-    panel.grid.major = element_line(), # 主网格线
-    panel.grid.minor = element_blank(), # 次网格线
-    plot.title = element_text(size = 14, hjust = 0.5), # 标题居中
-    plot.margin = margin(10, 10, 10, 10) # 图形边距
-  )
-
-
+  papaja::theme_apa()
 
 ##传统T检验
 # 1.方差齐性检验（输出p值）
@@ -91,12 +75,12 @@ tost_res <- tsum_TOST(
 print(tost_res)
 
 ##贝叶斯因子（r值 = 0.707）
-BF_sms <- ttestBF(x = SMS_low, y = SMS_high, r = 0.707)
+BF_sms <- BayesFactor::ttestBF(x = SMS_low, y = SMS_high, r = 0.707)
 print(BF_sms)
 
 ##敏感性分析
 #Cauchy (0, 1)
-BF_sms_1 <- ttestBF(x = SMS_low, y = SMS_high, r = 1)
+BF_sms_1 <- BayesFactor::ttestBF(x = SMS_low, y = SMS_high, r = 1)
 print(BF_sms_1)
 
 ##通过Rstan建立基于贝叶斯的线性模型
@@ -153,26 +137,28 @@ model {
 stan_data <- list(N = nrow(SMS_data), x = x, y = SMS_data$variable)
 
 #4.进行先验采样
-prior_checks <- stan(model_code = stan_model_prior, 
+prior_checks <- rstan::stan(model_code = stan_model_prior, 
             data = stan_data, 
             iter = 5000, 
             warmup = 0,
             chains = 1,
             seed = 202409)
+
 prior_samples <- rstan::extract(prior_checks)
 
 #5.进行后验采样
-fit <- stan(model_code = stan_model_code, 
+fit <- rstan::stan(model_code = stan_model_code, 
             data = stan_data, 
             iter = 2000, 
             warmup = 1000, 
             chains = 4, 
             control = list(adapt_delta = 0.9), 
             seed = 202409)
+
 idata <- rstan::extract(fit)
 
 #轨迹图
-traceplot(fit)
+rstan::traceplot(fit)
 
 
 ##抽样分布可视化
@@ -195,6 +181,7 @@ prior_plot <- ggplot(porior_df, aes(x = beta1)) +
     plot.title = element_text(size = 14, hjust = 0.5), # 标题居中
     plot.margin = margin(10, 10, 10, 10) # 图形边距
   )
+
 #后验分布图
 posterior_plot <- ggplot(posterior_df, aes(x = beta1)) +
   geom_density(fill = "orange", alpha = 0.5) +
@@ -213,8 +200,6 @@ posterior_plot <- ggplot(posterior_df, aes(x = beta1)) +
   )
 #并排显示
 grid.arrange(prior_plot, posterior_plot, nrow = 1, ncol = 2)
-
-
 
 ##使用ggplot进行可视化
 #获取后验分布的密度
@@ -238,18 +223,7 @@ p <- ggplot() +
   # 添加垂直线
   geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
   # 设置背景颜色
-  theme(
-    text = element_text(family = "Helvetica", size = 12), # 字体为Helvetica，字号为12
-    axis.title = element_text(size = 12), # 坐标轴标题大小
-    axis.text = element_text(size = 12), # 坐标轴刻度大小
-    axis.line = element_line(linewidth = 0.2, color = "black"), # 坐标轴线条
-    axis.ticks = element_line(linewidth = 0.2, color = "black"), # 坐标轴刻度线
-    panel.background = element_blank(), # 去除背景
-    panel.grid.major = element_line(), # 主网格线
-    panel.grid.minor = element_blank(), # 次网格线
-    plot.title = element_text(size = 14, hjust = 0.5), # 标题居中
-    plot.margin = margin(10, 10, 10, 10) # 图形边距
-  )
+  papaja::theme_apa()
+
 # 显示图形
 print(p)
-
