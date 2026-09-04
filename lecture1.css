@@ -1,0 +1,48 @@
+/* =====================================================
+   Lecture1 revealjs 溢出修复 (overflow fix)
+   目标: 让所有 slide 内容在 1600x900 设计尺寸内完整显示
+   ===================================================== */
+
+/* 1) R 源码块: 压缩字号与行距, 并设高度上限 (超长代码内部滚动) */
+.reveal .sourceCode pre {
+  max-height: 540px;
+  overflow-y: auto;
+}
+.reveal .sourceCode pre code,
+.reveal .cell-output-display pre code {
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+/* 2) 长文本输出 (stdout/stderr): 限高 + 内部滚动 */
+.reveal .cell-output-stdout pre {
+  max-height: 150px;
+  overflow-y: auto;
+}
+.reveal .cell-output-stdout pre code {
+  line-height: 1.35;
+}
+.reveal .cell-output-stderr pre {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+/* 3) markdown 表格: 缩小字号与内边距 (BF 解读表等) */
+.reveal table {
+  font-size: 0.68em;
+}
+.reveal table td,
+.reveal table th {
+  padding: 0.15em 0.5em;
+}
+
+/* 4) 滚动条更细, 不显突兀 */
+.reveal pre::-webkit-scrollbar,
+.cell-output-stdout pre::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.reveal pre::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 120, 0.5);
+  border-radius: 3px;
+}

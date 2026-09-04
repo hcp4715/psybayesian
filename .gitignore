@@ -64,3 +64,6 @@ other
 panNote.md
 
 教学大纲*/
+
+# MCMC sampling cache (brms file=)
+tmpdata/
