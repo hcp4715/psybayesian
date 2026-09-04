@@ -1,0 +1,921 @@
+---
+jupyter: ir
+---
+
+<h1>Lecture 8: 推断统计——假设检验</h1><h2>Instructor: Dr. Hu Chuan-Peng</h2><p></p>
+
+<h2>回顾</h2><p>上节课介绍了后验本质上已经是推断统计中的“参数估计”，并且也介绍了如何报告后验(credible intervals, CrI).</p><p>本讲我们继续介绍推断统计中的假设检验。</p><p></p><p>在贝叶斯推断中，最关键的是理解假设检验与后验之间的关系，从而理解当前贝叶斯统计中存在了多种指标及其内在的联系。</p><p></p><img src="https://cdn.kesci.com/upload/sm7veon5ei.png?imageView2/0/w/720/h/960" alt="Image Name"><p></p>
+
+<p>本节课将从心理学的视角，介绍假设检验及其贝叶斯方法：</p><h2><strong>Outline</strong></h2><ol><li><p>贝叶斯框架下的假设检验</p></li><li><p>基于后验分布的统计推断</p></li><li><p>基于贝叶斯因子的统计推断</p></li></ol><p>对于每种统计推断方法，我们将从以下三种应用作为展开：</p><ul><li><p>Testing against the point-null</p></li></ul><ul><li><p>Testing against a null-region</p></li><li><p>Directional hypotheses</p></li></ul><p></p>
+
+<img src="https://cdn.kesci.com/upload/1762500850308_1.jpg"><p></p>
+
+<h2>1.贝叶斯框架下的假设检验</h2><h3>1.1 传统的假设检验方法(NHST)</h3><p>🧑‍💻在学习贝叶斯框架下的假设检验方法前，我们先简单回顾一下传统统计中的零假设显著性检验（Null Hypothesis Significance Test, NHST）。</p><p>频率学派的假设检验主要是基于概率性质的反证法所实现的推论统计方法。即承认如下前提:小概率事件(发生概率小于0.05的事件)在单次抽样中不会发生。</p><p>在传统的假设检验框架中，研究者需要根据研究对总体做互斥的两种假设，即零假设$ H_0 $和备择假设$ H_1 $：</p><blockquote><p><strong>零假设（Null Hypothesis，$ H_0 $）</strong>：表示没有效应或差异的假设。在许多情况下，零假设代表“无差异”或“无效应”，例如认为两组数据的均值没有显著差异。</p></blockquote><blockquote><p><strong>备择假设（Alternative Hypothesis，$ H_1 $）</strong>：表示零假设不成立时的假设，通常认为有显著效应或差异。</p></blockquote><p></p><p></p>
+
+<p>传统假设检验的核心概念还包括：</p><p></p><ul><li><p><strong>Alpha（$ \alpha $）</strong>：显著性水平，通常设定为 0.05，表示在零假设（$ H_0 $）成立的情况下，错误拒绝零假设（$ H_0 $）的概率。换句话说，alpha（$ \alpha $）是我们愿意接受的第一类错误概率（假阳性）。</p></li><li><p><strong>$ P $值</strong>：是指在零假设成立的前提下，观察到当前或更极端数据的概率。如果 $ P $ 值小于等于 $ \alpha $，传统统计学的框架下通常会拒绝零假设，认为数据提供了足够的证据支持备择假设。</p></li><li><p>$统计检验力(statistical power)$: 当零假设不成立（即备择假设成立时），当前模型有多大可能拒绝零假设。</p></li></ul><p></p><ul><li><p>传统的假设检验方法主要依赖于 $ P $ 值，这一方法在统计学中应用广泛，但也存在多个问题：</p><ol><li><p><strong>假阳性结果</strong>：研究者可能会通过操纵p值来达到显著性，如增加样本量或调整变量，这会导致假阳性结果，误导后续研究。&nbsp; &nbsp;</p></li><li><p><strong>忽视效应大小</strong>：$ P $ 值无法提供效应大小的信息，仅仅是显著与否的二分判断，不能全面反映数据的实际意义。&nbsp; &nbsp; &nbsp; &nbsp;</p></li><li><p><strong>不考虑先验信息</strong>：传统假设检验忽略了先验知识和理论背景，仅关注数据本身，无法有效利用已有的研究成果。</p></li><li><p><strong>无法为直接为零假设提供支持</strong>：不显著结果不代表零假设为真。</p></li></ol></li></ul><p></p><img src="https://cdn.kesci.com/upload/smw36cj13b.png?imageView2/0/w/480/h/960" alt="Image Name"><blockquote><p>胡传鹏等(2018). 贝叶斯因子及其在JASP中的实现. <em>心理科学进展</em> <br>吴凡, 顾全, 施壮华, 高在峰, 沈模卫. (2018). 跳出传统假设检验方法的陷阱——贝叶斯因子在心理学研究领域的应用. <em>应用心理学</em></p></blockquote><p></p>
+
+<h3>1.2 假设检验的统一框架 (Smiley et al., 2023; Kiers &amp; Tendeiro, 2025)</h3><p></p><table style="min-width: 75px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p>检验类型</p></th><th colspan="1" rowspan="1"><p>零区间</p></th><th colspan="1" rowspan="1"><p>感兴趣区间</p></th></tr><tr><td colspan="1" rowspan="1"><p>双侧NHST</p></td><td colspan="1" rowspan="1"><p>δ = 0</p></td><td colspan="1" rowspan="1"><p>δ &gt; 0 or δ &lt; 0</p></td></tr><tr><td colspan="1" rowspan="1"><p>单侧NHST</p></td><td colspan="1" rowspan="1"><p>δ &lt; 0</p></td><td colspan="1" rowspan="1"><p>δ &gt; 0</p></td></tr><tr><td colspan="1" rowspan="1"><p>双侧最小效应检验</p></td><td colspan="1" rowspan="1"><p>−c &lt; δ &lt; c</p></td><td colspan="1" rowspan="1"><p>δ &lt; −c or δ &gt; c</p></td></tr><tr><td colspan="1" rowspan="1"><p>单侧最小效应检验</p></td><td colspan="1" rowspan="1"><p>δ &lt; c</p></td><td colspan="1" rowspan="1"><p>δ &gt; c</p></td></tr><tr><td colspan="1" rowspan="1"><p>等价性检验</p></td><td colspan="1" rowspan="1"><p>δ &lt; −c or δ &gt; c</p></td><td colspan="1" rowspan="1"><p>−c &lt; δ &lt; c</p></td></tr><tr><td colspan="1" rowspan="1"><p>非劣性检验</p></td><td colspan="1" rowspan="1"><p>δ &lt; −c</p></td><td colspan="1" rowspan="1"><p>δ &gt; −c</p></td></tr></tbody></table><blockquote><p>Kiers, H. A. L., &amp; Tendeiro, J. N. (2025). Bridging Null Hypothesis Testing and Estimation: A Practical Guide to Statistical Conclusion Drawing From Research in Psychology. <em>Advances in Methods and Practices in Psychological Science</em>, <em>8</em>(3), 25152459251365960. <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.1177/25152459251365960">https://doi.org/10.1177/25152459251365960</a></p><p>Smiley, A. H., Glazier, J. J., &amp; Shoda, Y. (2023). Null regions: A unified conceptual framework for statistical inference. <em>Royal Society Open Science</em>, <em>10</em>(11), 221328. <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.1098/rsos.221328">https://doi.org/10.1098/rsos.221328</a></p></blockquote><p></p>
+
+<h3>1.3 贝叶斯框架下的假设检验优势</h3><p>与传统假设检验方法相比，贝叶斯框架下的方法具有以下几方面的优势：</p><ol><li><p><strong>可以对假设一视同仁：</strong> 同时评估$ H_0 $和$ H_1 $的可能性，能够为$ H_0 $提供支持证据，解决传统假设检验难以证明$ H_0 $成立的问题。&nbsp;</p></li><li><p><strong>结合先验信息：</strong> 贝叶斯因子分析可以利用先验知识，将前人的研究成果与当前数据结合，提供更为全面的证据评估。&nbsp; &nbsp; &nbsp; &nbsp;</p></li><li><p><strong>避免<em>p</em>值操纵：</strong> 贝叶斯因子的计算基于全数据集，不受单个数据点的影响，能够有效避免p值操纵带来的假阳性结果。&nbsp; &nbsp; &nbsp;</p></li><li><p><strong>支持多模型比较：</strong> 贝叶斯因子不仅适用于二元假设检验，还可以用于比较多个模型的适用性，提供更为灵活的统计分析工具。</p></li><li><p><strong>可以直接支持零假设</strong>。</p></li></ol><p></p><blockquote><p>吴凡, 顾全, 施壮华, 高在峰, 沈模卫. (2018). 跳出传统假设检验方法的陷阱——贝叶斯因子在心理学研究领域的应用. <em>应用心理学</em></p><p>许岳培, 陆春雷, 王珺, 宋琼雅, 贾彬彬, 胡传鹏. (2022). 评估零效应的三种统计方法. 应用心理学, <em>28</em>(4), 369–384.</p></blockquote><p></p>
+
+<p><strong>以Beta-Binomial模型在Stan中的实现为例</strong></p><p>仍然以随机点运动任务为例，每个试验中参与者判断正确的概率用 $ \pi $ 表示。</p><p></p><p><strong>模型假设</strong></p><ul><li><p>判断正确概率 $ \pi $ 服从 <strong>Beta 分布</strong>分布：</p></li></ul><p>$$ \begin{equation} \pi \sim \text{Beta}(\alpha, \beta) \end{equation} $$</p><ul><li><p>在每次试验中，参与者的成功次数 $ Y $ 服从 <strong>Binomial 分布</strong>：</p></li></ul><p>$$ \begin{equation} Y \sim \text{Binomial}(n, \pi) \end{equation} $$</p><p>其中，$ n $是试验的总次数，$ Y $是成功次数。</p><p></p><p><strong>模型设定</strong></p><p>在这个例子中，我们可以使用Beta-Binomial 模型来表示：</p><p></p><blockquote><p>数据: 总试验数为n=10，成功次数为9 $ (Y = 9) $<br>先验分布为：$ \pi \sim \text{Beta}(2, 2) $<br>似然函数为：$ Y|\pi \sim \text{Bin}(n, \pi) $</p></blockquote><p></p>
+
+```{r}
+#| collapsed: false
+#| hide_input: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 安装和加载包
+options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
+if (!requireNamespace('pacman', quietly = TRUE)) {
+    install.packages('pacman')
+}
+pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja", "patchwork","bayesplot","rstan","bridgesampling","bayestestR") # "bayesrules"
+options(warn = -1)  # 抑制警告
+```
+
+```{r}
+#| collapsed: false
+#| hide_input: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 准备数据
+stan_data <- list(N = 118,Y = 99)
+
+# 定义模型
+stan_model_code <- "
+data {
+  int<lower=0> N;       
+  int<lower=0, upper=N> Y; 
+}
+parameters {
+  real<lower=0, upper=1> pi;
+}
+model {
+  pi ~ beta(2, 2);
+  Y ~ binomial(N, pi);
+}
+"
+
+# 进行采样
+fit_bb <- stan(
+  model_code = stan_model_code,      # 定义的模型或模型文件路径
+  data = stan_data,                  # 输入数据
+  chains = 4,                        # 马尔可夫链数量
+  iter = 5000,                       # 总迭代次数（每个链）
+  warmup = 1000,                     # 热身迭代次数（不保存）
+  seed = 84735
+)
+```
+
+```{r}
+#| collapsed: false
+#| hide_input: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+pp <- bayesplot::mcmc_areas(fit_bb, regex_pars = "pi",  prob = 0.8) +
+ labs(
+   title = "Posterior distributions",
+   subtitle = "with medians and 80% intervals"
+ ) +
+ papaja::theme_apa()
+
+ pp
+```
+
+<p></p><p>🤔假设我们在一篇报道中看到这样一种描述：在随机点运动任务中，成功次数占比为80%。</p><p></p><p>如何根据这个数据结果判断改成功率是否大于随机判断水平 50% 呢？ <br></p><p>我们同时考虑两种可能性：成功次数 $\pi$ 的比例是否与 50% 相同，此时备择假设和虚无假设可以写成：</p><p></p><p>$ H_0: \pi = 0.5 $</p><p></p><p>$H_a: \pi \ne 0.5$</p>
+
+<h2>2. 基于后验分布的统计推断</h2><h3>2.1 Testing against the point-null：通过 HDI 进行检验</h3><p></p><p>沿用之前的例子，已经知道先验分布为 $Beta(2, 2)$； 后验分布为 $Beta(101, 21)$。</p><p></p><p>为了检验 $\pi$ 是否显著不同于 0.5，我们可以计算 <strong>后验分布的 HDI</strong>（Highest Density Interval），这是一种包含后验分布中最高概率密度的区间。通常 HDI 表示一个区间，比如 95% HDI，意味着该区间包含了后验分布中的 95% 的概率质量。</p>
+
+<p><strong>计算 HDI</strong></p><p></p><p>HDI 是后验分布中包含最高密度的区间，我们通常计算 95% HDI，这意味着该区间包含后验分布中 95% 的概率质量。HDI 的定义要求该区间 $[\pi_\text{low}, \pi_\text{high}]$ 满足以下条件：</p><p><br></p><p>1. 对于任何 $\pi$ 在区间 $[\pi_\text{low}, \pi_\text{high}]$ 外的点，它的密度都小于区间内的点的密度，即：</p><p><br></p><p>$f(\pi_\text{low} | \alpha, \beta) = f(\pi_\text{high} | \alpha, \beta)$</p><p><br></p><p>2. 该区间内的概率质量为 95%：</p><p></p><p>$\int_{\pi_\text{low}}^{\pi_\text{high}} f(\pi | \alpha, \beta) d\pi = 0.95$</p>
+
+```{r}
+#| collapsed: false
+#| hide_input: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# get posterior
+trace <- rstan::extract(fit_bb)
+trace_par <- as.data.frame(trace$pi)
+
+# get HDI
+bayestestR::hdi(trace_par,ci = 0.95) # 可自行更改不同范围的HDI区间。
+```
+
+<p><strong>结果解释</strong></p><p></p><p>经过计算，得到的 95% HDI 区间为 $[0.75, 0.89]$。接下来，我们要验证这个区间是否包含 0.5：</p><p></p><p>- 该区间为 $[0.75, 0.89]$。</p><p>- 0.5 不在这个区间内。</p><p></p><p>因此，95% HDI 区间不包含 0.5，表明在 95% 的可信水平下，成功率 $\pi$ 与 0.5 存在差异。基于这一结果，我们可以拒绝虚无假设 $H_0: \pi = 0.5$，认为成功率 $\pi$ 显著不同于 0.5。</p>
+
+<h3>2.2 Testing against a null-region：通过 HDI + ROPE 进行检验</h3><p></p><p><strong>ROPE</strong>（Region of Practical Equivalence，实际等效区间）是一种贝叶斯统计中的概念，用来定义在实践中认为与虚无假设无显著差异的区域。通过结合 HDI 和 ROPE，我们可以进一步检验成功率 $\pi$ 是否在实践中显著不同于 0.5。 <br></p><p>在这个例子中，我们假设 ROPE 的范围为 $[0.4, 0.6]$。这意味着如果成功率 $\pi$ 落入这个区间，我们认为 $\pi$ 在实践中与随机判断水平 0.5 没有显著差异。因此，我们的目标是判断 95% HDI 区间是否完全落在 ROPE 内，完全在 ROPE 外，或者部分重合。</p><p></p><blockquote><p>注意：ROPE需要我们根据具体情况进行调整。 一般情况下需要参考经验值或文献中的建议。</p></blockquote><p></p>
+
+<p><strong>检验步骤</strong></p><p></p><p>我们已经知道 95% HDI 区间为 $[0.75, 0.89]$。接下来，我们需要将这个区间与 ROPE 区间 $[0.4, 0.6]$ 进行比较：</p><p><br></p><p>- HDI 区间为 $[0.75, 0.89]$。</p><p>- ROPE 区间为 $[0.4, 0.6]$。</p><p><br></p><p>接下来，我们考虑三种可能的情况：</p><p></p><p>- <strong>HDI 完全落在 ROPE 之内</strong>：如果 95% HDI 完全在 $[0.4, 0.6]$ 之内，那么可以认为 $\pi$ 在实践中与 0.5 无差异。</p><p>- <strong>HDI 完全落在 ROPE 之外</strong>：如果 95% HDI 完全在 $[0.4, 0.6]$ 之外，那么可以认为 $\pi$ 在实践中不同于 0.5。</p><p>- <strong>HDI 与 ROPE 部分重合</strong>：如果 95% HDI 区间与 ROPE 有部分重合，那么可以认为不确定 $\pi$ 是否不同于 0.5。</p>
+
+```{r}
+#| collapsed: false
+#| hide_input: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# get ROPE
+bayestestR::rope(trace_par,range = c(0.4, 0.6))
+```
+
+<p><strong>结果分析</strong>  </p><p><br></p><p>在我们的例子中，HDI 区间 $[0.75, 0.89]$ 完全位于 ROPE 区间 $[0.4, 0.6]$ 之外。这意味着我们可以认为 $\pi$ 在实践中与 0.5 存在差异，且成功率 $\pi$ 高于 50%。  </p><p><br></p><p>HDI 区间 $[0.75, 0.89]$ 完全落在 ROPE 之外，这表明成功率 $\pi$ 在实践中不同于随机判断水平 0.5。结合 HDI 和 ROPE 的结果，我们可以进一步确认成功率 $\pi$ 高于 0.5。  </p><p><br></p><p>因此，基于 HDI + ROPE 的检验结果，我们可以认为成功率 $\pi$ 不仅在统计学上（通过 HDI 检验），而且在实践中（通过 ROPE 检验）都不同于 50%。</p>
+
+```{r}
+#| collapsed: false
+#| hide_input: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+result <- bayestestR::rope(trace_par,range = c(0.4, 0.6))
+
+plot(result, rope_color = "grey70") + papaja::theme_apa()
+```
+
+<p>思考：以上的HDI+ROPE属于以下哪一种检验？</p><ul><li><p>双侧最小效应检验</p></li><li><p>单侧最小效应检验</p></li><li><p>等价性检验</p></li><li><p>非劣性检验</p></li></ul><p></p>
+
+<h3>2.3 Extend to Directional hypotheses：六种检验类型演示</h3><p>下面，我们将展示传统贝叶斯统计在六种假设检验框架下的实现。</p><p></p><p><strong>假设检验的统一框架 (Smiley et al., 2023; Kiers &amp; Tendeiro, 2025)</strong></p><p></p><table style="min-width: 75px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p>检验类型</p></th><th colspan="1" rowspan="1"><p>零区间</p></th><th colspan="1" rowspan="1"><p>感兴趣区间</p></th></tr><tr><td colspan="1" rowspan="1"><p>双侧NHST</p></td><td colspan="1" rowspan="1"><p>δ = 0</p></td><td colspan="1" rowspan="1"><p>δ &gt; 0 or δ &lt; 0</p></td></tr><tr><td colspan="1" rowspan="1"><p>单侧NHST</p></td><td colspan="1" rowspan="1"><p>δ &lt; 0</p></td><td colspan="1" rowspan="1"><p>δ &gt; 0</p></td></tr><tr><td colspan="1" rowspan="1"><p>双侧最小效应检验</p></td><td colspan="1" rowspan="1"><p>−c &lt; δ &lt; c</p></td><td colspan="1" rowspan="1"><p>δ &lt; −c or δ &gt; c</p></td></tr><tr><td colspan="1" rowspan="1"><p>单侧最小效应检验</p></td><td colspan="1" rowspan="1"><p>δ &lt; c</p></td><td colspan="1" rowspan="1"><p>δ &gt; c</p></td></tr><tr><td colspan="1" rowspan="1"><p>等价性检验</p></td><td colspan="1" rowspan="1"><p>δ &lt; −c or δ &gt; c</p></td><td colspan="1" rowspan="1"><p>−c &lt; δ &lt; c</p></td></tr><tr><td colspan="1" rowspan="1"><p>非劣性检验</p></td><td colspan="1" rowspan="1"><p>δ &lt; −c</p></td><td colspan="1" rowspan="1"><p>δ &gt; −c</p></td></tr></tbody></table><blockquote><p>Kiers, H. A. L., &amp; Tendeiro, J. N. (2025). Bridging Null Hypothesis Testing and Estimation: A Practical Guide to Statistical Conclusion Drawing From Research in Psychology. <em>Advances in Methods and Practices in Psychological Science</em>, <em>8</em>(3), 25152459251365960. <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.1177/25152459251365960">https://doi.org/10.1177/25152459251365960</a></p><p>Smiley, A. H., Glazier, J. J., &amp; Shoda, Y. (2023). Null regions: A unified conceptual framework for statistical inference. <em>Royal Society Open Science</em>, <em>10</em>(11), 221328. <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.1098/rsos.221328">https://doi.org/10.1098/rsos.221328</a></p></blockquote><p></p>
+
+```{r}
+#| collapsed: false
+#| hide_input: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# ============================================
+# 1. 提取后验样本（直接使用 pi）
+# ============================================
+posterior_samples <- extract(fit_bb)
+pi_posterior <- posterior_samples$`pi`  
+
+# ============================================
+# 2. 定义假设检验函数（基于 pi，ROPE = [0.4, 0.6]）
+# ============================================
+
+# ROPE Test: Practical equivalence to 0.5 with ROPE = [0.4, 0.6]
+rope_test <- function(samples, rope_lower = 0.4, rope_upper = 0.6) {
+  null_region <- samples <= rope_lower | samples >= rope_upper   # outside ROPE
+  interest_region <- samples > rope_lower & samples < rope_upper  # inside ROPE
+  
+  list(
+    name = "ROPE Test (Practical Equivalence)",
+    null = paste0("π ≤ ", rope_lower, " or π ≥ ", rope_upper, " (outside ROPE)"),
+    interest = paste0(rope_lower, " < π < ", rope_upper, " (inside ROPE)"),
+    p_null = sum(null_region) / length(samples),
+    p_interest = sum(interest_region) / length(samples),
+    rope_lower = rope_lower,
+    rope_upper = rope_upper
+  )
+}
+
+# 单侧 NHST: H0: π ≤ 0.5 vs H1: π > 0.5
+one_sided_nhst <- function(samples, null_val = 0.5) {
+  null_region <- samples <= null_val
+  interest_region <- samples > null_val
+  
+  list(
+    name = "One-sided NHST",
+    null = paste0("π ≤ ", null_val),
+    interest = paste0("π > ", null_val),
+    p_null = sum(null_region) / length(samples),
+    p_interest = sum(interest_region) / length(samples),
+    null_val = null_val
+  )
+}
+
+# 双侧最小效应检验: H0: π ∈ [0.4, 0.6] (no meaningful effect)
+two_sided_met <- function(samples, rope_lower = 0.4, rope_upper = 0.6) {
+  null_region <- samples > rope_lower & samples < rope_upper
+  interest_region <- samples <= rope_lower | samples >= rope_upper
+  
+  list(
+    name = "Two-sided Minimal Effect Test",
+    null = paste0(rope_lower, " < π < ", rope_upper, " (trivial effect)"),
+    interest = paste0("π ≤ ", rope_lower, " or π ≥ ", rope_upper, " (meaningful effect)"),
+    p_null = sum(null_region) / length(samples),
+    p_interest = sum(interest_region) / length(samples),
+    rope_lower = rope_lower,
+    rope_upper = rope_upper
+  )
+}
+
+# 单侧最小效应检验: H0: π ≤ 0.6 vs H1: π > 0.6
+one_sided_met <- function(samples, threshold = 0.6) {
+  null_region <- samples <= threshold
+  interest_region <- samples > threshold
+  
+  list(
+    name = "One-sided Minimal Effect Test",
+    null = paste0("π ≤ ", threshold),
+    interest = paste0("π > ", threshold),
+    p_null = sum(null_region) / length(samples),
+    p_interest = sum(interest_region) / length(samples),
+    threshold = threshold
+  )
+}
+
+# 等价性检验（与 ROPE Test 数学相同，语义一致，可选保留）
+equivalence_test <- function(samples, rope_lower = 0.4, rope_upper = 0.6) {
+  null_region <- samples <= rope_lower | samples >= rope_upper
+  interest_region <- samples > rope_lower & samples < rope_upper
+  
+  list(
+    name = "Equivalence Test",
+    null = paste0("π ≤ ", rope_lower, " or π ≥ ", rope_upper),
+    interest = paste0(rope_lower, " < π < ", rope_upper),
+    p_null = sum(null_region) / length(samples),
+    p_interest = sum(interest_region) / length(samples),
+    rope_lower = rope_lower,
+    rope_upper = rope_upper
+  )
+}
+
+# 非劣性检验: H0: π < 0.4 vs H1: π ≥ 0.4
+non_inferiority_test <- function(samples, threshold = 0.4) {
+  null_region <- samples < threshold
+  interest_region <- samples >= threshold
+  
+  list(
+    name = "Non-inferiority Test",
+    null = paste0("π < ", threshold),
+    interest = paste0("π ≥ ", threshold),
+    p_null = sum(null_region) / length(samples),
+    p_interest = sum(interest_region) / length(samples),
+    threshold = threshold
+  )
+}
+
+# ============================================
+# 3. 执行所有检验 
+# ============================================
+
+results <- list(
+  rope_test(pi_posterior, rope_lower = 0.4, rope_upper = 0.6),
+  one_sided_nhst(pi_posterior, null_val = 0.5),
+  two_sided_met(pi_posterior, rope_lower = 0.4, rope_upper = 0.6),
+  one_sided_met(pi_posterior, threshold = 0.6),
+  equivalence_test(pi_posterior, rope_lower = 0.4, rope_upper = 0.6),
+  non_inferiority_test(pi_posterior, threshold = 0.4)
+)
+
+
+# ============================================
+# 4. 可视化函数
+# ============================================
+
+visualize_test_pi <- function(samples, test_result, xlim = c(0, 1)) {
+  df <- data.frame(pi = samples)
+  
+  p <- ggplot(df, aes(x = pi)) +
+    geom_density(fill = "gray80", alpha = 0.5) +
+    geom_vline(xintercept = 0.5, linetype = "dashed", color = "black", linewidth = 0.8) +
+    labs(
+      title = test_result$name,
+      subtitle = paste0("Null: ", test_result$null, " | Interest: ", test_result$interest),
+      x = "Parameter π",
+      y = "Posterior Density"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(face = "bold", size = 11),
+      plot.subtitle = element_text(size = 9),
+      axis.title = element_text(size = 10)
+    ) +
+    xlim(xlim)
+  
+  # 添加区间标注
+  if (test_result$name == "ROPE Test (Practical Equivalence)" || 
+      test_result$name == "Equivalence Test") {
+    p <- p +
+      annotate("rect", xmin = test_result$rope_lower, xmax = test_result$rope_upper,
+               ymin = 0, ymax = Inf, alpha = 0.2, fill = "blue") +
+      geom_vline(xintercept = c(test_result$rope_lower, test_result$rope_upper),
+                 linetype = "dotted", color = "blue", linewidth = 0.8)
+    
+  } else if (test_result$name == "Two-sided Minimal Effect Test") {
+    p <- p +
+      annotate("rect", xmin = test_result$rope_lower, xmax = test_result$rope_upper,
+               ymin = 0, ymax = Inf, alpha = 0.2, fill = "red") +
+      geom_vline(xintercept = c(test_result$rope_lower, test_result$rope_upper),
+                 linetype = "dotted", color = "red", linewidth = 0.8)
+    
+  } else if (test_result$name == "One-sided Minimal Effect Test") {
+    p <- p +
+      geom_vline(xintercept = test_result$threshold,
+                 linetype = "dotted", color = "red", linewidth = 0.8)
+    
+  } else if (test_result$name == "Non-inferiority Test") {
+    p <- p +
+      geom_vline(xintercept = test_result$threshold,
+                 linetype = "dotted", color = "blue", linewidth = 0.8)
+    
+  } else if (test_result$name == "One-sided NHST") {
+    p <- p +
+      geom_vline(xintercept = test_result$null_val,
+                 linetype = "dotted", color = "black", linewidth = 0.8)
+  }
+  
+  return(p)
+}
+
+# 生成图形
+plots <- lapply(results, function(r) visualize_test_pi(pi_posterior, r))
+
+# 组合图形（2列）
+do.call(grid.arrange, c(plots, ncol = 2))
+
+
+# ============================================
+# 5. ROPE、HDI、后验摘要
+# ============================================
+
+# 使用 bayestestR 的 rope() 函数验证（ROPE = [0.4, 0.6]）
+rope_bayestestR <- rope(pi_posterior, range = c(0.4, 0.6), ci = 0.95)
+cat("\n=== bayestestR ROPE Analysis (95% CI) ===\n")
+print(rope_bayestestR)
+
+# 95% HDI
+hdi_result <- hdi(pi_posterior, ci = 0.95)
+cat("\n95% Highest Density Interval (HDI):", 
+    round(hdi_result$CI_low, 4), "to", round(hdi_result$CI_high, 4), "\n")
+
+# 后验均值与中位数
+cat("Posterior Mean of π:", round(mean(pi_posterior), 4), "\n")
+cat("Posterior Median of π:", round(median(pi_posterior), 4), "\n")
+
+# 判断是否等效：如果 HDI 完全在 [0.4, 0.6] 内，则 strong evidence for equivalence
+hdi_in_rope <- hdi_result$CI_low > 0.4 & hdi_result$CI_high < 0.6
+cat("HDI fully within ROPE [0.4, 0.6]?", ifelse(hdi_in_rope, "YES", "NO"), "\n")
+```
+
+<h2>3. 基于贝叶斯因子的统计推断</h2><p>贝叶斯假设检验的另一个取向：贝叶斯因子 (Bayes factor, BF)</p><p></p><p><strong>假设检验 vs. 贝叶斯因子</strong></p><p>在传统假设检验中，我们会计算出一个 $ p $ 值。如果 $ p $ 值小于等于设定的显著性水平（例如 0.05），则拒绝零假设，认为自我和他人条件下的反应时存在显著差异。</p><p></p><img src="https://cdn.kesci.com/upload/smw4sakmzz.png?imageView2/0/w/320/h/960" alt="Image Name"><p>与传统的假设检验方法不同，贝叶斯统计使用 <strong>贝叶斯因子（Bayes Factor，BF）</strong> 来衡量不同模型之间的相对证据强度。贝叶斯因子不是基于 $ p $ 值，而是通过比较模型间的后验概率来得出结论。</p><p></p><p><strong>基本概念</strong></p><p>频率学派将随机事件发生的频率作为一种客观指标，而贝叶斯学派则从观察者的视角出发将概率理解为一种主观不确定性。</p><p></p><p>贝叶斯因子（Bayes Factor，BF）作为一种基于贝叶斯统计的验证方法，主要用于比较零假设（$ H_0 $）与备择假设（$ H_1 $）的相对支持程度，其衡量的主要是数据在这两种假设下的解释能力。</p><p></p><p>具体来说，贝叶斯因子可以表示为：</p><p>$$ \begin{align*} \text{Bayes Factor} &amp;= \frac{\text{posterior odds }}{\text{prior odds }} \\ &amp;= \frac{\text{后验概率比}}{\text{先验概率比}} \\ &amp;= \frac{P(H_1 | Y) / P(H_0 | Y)}{P(H_1) / P(H_0)} \end{align*} $$</p><p></p><ul><li><p>Posterior odds：后验概率比</p></li><li><p>Prior odds：先验概率比</p></li><li><p>$ H_0 $：零假设</p></li><li><p>$ H_1 $：备择假设</p></li></ul><p></p><blockquote><p>Heck, D. W., Boehm, U., Böing-Messing, F., Bürkner, P.-C., Derks, K., Dienes, Z., Fu, Q., Gu, X., Karimova, D., Kiers, H. A. L., Klugkist, I., Kuiper, R. M., Lee, M. D., Leenders, R., Leplaa, H. J., Linde, M., Ly, A., Meijerink-Bosman, M., Moerbeek, M., … Hoijtink, H. (2023). A review of applications of the bayes factor in psychological research. Psychological Methods, 28(3), 558–579. <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.1037/met0000454">https://doi.org/10.1037/met0000454</a></p></blockquote><p></p>
+
+<p>当然，贝叶斯因子还有一种表达方式，即后验概率比等于贝叶斯因子乘以先验概率比：</p><p>$$ \begin{align*} \text{posterior odds} &amp;= \text{BF}_{10} \times \text{prior odds} \end{align*} $$</p><p>这说明，贝叶斯因子反映了数据对假设的支持程度，也反映了先验概率到后验概率变化的程度或证据。</p>
+
+<p>同时，贝叶斯因子分析能够帮助研究者根据现有证据评估不同假设成立的可能性之比，并且在评估证据强度上也有一套独立的标准：</p><table style="min-width: 50px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p><strong>贝叶斯因子</strong></p></th><th colspan="1" rowspan="1"><p><strong>解读</strong></p></th></tr><tr><td colspan="1" rowspan="1"><p>&gt; 100</p></td><td colspan="1" rowspan="1"><p>极强的证据支持$ H_1 $</p></td></tr><tr><td colspan="1" rowspan="1"><p>30 ~ 100</p></td><td colspan="1" rowspan="1"><p>非常强的证据支持$ H_1 $</p></td></tr><tr><td colspan="1" rowspan="1"><p>10 ~ 30</p></td><td colspan="1" rowspan="1"><p>较强的证据支持$ H_1 $</p></td></tr><tr><td colspan="1" rowspan="1"><p>3 ~ 10</p></td><td colspan="1" rowspan="1"><p>中等程度的证据支持$ H_1 $</p></td></tr><tr><td colspan="1" rowspan="1"><p>1 ~ 3</p></td><td colspan="1" rowspan="1"><p>较弱的证据支持$ H_1 $</p></td></tr><tr><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>没有证据</p></td></tr><tr><td colspan="1" rowspan="1"><p>1/3 ~ 1</p></td><td colspan="1" rowspan="1"><p>较弱的证据支持$ H_0 $</p></td></tr><tr><td colspan="1" rowspan="1"><p>1/10 ~ 1/3</p></td><td colspan="1" rowspan="1"><p>中等程度的证据支持$ H_0 $</p></td></tr><tr><td colspan="1" rowspan="1"><p>1/30 ~ 1/10</p></td><td colspan="1" rowspan="1"><p>较强的证据支持$ H_0 $</p></td></tr><tr><td colspan="1" rowspan="1"><p>1/100 ~ 1/30</p></td><td colspan="1" rowspan="1"><p>非常强的证据支持$ H_0 $</p></td></tr><tr><td colspan="1" rowspan="1"><p>&lt; 1/100</p></td><td colspan="1" rowspan="1"><p>极强的证据支持$ H_0 $</p></td></tr></tbody></table><blockquote><p>Source: 该表改编自胡传鹏等(2018)，源引用于Lee &amp; Wagenmakers (2014)。</p></blockquote><p></p><p></p><ul><li><p>$ BF_{10} $ = 1，收集到的数据并没有改变备择假设$ H_1 $的相对可能性</p></li><li><p>$ BF_{10} $ &gt; 1，收集到的数据增加了备择假设$ H_1 $的相对可能性。$ BF $越大，表明支持备择假设$ H_1 $的证据越强</p></li><li><p>$ BF_{10} $ &lt; 1，收集到的数据削弱了备择假设$ H_1 $的相对可能性。$ BF $越小，表明支持备择假设$ H_1 $的证据越弱</p></li></ul><p></p><blockquote><p>胡传鹏, 孔祥祯, Eric-Jan Wagenmakers, Alexander Ly, 彭凯平. (2018). 贝叶斯因子及其在JASP中的实现. <em>心理科学进展</em></p></blockquote><blockquote><p>Makowski, D., Ben-Shachar, M. S., &amp; Lüdecke, D. (2019). bayestestR: Describing Effects and their Uncertainty, Existence and Significance within the Bayesian Framework. Journal of Open Source Software, 4(40), 1541. <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.21105/joss.01541">https://doi.org/10.21105/joss.01541</a></p></blockquote><blockquote><p>Makowski, D., Ben-Shachar, M. S., Chen, S. H. A., &amp; Lüdecke, D. (2019). Indices of Effect Existence and Significance in the Bayesian Framework. Retrieved from 10.3389/fpsyg.2019.02767</p></blockquote><p></p>
+
+<p>贝叶斯因子非常灵活，因为它不仅可以用于简单的假设检验，还可以用于比较复杂模型、评估模型拟合优度、以及在多模型比较中提供更丰富的信息。</p><p></p><p><strong>贝叶斯因子同样可以应用于以下三种常见的假设检验方法：</strong></p><p></p><ol><li><p><strong>Testing against the point-null</strong></p><p>贝叶斯因子可以用来检验某个参数是否等于零，即检验点的零假设。</p></li></ol><p></p><ol start="2"><li><p><strong>Testing against a null-region</strong></p></li></ol><p>设定一个“零区域”，即一个参数值的范围，该范围内的值被认为与零没有显著差异。假设我们设定一个区间 $ \beta_1 \in [-0.05, 0.05] $，认为 $ \beta_1 $ 落在这个区间内是可以接受的无效效应。通过贝叶斯因子，我们可以计算数据支持 $ \beta_1 $ 在零区域内（$ \beta_1 \in [-0.05, 0.05] $）或零区域外（$ \beta_1 \notin [-0.05, 0.05] $）的证据强度。</p><p></p><ol start="3"><li><p><strong>Directional hypotheses</strong></p></li></ol><p>即是否存在正向或负向的影响。例如，我们可以提出假设 $ H_1: \beta_1 &gt; 0 $，认为自变量 （Label）对因变量（RT_sec）有正向影响。贝叶斯因子将帮助我们评估数据是否支持这种方向性的假设，而不仅仅是支持或拒绝零假设。</p><p></p>
+
+<p>我们还是前述的Beta-Binomial模型为例</p>
+
+<p></p><p><strong>模型假设</strong></p><ul><li><p>判断正确概率 $ \pi $ 服从 <strong>Beta 分布</strong>分布：</p></li></ul><p>$$ \begin{equation} \pi \sim \text{Beta}(\alpha, \beta) \end{equation} $$</p><ul><li><p>在每次试验中，参与者的成功次数 $ Y $ 服从 <strong>Binomial 分布</strong>：</p></li></ul><p>$$ \begin{equation} Y \sim \text{Binomial}(n, \pi) \end{equation} $$</p><p>其中，$ n $是试验的总次数，$ Y $是成功次数。</p><p></p><p><strong>模型设定</strong></p><p>在这个例子中，我们可以使用Beta-Binomial 模型来表示：</p><p></p><blockquote><p>数据: 总试验数为n=118，成功次数为99 $ (Y = 99) $<br>先验分布为：$ \pi \sim \text{Beta}(2, 2) $<br>似然函数为：$ Y|\pi \sim \text{Bin}(n=118, \pi) $</p></blockquote><p></p>
+
+```{r}
+#| collapsed: false
+#| hide_input: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+print(fit_bb, pars = c("pi"))
+```
+
+**MCMC诊断**
+
+```{r}
+#| collapsed: false
+#| hide_input: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+trace_pi <- bayesplot::mcmc_trace(
+  fit_bb,
+  pars = "pi"
+) +
+  papaja::theme_apa()
+
+trace_pi
+```
+
+<h3>3.1 Testing against the point-null</h3><p>贝叶斯因子可以帮助我们衡量数据对点零假设与非零假设的支持程度。在Beta-Binomial模型中，我们可以设定一个零假设 $ H_0: \pi = 0.5 $ 和备择假设 $ H_1: \pi \neq 0.5 $，然后使用贝叶斯因子来计算零假设和备择假设的相对证据。</p><p>$$ BF_{10} = \frac{P(\text{Data} | H_1)}{P(\text{Data} | H_0)} = \frac{P(Data|\pi \neq 0.5)}{P(Data|\pi = 0.5)} $$</p><p></p><p>其中，$ P(Data | H_1) $ 和 $ P(Data | H_0) $ 分别表示在备择假设$ H_1 $和零假设$ H_0 $下数据的似然值。</p><p></p><p><strong>实现贝叶斯因子计算</strong></p><p>现在，我们有了 $ \beta_1 $ 的先验分布和后验分布，我们分别计算贝叶斯因子 $ BF_{10} $ 和 $ BF_{01} $，以表示数据支持备择假设和零假设的证据强度，并且通过直接计算贝叶斯因子的方法，对先验和后验分布在零假设点处的概率密度值进行可视化。</p>
+
+```{r}
+#| collapsed: false
+#| hide_input: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# =====================================
+# 从先验采样（无数据似然）
+# =====================================
+# 定义模型
+stan_prior_code <- "
+data {
+  int<lower=0> N;       
+  int<lower=0, upper=N> Y; 
+}
+parameters {
+  real<lower=0, upper=1> pi;
+}
+model {
+  pi ~ beta(2, 2);
+  
+  // 注释掉似然
+  // Y ~ binomial(N, pi);
+}
+"
+
+# 编译先验模型
+prior_model <- stan_model(model_code = stan_prior_code)
+
+# 从先验采样（使用虚拟数据）
+fit_prior <- sampling(
+  prior_model,
+  data = stan_data,  # 虚拟
+  iter = 5000,
+  warmup = 1000,
+  chains = 4,
+  seed = 84735
+)
+```
+
+<p><strong>🔍 Savage-Dickey 公式来源</strong></p><p>Savage-Dickey 密度比的标准形式是（见 Wagenmakers et al., 2010）：</p><p>$$ \text{BF}_{01} = \frac{p(\beta_1 = 0 \mid \text{data}, \mathcal{M}_1)}{p(\beta_1 = 0 \mid \mathcal{M}_1)} $$</p><p>其中：</p><ul><li><p>分子 p(β₁=0 | data, M₁)： 表示在备择模型 M₁（即包含参数β₁的模型）下的已经观察到数据之后，参数β₁在零点（原假设H₀指定的点）的后验密度。它衡量了在看到数据后，我们认为β₁等于0的可能性有多大。</p></li><li><p>分母 p(β₁=0 | M₁)： 表示在备择模型 M₁下的看到任何数据之前，参数β₁在零点的先验密度。它衡量了在看到数据之前，我们认为β₁等于0的可能性有多大。</p></li><li><p>BF₀₁： 是支持<strong>原假设（M₀）</strong> 相对于<strong>备择假设（M₁）</strong> 的证据。<strong>BF₀₁的值越大，证据越支持原假设（即β₁=0）</strong>。</p></li></ul><p></p>
+
+```{r}
+#| collapsed: false
+#| hide_input: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 提取pi的先验样本
+prior_samples <- extract(fit_prior)
+pi_prior <- prior_samples$`pi`
+
+# 提取后验样本
+posterior_samples <- extract(fit_bb)
+pi_posterior <- posterior_samples$`pi`
+
+# 计算贝叶斯因子
+
+# 使用核密度估计计算密度在 0.5 处的值
+prior_density <- density(pi_prior, from = 0.49, to = 0.51, n = 1024)
+posterior_density <- density(pi_posterior, from = 0.49, to = 0.51, n = 1024)
+
+# 找到最接近 0 的点的密度值
+idx_0_prior <- which.min(abs(prior_density$x))
+idx_0_post <- which.min(abs(posterior_density$x))
+
+prior_at_0 <- prior_density$y[idx_0_prior]
+# posterior 太小，设置为0.0001，避免出现无穷大
+posterior_at_0 <- if_else(posterior_density$y[idx_0_post] ==0, 0.0001, posterior_density$y[idx_0_post])
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+str(pi_posterior)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+str(pi_prior)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 计算 Savage-Dickey 比
+BF_01 <- posterior_at_0 / prior_at_0# 支持 H0 相对于 H1
+BF_10 <- 1 / BF_01# 支持 H1（β₁ ≠ 0）相对于 H0（β₁ = 0）
+
+
+cat("The BF_10 is", round(BF_10, 2), "\n")
+cat("The BF_01 is", round(BF_01, 6), "\n")
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 提取pi的先验和后验样本
+prior_samples <- extract(fit_prior)
+pi_prior <- prior_samples$`pi`
+
+posterior_samples <- extract(fit_bb)
+pi_posterior <- posterior_samples$`pi`
+
+
+
+prior_density <- density(pi_prior, from = min(c(pi_prior, pi_posterior)), 
+                        to = max(c(pi_prior, pi_posterior)), n = 1024)
+posterior_density <- density(pi_posterior, from = min(c(pi_prior, pi_posterior)), 
+                            to = max(c(pi_prior, pi_posterior)), n = 1024)
+
+# 准备绘图数据
+df_prior <- data.frame(
+  pi = prior_density$x,
+  density = prior_density$y,
+  type = "Prior"
+)
+
+df_posterior <- data.frame(
+  pi = posterior_density$x,
+  density = posterior_density$y,
+  type = "Posterior"
+)
+
+df_combined <- bind_rows(df_prior, df_posterior)
+
+
+# 主密度图
+main_plot <- ggplot(df_combined, aes(x = pi, y = density, color = type)) +
+  geom_line(size = 1.2, alpha = 0.8) +
+  scale_color_manual(values = c("Prior" = "steelblue", "Posterior" = "darkorange")) +
+  labs(
+    title = "Prior and Posterior Distribution Comparison",
+    x = expression(pi),
+    y = "Density",
+    color = "Distribution"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = c(0.85, 0.85),
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    panel.grid.minor = element_blank()
+  )
+
+# 添加分面版本以更好比较分布特性
+facet_plot <- ggplot(df_combined, aes(x = pi, y = density, fill = type)) +
+  geom_area(alpha = 0.6) +
+  facet_wrap(~ type, ncol = 1, scales = "free_y") +
+  scale_fill_manual(values = c("Prior" = "steelblue", "Posterior" = "darkorange")) +
+  labs(x = expression(pi), y = "Density") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+# 组合图形
+combined_plot <- main_plot / facet_plot +
+  plot_annotation(title = "Bayesian Analysis: Prior vs Posterior Distributions",
+                  theme = theme(plot.title = element_text(hjust = 0.5, face = "bold")))
+
+print(combined_plot)
+```
+
+<p>通过上图我们可以发现：</p><ol><li><p>$ BF_{10} = 14536.01 $：表示数据支持$ H_1 $的强度相对于$ H_0 $设为 14536.01 。</p></li><li><p>$ BF_{01} =6.9e-05  $：表示数据支持$ H_0 $的强度相对于$ H_1 $为 6.9e-05 。</p></li></ol><p>总结：通过贝叶斯因子的计算，对于数据倾向于支持 $ \beta_1 \neq 0 $，即存在效应提供了极强（&gt;100)的证据。</p>
+
+<p><strong>与 JASP 的对比</strong></p><p>在上一小节，我们通过直接比较先验和后验分布在零点的密度差异来检验某个效应是否为零。</p><p>然而，JASP（Jeffreys's Amazing Statistics Program）提供了一种不同的方法来计算贝叶斯因子：</p><ul><li><p>JASP 是一个基于 R 语言的开源软件，以其易用性和友好的图形界面广受欢迎，主要用于心理学、社会学等领域的统计分析。</p></li><li><p>JASP 使用贝叶斯模型来计算贝叶斯因子，包括模型比较和桥采样法（Bridge Sampling）等技术，能够通过计算后验和先验分布的比值，评估不同模型或假设的相对支持程度。与 Savage-Dickey 方法不同，桥采样不局限于单参数或简单假设，因此更适合模型比较和复杂假设检验。</p></li></ul><p></p><p><strong>注意：由于这里的方法基于模型比较，它更适合模型比较和复杂假设检验，因此和 Savage-Dickey 方法不同。此外，在JASP的实际运算中，软件会自动调整先验，因此与我们设置的先验不同，计算得到的贝叶斯因子也会有所不同。</strong></p><p></p><img src="https://cdn.kesci.com/upload/1762414215845_1.jpg"><p></p>
+
+<img src="https://cdn.kesci.com/upload/1762414056164_1.jpg"><p></p>
+
+<h3>3.2 Testing against a null-region</h3><p>现在，我们证实了$ \pi \neq 0.5 $，即正确率不为0.5.</p><p></p><p><strong>回顾 ROPE</strong></p><ul><li><p>假设了 $ \pi$ 的值在 $ [0.4, 0.6] $ 范围内可以视为实用等效区间，也就是说，</p></li><li><p>如果 $ \pi $ 落在这个区间内，我们可以认为正确率为0.5，从而在实践上认为两者无显著差异。</p></li></ul><p></p><p><strong>ROPE 对于贝叶斯因子的意义</strong></p><ul><li><p>在假设检验中，设定一个“零区域”（null region）可以帮助我们定义一个在实际意义上视为“无效”的效果范围。</p></li><li><p>通过设定零区域，<strong>我们可以计算先验概率和后验概率，进而计算贝叶斯因子来量化数据对假设的支持强度</strong>。</p></li></ul><p>$$ BF_{10} = \frac{P(\text{Data} | H_1)}{P(\text{Data} | H_0)} = \frac{P(Data|\beta_1 \notin [0.4,0.6])}{P(Data|\beta_1 \in [0.4,0.6])} $$</p><p>（注：我们可以计算 "label" 条件下反应时间差异落在零假设区间之外的先验概率，以及落在零假设区间之内的先验概率，从而得到我们的先验概率比（prior odds）。）</p><p></p>
+
+<p><strong>贝叶斯因子的计算</strong></p><p>首先，我们需要确定 $ \pi $ 在 ROPE 范围 $ (0.4, 0.6) $ 内的概率，即：</p><p>$$ \begin{align*} P(H0|Y) &amp;= P(0.4 \leq \pi \leq 0.6 | Y) = \int_{0.4}^{0.6} f(\pi | Y) d\pi \\ \end{align*} $$</p><ul><li><p>其中 $ f(\pi | Y) $ 是 $ \pi $ 的后验密度函数。根据我们的后验分布 $ Beta(101, 21) $，我们可以使用积分或数值方法来求解具体数值。</p></li></ul><p>与此同时，我们考虑 $ (0.4, 0.6) $ 之外的概率，即 $ P(\pi \notin (0.4, 0.6) | Y) $，通过：</p><p>$$ P(H1|Y) = P(\pi \notin (0.4, 0.6) | Y) = 1 - P(H0|Y) $$</p><p>现在我们可以根据下式计算贝叶斯因子（BF）：</p><p>$$ \text{Bayes Factor } = \frac{P(0.4 \leq \pi \leq 0.6 | Y)/P(H0)}{P(\pi \notin (0.4, 0.6) | Y)/P(H1)} $$</p><p><strong>由于两种假设下先验分布相同，$ P(H0) = P(H1) = 0.5 $，因此可以简化计算为：</strong></p><p>$$ \text{Bayes Factor } = \frac{P(0.4 \leq \pi \leq 0.6 | Y)}{P(\pi \notin (0.4, 0.6) | Y)} $$</p>
+
+<p><strong>结果分析</strong></p><p>计算 $ P(0.4 \leq \pi \leq 0.6 | Y) $ 可以用$ Beta $分布的累积分布函数（CDF）进行:</p><p>$$ P(0.4 \leq \pi \leq 0.6 | Y) = F(0.6) - F(0.4) $$</p><ul><li><p>其中 $ F $ 是以 $ Beta $ 分布(101,21)累积分布函数。则，</p></li></ul><p>$$ P(0.4 \leq \pi \leq 0.6 | Y) \approx 0.022 - 0.0003 = 0.0217 $$</p><p>因此，$ P(\pi \notin (0.4, 0.6) | Y) = 1 - 0.0217 = 0.9783 $。</p><p>计算贝叶斯因子（BF）:</p><p>$$ \text{Bayes Factor} = \frac{P(0.4 \leq \pi \leq 0.6 | Y)}{P(\pi \notin (0.4, 0.6) | Y)} \approx \frac{0.0217}{0.9783} \approx 0.0222 $$</p><p>贝叶斯因子的值约为 $ 0.0222 $，这意味着备择假设 $ H_1 $ ($ \pi $ 不在 $ (0.4, 0.6) $ 区间内) 相对于原假设 $ H_0 $ ($ \pi $ 在 $ (0.4, 0.6) $ 区间内) 获得了极大的支持。这个结果表明，给定数据和先验信息，$ \pi $ 值显著不在 $ (0.4, 0.6) $ 区间内，大大倾向于 $ \pi $ 的真实值远离 $ 0.5 $，这与 $ \pi = 0.8 $ 的假设一致。</p><p>因此，我们可以结论认为，在给定的统计模型和数据条件下，成功率 $ \pi = 0.8 $ 是显著高于一般随机判断水平（$ 0.5 $），这进一步强化了 $ \pi $ 显著高于 $ 0.5 $ 的结论。此结果对于决策支持和进一步的统计分析具有重要意义。</p>
+
+<p>🙋<strong>Question</strong></p><p>如何利用我们已经得到的后验分布计算上述BF值？</p>
+
+<p><strong>练习1</strong>：</p><p></p><p>首先，可以写出“伪代码”作为计算的思路：</p><p></p><p>第一步：</p><p></p><p>每二步：</p><p></p><p>第三步：</p><p></p><p>下面，让我们进行代码实操环节😋！</p>
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+#第一步：后验样本提取及对应转换
+
+# 用 as.vector() 统一格式
+pi_vec <- as.vector(...)  
+# 查看总样本数（确保所有有效迭代都被包含）
+total_samples <- length(pi_vec)  
+cat("pi的后验总样本数：", total_samples, "\n")
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+#第二步： 计算ROPE区间内的后验概率比
+
+# 定义 ROPE 区间
+rope_low <- ...
+rope_high <- ...
+
+# 筛选：判断每个样本是否落在 (0.4, 0.6) 内
+pi_in_rope <- (... > rope_low) & (... < rope_high)  
+
+# 计算 ROPE 内的后验概率比例
+pi_rope_prob <- mean(pi_in_rope)  
+
+# 输出结果
+cat("参数 pi 落在 ROPE (", rope_low, ",", rope_high, ") 内的后验概率：", round(pi_rope_prob, 3), "\n")
+# 可选：输出落在 ROPE 内的样本数
+#cat("落在 ROPE 内的样本数：", sum(pi_in_rope), "\n")
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 第三步： 计算贝叶斯因子：BF₀₁ = 支持 H₀（pi在ROPE内）的概率 / 支持 H₁（pi在ROPE外）的概率
+bf01 <- (...) / (...)  
+cat("贝叶斯因子 BF₀₁（支持 pi 在 (0.4,0.6) 内）：", round(bf01, 3), "\n")
+```
+
+<h3>3.3 Directional hypotheses</h3><p>我们还可以通过Directional hypotheses 检验效应是否朝着我们预期的方向发展，计算方向假设（“单侧”）的贝叶斯因子。</p><p></p><p><strong>练习2</strong><br>思考🤔：如何通过贝叶斯因子量化支持该假设的相对证据强度呢?</p>
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 请直接运行，无需修改
+calculate_odds <- function(tace_samples, region = c(-0.05, 0.05)) {
+
+#计算区间 [-0.05, 0.05] 内的样本
+in_range <- tace_samples[tace_samples >= region[1] & tace_samples <= region[2]]
+
+#计算区间外的样本
+out_of_range <- tace_samples[tace_samples < region[1] | tace_samples > region[2]]
+
+#计算区间内外的比例
+P_in_range <- length(in_range) / length(tace_samples)
+P_out_of_range <- length(out_of_range) / length(tace_samples)
+
+#计算比率
+ratio <- P_out_of_range / P_in_range
+
+return(ratio)
+}
+
+plot_region <- function(samples, region = c(-0.05, 0.05), dist_type = "Prior") {  
+  df <- data.frame(x = samples)  
+  
+  # 计算密度用于 y 位置
+  density_data <- density(samples, n = 1024)
+  null_mask <- density_data$x >= region[1] & density_data$x <= region[2]
+  alt_mask <- !null_mask
+  
+  null_density_vals <- density_data$y[null_mask]
+  alt_density_vals <- density_data$y[alt_mask]
+  
+  # x 轴范围
+  x_range <- range(samples)
+  x_span <- diff(x_range)
+  
+  ggplot(df, aes(x = x)) +    
+    stat_density(geom = "line", color = "black", size = 1) +    
+    stat_density(      
+      geom = "area",      
+      data = df %>% filter(x >= region[1] & x <= region[2]),      
+      fill = "blue", alpha = 0.3,      
+      aes(y = ..density..)
+    ) +    
+    stat_density(      
+      geom = "area",      
+      data = df %>% filter(x < region[1] | x > region[2]),      
+      fill = "yellow", alpha = 0.3,      
+      aes(y = ..density..)
+    ) +    
+    # Null 标签
+    annotate("text", 
+             x = mean(region),  
+             y = if(length(null_density_vals) > 0) max(null_density_vals) * 0.6 else 0,
+             label = "Null", 
+             color = "blue", 
+             fontface = "bold",
+             size = 4) +
+    # Alternative 标签
+    annotate("text", 
+             x = if (abs(x_range[1]) > x_range[2]) {
+               x_range[1] + 0.15 * x_span  
+             } else {
+               x_range[2] - 0.15 * x_span  
+             },
+             y = if(length(alt_density_vals) > 0) max(alt_density_vals) * 0.6 else 0,
+             label = "Alternative", 
+             color = "darkorange", 
+             fontface = "bold",
+             size = 4) +
+    labs(      
+      title = paste0(dist_type, " Distribution with Null Region"),      
+      x = expression(beta[1]),      
+      y = "Density"    
+    ) +    
+    scale_x_continuous(limits = c(x_range[1] - 0.05 * x_span, x_range[2] + 0.05 * x_span)) +    
+    theme_minimal() +    
+    theme(plot.title = element_text(hjust = 0.5)) 
+}
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+#=====================================
+#      基于方向的贝叶斯因子计算
+#      自行练习
+#=====================================
+
+# 获取pi的先验分布的采样
+#pi_prior =  
+
+
+# 获取pi的后验分布的采样
+# pi_posterior = ...
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 定义区间
+# region = ...
+
+# 计算先验比
+# prior_odds = ...
+
+# 计算后验比
+# prior_odds = ...
+
+# 计算贝叶斯因子
+# BF_10 = ...
+
+cat("贝叶斯因子（BF_10）:", BF_10,"\n")
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 690a86a8ae50d8e7fdf63a45
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+df_plot <- tibble(
+  prior = ...,
+  posterior = ...
+) %>%
+  pivot_longer(
+    cols = everything(),
+    names_to = "distribution",
+    values_to = "pi"
+  )
+
+# === 方向性假设：H1: pi < 0.5 ===
+h0_boundary <- 0  # H₀: pi >= 0.5
+
+# 计算最大密度用于标签定位
+dens_prior <- density(pi_prior, from = -1, to = 1)
+dens_post <- density(pi_posterior, from = -1, to = 1)
+max_dens <- max(dens_prior$y, dens_post$y)
+
+# 绘图
+ggplot(df_plot, aes(x = beta1, fill = distribution, color = distribution)) +
+  geom_density(alpha = 0.3, size = 1) +
+  
+
+  annotate("rect", 
+           xmin = h0_boundary, xmax = Inf,
+           ymin = -Inf, ymax = Inf,
+           fill = "blue", alpha = 0.2, inherit.aes = FALSE) +
+  
+  # 垂直线在 0 处（假设边界）
+  geom_vline(xintercept = 0, linetype = "dashed", color = "grey", size = 1) +
+  
+  # 标签：H₀ 在右侧，H₁ 在左侧
+  annotate("text",
+           x = 0.5,  # H₀ 区域（右侧）
+           y = max_dens * 0.8,
+           label = "H0: pi >= 0.5",
+           color = "blue",
+           fontface = "bold",
+           size = 4,
+           parse = TRUE) +
+  
+  annotate("text",
+           x = -0.5,  # H₁ 区域（左侧）
+           y = max_dens * 0.6,
+           label = "H1: pi < 0.5",
+           color = "darkorange",
+           fontface = "bold",
+           size = 4,
+           parse = TRUE) +
+  
+  xlim(-1, 1) +
+  
+  labs(
+    title = "Directional Hypothesis: Testing for Negative Effect",
+    x = expression(beta[1]),
+    y = "Density",
+    fill = "Distribution",
+    color = "Distribution"
+  ) +
+  
+  scale_fill_manual(values = c("prior" = "cyan", "posterior" = "coral")) +
+  scale_color_manual(values = c("prior" = "cyan", "posterior" = "coral")) +
+  
+  theme_minimal() +
+  theme(
+    panel.border = element_rect(fill = NA, colour = "black"),
+    panel.grid.minor = element_blank(),
+    legend.position = "upper right"
+  )
+```
+
+## 总结  
+贝叶斯因子较传统统计方法有很多优势，其中最突出的优势是对零假设和备择假设一视同仁。这一方面能够帮助研究者解决为零假设提供证据的问题，另一 方面还能帮助研究者拓宽思路，如本节课介绍了三种贝叶斯因子的计算与应用。  
+
+与传统的 $p$ 值不同，贝叶斯因子不仅能够告诉我们是否拒绝零假设，还能展示数据支持哪一个假设的证据强度。  
+
+最后，请大家不要谨慎看待 $p$ 值，$p$ 值并不教你相信/不相信什么，而只是为你修正自己的信念提供参考。  
+

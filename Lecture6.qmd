@@ -1,0 +1,397 @@
+---
+jupyter: ir
+---
+
+ # <center>  Lecture 6 : MCMC </center>   ##  <center>  Instructor: Dr. Hu Chuan-Peng   </center>  
+
+在上一节课中，通过简单的 Beta-Binomial 模型中，我们已经看到 Stan可以帮助我们得到后验分布。  且这个过程中使用了**MCMC算法** 从后验分布中进行抽样。  为什么 **MCMC算法** 可以得到后验分布的样本？🤔  为了更深入理解这些方法，我们现在回到基础，从第一个MC(Monte Carlo)方法开始。😎  
+
+## Monte Carlo, Markov Chain 和 Markov Chain Monte Carlo  ### 什么是 Monte Carlo  - Monte Carlo 方法是一种通过**随机采样**模拟复杂现象的数值计算方法。  假设我们知道这个正方形的面积，想估算图中圆形的面积（但不使用圆的面积的公式），通过何种近似的方法可以怎么解决这一问题呢？  <center>      <table>              <tr>                  <td><img src="https://cdn.kesci.com/upload/slozv1v2pv.png?imageView2/0/w/480/h/960" alt=""></td>                  <td><img src="https://cdn.kesci.com/upload/slozv7t6h6.png?imageView2/0/w/480/h/960" alt=""></td>              </tr>              <tr>                  <td></td>                  <td></td>              </tr>      </table>  </center>  1. **随机投点**：我们在一个边长为 10厘米 的正方形区域内随机放置 20 个点。  2. **计算圆内的点数比例**：统计这些点中有多少落在圆内，并计算这一比例。  3. **面积估算**：根据比例，乘以正方形的面积（100 平方厘米），即可得到近似的圆面积。  **Monte Carlo 的核心思想**：    1. **随机抽样**：通过从某个已知的概率分布中随机抽样，估计该分布的期望或其他统计量。    2. **近似逼近**：随着样本数量增加，抽样结果会逐渐逼近真实分布的统计特性。
+
+#### Normal-Normal 模型的后验分布  首先，以正态模型为例子（贝叶斯中，我们使用 Normal-Normal表示先验与似然都是正态分布）。  假设有一个标准差为0.75的正态分布，其均值$\mu$未知，如何通过从该正态分布中抽取出的一个数据点($Y=6.25$)来估计其均值$\mu$范围?  这个问题在贝叶斯的框架之下可以进行如下表述：  1. **似然模型**：平均值为$\mu$，标准差为0.75的正态分布，从中抽取一个数据点$Y=6.25$：      $$      Y|\mu  \sim \ N(\mu, 0.75^2)      $$  2. **先验模型**：上述正态分布的均值$\mu$可能是从如下正态分布中取值的：      $$      \mu  \sim \ N(0, 1^2)      $$      *可以简单理解为在看到$Y=6.25$这一数据点之前对$\mu$的信念（$\mu$在平均值为0，标准差为1的正态分布中波动*  ）  3. **后验分布**：那么在$Y=6.25$这个结果下，结合先验，更新后的$\mu$是怎样的？      $$  		\mu | (Y = 6.25) \sim \text{N}(?, ?)  		$$  
+
+**后验分布的解析解：**  在第五课中，提示过Normal-Normal为共轭先验，因此其后验分布可直接计算：  $$  \mu|\vec{y} \sim N\left(\frac{\theta\sigma^2 + \bar{y}n\tau^2}{n\tau^2 + \sigma^2}, \frac{\tau^2\sigma^2}{n\tau^2 + \sigma^2}\right)  $$  其中：  - $\bar{y}$ 是样本的均值（观测到的数据, $Y=6.25$），  - $\sigma^2$ 是数据的方差（此处用已知正态分布的方差0.75替代），  - $\tau^2$ 是先验的方差（$\sigma^2_{prior} = 1$）。  - **后验均值**：后验均值是先验均值 $\theta$ 和样本均值 $\bar{y}$ 的加权平均：    $$    \text{posterior mean} = \frac{0 \times 0.75^2 + 6.25 \times 1^2}{1^2 + 0.75^2} = \frac{6.25}{1.5625} = 4    $$  - **后验方差**：后验方差受先验的方差 $\tau^2$ 和样本数据的方差 $\sigma^2$ 的共同影响：    $$    \text{posterior variance} = \frac{1^2 \times 0.75^2}{1^2 + 0.75^2} = \frac{0.5625}{1.5625} = 0.6^2    $$   > 因此，更新后的$\mu$的分布为：  >  $\mu | (Y = 6.25) \sim \text{N}(4, 0.6^2)$
+
+在现代的概率编辑语言中，我们很容易能够进行Monte Carlo采样。  比如，对于上述的正态分布 $N(4, 0.6^2)$，将通过代码进行Monte Carlo采样并进行可视化。
+
+**后验分布模型 vs. 从后验分布采样**  📍需要明确的一点：通过解析计算得到的后验分布模型与从基于后验分布的采样结果并不完全相同。  在上述例子中，我们通过解析计算得到了后验分布的具体形式（模型）：  > $\mu | (Y = 6.25) \sim \text{N}(4, 0.6^2)$  这并不意味着可直接从表达式中获得参数的**样本**。要生成这些样本，需要通过Monte Carlo过程采样。  简单地说：要得到的样本数量与每个样本在分布模型中的可能性之间是成比例的；某个值出现的概率越大，在采样中，它出现的次数应该越多。  反过来：如果能从某个分布中采到足够多的符合分布模型的样本，则可通过对样本的统计量的计算来估计该分布本身的模型参数。
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+# 安装和加载包options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))if (!requireNamespace('pacman', quietly = TRUE)) {    install.packages('pacman')}pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja", "patchwork","bayesplot","rstan")options(warn = -1)  # 抑制警告
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+# 设置 x 的范围为 [2, 10]x_range <- seq(2, 10, length.out = 1000)# 计算正态分布的概率密度函数y_norm <- dnorm(x_range, mean = 6.25, sd = 0.75)# 对正态分布进行采样，得到1000个样本值samples <- rnorm(1000, mean = 6.25, sd = 0.75)# 显示前 10 个样本值cat("前 10 个样本值：", head(samples, 10))
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+# 绘制图像options(repr.plot.width=10, repr.plot.height=6) df <- data.frame(x = x_range, y = y_norm)ggplot2::ggplot(df, aes(x = x, y = y)) +  ggplot2::geom_histogram(aes(x = samples, y = ..density..),                            bins = 45,                           fill = "lightgrey",                           color = "black") +  ggplot2::geom_line(color = 'red', size = 1.5)+   ggplot2::scale_y_continuous(expand = c(0, 0) , limits = c(0, 0.55)) +  papaja::theme_apa()
+```
+
+**未归一化的后验分布(unnormalized posterior pdf)**  上节课讲到，在现实的数据分布中，往往模型比较复杂，导致计算变得复杂，尤其是分母部分的归一化因子。  ❓为什么归一化因子比较难以计算？  
+
+假如归一化因子（分母）比较难以计算，是不是可以不计算？  <center>      <table>              <tr>                  <td><img src="https://cdn.kesci.com/upload/slozv1v2pv.png?imageView2/0/w/480/h/960" alt=""></td>                  <td><img src="https://cdn.kesci.com/upload/slozv7t6h6.png?imageView2/0/w/480/h/960" alt=""></td>              </tr>              <tr>                  <td></td>                  <td></td>              </tr>      </table>  </center>  Q: 假如只知道上面随机点的信息，但不知道正方形的面积，如何估算圆的面积？  A: 使用足够多的点，计算圆内点的比例
+
+对于贝叶斯推断来说，可以不用计算归一化因子，直接通过对后验分布的采样来近似得到后验分布。  $$  f(\mu | y=6.25) \propto f(\mu)L(\mu|y=6.25)  $$  - 尽管未归一化的分布并不是真正的后验分布，但这二者的形状、集中趋势、变异性是一样的  - 可以看到，真实的后验分布和未归一化后验分布，处理在 y 轴上的单位不一样，但他们的形状、集中趋势、变异性是一样的  - 重要的是，两个分布中，$\mu$ 的结果主要集中在 2-6 之间  因此，当进行采样时，可以使用**未归一化的后验分布** 的结果来替代计算真实的后验分布 $f(\mu)$  ![Image Name](https://cdn.kesci.com/upload/s2ty9jty8t.png?imageView2/0/w/960/h/960)  那么新的问题是，如何在不计算复杂归一化常数的情况下，有效地生成样本？🤔  
+
+### Markov Chain Monte Carlo  Markov Chain（马尔可夫链）即可自然地解决了未归一化的后验分布的问题。  原因：  - 每次只关注当前的状态。  - 利用当前状态生成建议分布（proposed distribution）。  - 判断是否接受新的状态，构建一个链条来近似后验分布。  以一个心情变化的例子来深入理解 Markov Chain：  - 假如不同的情绪对应一种状态，也就是参数可能的取值。  - 那么，我们可以将不同的心情（如“冷静”、“悲伤”、“开心”）定义为 状态。这些状态中的每一个代表参数 $\theta_k$ 的不同取值：    - 例如，冷静是 $\theta_1=0.5$; 悲伤是 $\theta_2=0.3$；开心是$\theta_3=0.7$； 以此类推.....。    - 这样，我们可以确定参数选择的范围 $\theta_{k} \sim [0,1]$，参数是离散变量，每一个值对应一种心情。    - 注意，我们用下标 k 来表示不同的心情以及对应的参数值。  <table>      <tr>          <td><img src="https://cdn.kesci.com/upload/s2vta0gekr.png?imageView2/0/w/500/h/500" alt="图片1" width = 600></td>      </tr>  </table>  - 状态转移：每一天我们的心情都会发生变化或者不变，代表一次采样，即一次状态的转移。     - 长时间跟踪这些状态，我们会得到一个 马尔可夫链:$\left\lbrace \theta^{(1)}, \theta^{(2)}, \ldots, \theta^{(N)} \right\rbrace$,这里 $n$ 表示天数，$\theta^{(n)}$ 是第 $n$ 天的具体心情。  - **“无记忆性”**：无记忆性是马尔可夫链的关键特点,今天的心情（当前状态）只依赖于昨天的心情（前一状态），例如：     - 如果前一天是“开心” $\theta_3$，那么今天仍然保持“开心”的概率是 0.5，     - 变为“冷静”的概率是 0.25，变为“悲伤”的概率也是 0.25。
+
+我们可以根据上面的概率构建一个状态转移表，用于描述从一个状态跳转到另一个状态的可能性：  | 心情 | 开心$\theta^{(n)}_{1}$ | 冷静$\theta^{(n)}_{2}$ | 悲伤$\theta^{(n)}_{3}$ | ... |  | :----: | :----: | :----: | :----: | :----: |  | 开心$\theta^{(n-1)}_{1}$ | 0.5 | 0.25 | 0.25 | ... |  | 冷静$\theta^{(n-1)}_{2}$ | 0.5 | 0 | 0.5 | ... |  | 悲伤$\theta^{(n-1)}_{3}$ | 0.25 | 0.25 | 0.5 | ... |  | ... | ... | ... | ... | ... |  解释：  - 每一行代表当前状态影响下一状态的概率，也就是 当日心情(n)受到上一天心情(n-1)的影响。  - 可以写成服从概率分布的形式：$choice(n) \sim Distribution(n-1)$。  - 这里的 **Distribution 可以理解为建议分布**。    - 它为第二天的心情变化提供了可能的选项，所以被称为建议分布 $q(x)$，并且根据这个分布来选择是否接受新的状态。    马尔可夫链的的好处：当我们运行一段时间后，会发现慢慢会稳定在某个状态，高概率的更多出现，低概率的情况更少出现。  
+
+### 为什么 Monte Carlo 需要加上 Markov Chain？  原因：  1. Monte Carlo 方法通过从目标分布中直接采样，使用大量随机样本来逼近期望值或目标概率。这种方法在低维分布中工作良好，但在高维复杂分布中直接采样变得非常困难和不现实。  2. 为了解决高维空间中的采样困难，MCMC 使用马尔可夫链生成样本。每次样本的生成只依赖于前一次的状态，因此构建了一个可以逐渐收敛于目标分布的链条。  所以，MCMC 的核心思想即：  - **构建一个符合目标分布的马尔可夫链**：  每次新样本的生成依赖于前一个状态，逐步逼近目标分布。  - **长时间采样达到平稳分布**：  当马尔可夫链达到稳态分布时，采样结果便可以作为目标分布的近似。  尽管 MCMC 的实现方式多种多样，但所有方法的目标都是构建一个符合目标后验分布的马尔可夫链。许多 MCMC 算法，如 **吉布斯采样**、**差分进化算法** 以及 PyMC 默认使用的 **NUTS**（No-U-Turn Sampler），都是 **Metropolis-Hastings** 算法的变种。      <table>          <tr>              <td><img src="http://gorayni.github.io/assets/posts/gibbs/gibbs2.gif" alt="" width="200" height="200"></td>              <td><img src="https://matteding.github.io/images/diff_evol.gif" alt="" width="200" height="200"></td>              <td><img src="https://cdn.kesci.com/upload/image/rjvh3zx4an.gif?imageView2/0/w/640/h/640" alt="" width="200" height="200"></td>          </tr>          <tr>              <td>吉布斯采样算法</td>              <td>差分进化算法</td>              <td>汉密尔顿算法</td>          </tr>  </table>  通过这些算法，我们可以对难以直接求解的后验分布进行近似。  我们将在本节课重点讨论 Metropolis-Hastings (MH) 算法，而不是研究所有的变种。  - 虽然实现该算法需要计算机编程技能，而这些技能并不在本课程的范围之内（例如编写函数和 for 循环），    - 😜ps. 即使没有学会 MH 算法的实现，也不妨碍我们通过 stan 来实现各种 MCMC 算法。  
+
+## Metropolis-Hastings(MH)算法  上面的例子已经涉及到 MH 算法最朴素的思想：  - 根据后验模型 y 轴的大小(概率密度)来决定 x 轴参数的数量。    - 首先，均匀的从参数范围($x~[0,1]$)中抽取 10000个参数样本 $\mu_i$。    - 然后，对于每个 $\mu_i$ 计算其在后验分布中的概率密度值 $f(\mu_i)$ 的大小，$f(\mu_i)$ 越大则 $\mu_i$ 被保留的可能性越高。   - 但通常计算 $f(\mu_i)$ 是比较困难的，我们可以计算非标准化的 $f(\mu_i)$。  - 此外，在[0,1]中进行均匀采样的做法效率太低，可利用 MCMC 状态转移的性质来提高采样效率。  现在我们就来体验这个奇妙的过程。
+
+### 建议分布(proposed distribution)  为了提高采样效率，通常**不会**直接从某个分布中大量采样，再进行筛选(也被称为拒绝)，这种方式可能效率非常低。  在MCMC 中，首先构建建议分布 (proposed distribution) $q(x)$，然后利用 MCMC 状态转移的性质来进行采样。  通过建议分布，我们可以在 MCMC 的状态转移过程中构造出一条马尔可夫链。这条链最终会收敛于目标后验分布，使得生成的样本接近真实的目标分布。  在刚才所讲的心情状态的变化过程实际上就是一个建议分布的例子。  >  ![Image Name](https://www.bayesrulesbook.com/bookdown_files/figure-html/ch-7-mh-proposal-1.png)  
+
+接下来，需要了解**如何根据建议分布进行采样**，以及如何从 **建议分布 $q(x)$ 得到后验分布 $p(x)$** 。
+
+### 接受率 (acceptance probability)  当前样本可根据上一个样本从建议分布中进行采样 $\theta^{n} \sim Normal(\theta^{n-1}_{k},\sigma)$。  但应该如何判断当前的采样是否合理？换句话说，保留还是拒绝当前所采的样本数据。  - 假设上一次采样的参数值为 $\theta^{n-1} = 3$， 根据建议分布$q(\theta) = Normal(3, 1)$ 进行一次采样，得到参数 $\theta^{n} = 1$。  - 假定后验分布(或者未标准化的后验分布)为 $p(\theta) = Normal(5,1)$。  - 显然，$\theta^{n} = 1$ 在 $p(\theta)$ 的边缘。那我们是否要保留该采样呢？
+
+**不同接受策略的影响**  * 可以考虑三种接受建议的情况：      1：始终不接受提议。      2：始终接受提议。      3：只有当提议(n+1)的后验可能性大于当前(n)值的后验可能性时，才接受提议  * 看看这三种情况对应生成的trace plot  ![Image Name](https://www.bayesrulesbook.com/bookdown_files/figure-html/ch7-bad-step2-1.png)      A. 使得马尔科夫链在采样时一直停在同一个值      B. 马尔科夫链的采样并不会稳定在某一个范围内          C. 采样只停留在$\mu = 4$附近(只能采到一部分值)  * 因此，尽管采样应该更多地停留在“高后验可能性的值”，但也不能只取到这附近的值。  
+
+**接受率 (acceptance probability)**  “采样应该更多地停留在'高后验可能性的值'，但也不能只取到这附近的值”，意味着需要选择一个合适的接受策略。  --> 接受率 ($\alpha$, acceptance probability)就是为了解决这个问题。  - 首先，我们将从建议模型中抽取一个新的参数 $\theta^{n+1}$ 的概率为 $q(\theta^{n+1}|\theta^{n})$  - 对于是否接受 $\theta^{n+1}$，我们定义接受概率$\alpha$  $$    \alpha = \min\left\lbrace 1, \; \frac{f(\theta^{n+1})L(\theta^{n+1}|y)}{f(\theta^{n})L(\theta^{n}|y)} \times \frac{q(\theta^{n}|\theta^{n+1})}{q(\theta^{n+1}|\theta^{n})} \right\rbrace.  $$  - 别看这公式很复杂，其实很简单。  - 分数的上下分别代表下一个参数$\theta^{n+1}$和当前参数$\theta^{n}$的非标准化后验。即我们之前提到，要通过非标准化后验来判断是否接受一个参数。    - 其中，$f(\theta)L(\theta|y)$ 为非标准化后验    - $q(\theta^{n}|\theta^{n+1})$ 部分代表了从建议分布中采样新参数的过程。  - 可以想象，$\frac{f(\theta^{n+1})L(\theta^{n+1}|y)}{f(\theta^{n})L(\theta^{n}|y)}$ 大于1且其值越大，表明下一个参数$\theta^{n+1}$的后验概率越大，因此它越有可能被接受。  - 如果$\frac{f(\theta^{n+1})L(\theta^{n+1}|y)}{f(\theta^{n})L(\theta^{n}|y)}$小于1，则代表下一个参数$\theta^{n+1}$的后验概率过小，因此我们要舍弃它。  所以，对于是否接受或拒绝新的参数 $\theta^{n+1}$，则有：  $$  \theta^{(n+1)} =   \begin{cases}   \theta^{(n+1)} &  \text{ with probability } \alpha \\   \theta^{(n)} &  \text{ with probability } 1- \alpha. \\   \end{cases}   $$  - 也就是如果我们不接受新的参数，那我们用原来的参数替代现在的参数。  - 这样避免了参数采样被浪费，并且使得概率更大的参数被更多的采样。
+
+总的来说，MH 算法包含两个关键思想和两个关键步骤：  两个关键思想  - 根据非标准化的后验进行参数的接受或拒绝  - 根据 MCMC 的特性设置建议分布来完成状态转移  两个关键步骤  - 设定建议分布  - 根据建议分布的参数、未标准化后验计算接受率
+
+### 代码示例  我们使用代码感受一下这个过程
+
+首先，我们假设当前的参数值 $\theta^{n} = 3$，然后我们根据该参数设定建议分布，并进行一次新的采样。  - 注意，为了方便演示，我们将建议分布(正态分布)的 $\sigma$ 固定为1。
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+set.seed(2024)current <- 3                                  # 假设theta^n为3proposal <- rnorm(1, mean = current, sd = 1)  # 从当前正态分布中抽出一个样本作为建议分布的mucat("从建议分布中新采样 θ(n+1)为：", proposal)
+```
+
+接着，我们根据新采样得到的参数计算其相关的接受率。  - 注意，假定先验为正态分布：$N(\mu = 3, \sigma = 1)$  - 另外，假设似然模型仅包含一个数据：$Y = 6$
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+# 设置先验proposal_prior <- dnorm(proposal, mean = 3, sd = 1)  # 先验概率密度current_prior <- dnorm(current, mean = 3, sd = 1)    # 先验概率密度# 定义似然函数likelihood <- function(theta) {  Y <- 6  # 假设数据 Y 为 6  return(dnorm(Y, mean = theta, sd = 0.75))  # 固定 sd=0.75}# 计算建议位置的未归一化的后验概率值（先验 * 似然）proposal_posterior <- proposal_prior * likelihood(proposal)# 计算当前位置的未归一化的后验概率值（先验 * 似然）current_posterior <- current_prior * likelihood(current)# 计算接受概率α，为两者概率值之比alpha <- min(1, proposal_posterior / current_posterior)# 打印出接受概率αcat("后验比为：", proposal_posterior / current_posterior, ", alpha为:", alpha, "\n")
+```
+
+最后，我们根据接受率 $\alpha$来决定是否接受建议分布的参数作为新的采样值。
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+# 根据接受概率α进行抽样，抽样内容为建议位置和当前位置next_stop <- sample(c(proposal, current), 1, prob = c(alpha, 1 - alpha))# 打印出下一个位置的值cat("下一个位置的值为:", next_stop, "\n")# 从第一段代码我们可以看到此时的接受概率α=1，因此接受了建议值作为我们的下一个值
+```
+
+**定义单次采样函数**  我们可以直接定义一个函数，将刚刚的操作全都结合在一起，这样当我们想进行抽样的时候，不用重复写代码
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+one_mh_iteration <- function(current, sigma = 1) {    # 提议值:从均值为current，方差为sigma（默认值为1）的正态分布中抽样  proposal <- rnorm(1, mean = current, sd = sigma)    # 设置先验并计算概率密度  proposal_prior <- dnorm(proposal, mean = 3, sd = 1)  # 先验概率密度  current_prior <- dnorm(current, mean = 3, sd = 1)  # 先验概率密度     # 定义似然函数  likelihood <- function(theta) {    Y <- 6  # 假设数据 Y 为 6    return(dnorm(Y, mean = theta, sd = 0.75))  # 计算似然  }    # 计算未归一化的后验概率  proposal_posterior <- proposal_prior * likelihood(proposal)  current_posterior <- current_prior * likelihood(current)    # 计算接受概率 alpha  if (is.na(proposal_posterior) || is.na(current_posterior) || current_posterior <= 0) {    alpha <- 0  } else {    alpha <- min(1, proposal_posterior / current_posterior)  }      # 根据接受概率 alpha 进行抽样  next_stop <- sample(c(proposal, current), 1, prob = c(alpha, 1 - alpha), replace = TRUE)                        # 返回建议值、接受概率和下一个位置组成的数据框  result <- data.frame(proposal = proposal, alpha = alpha, next_stop = next_stop)                        return(result)}# 设置随机种子set.seed(2024)# 调用函数并显示结果results <- one_mh_iteration(current = 3)print(results, row.names = FALSE) 
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+# 变换不同的随机数种子，其实也是生成不同的建议值set.seed(83)# 调用函数并显示结果results <- one_mh_iteration(current = 3)print(round(results, digits = 4), row.names = FALSE) #用round对数据框内数字四舍五入，保留4位小数
+```
+
+**多次采样**  上述函数只进行了一次采样，即当前位置为3时，下一个可能采样的结果  基于当前位置，提出下一个采样值，接受或拒绝它。那么新的采样值就变成了当前位置，我们需要不断重复这个过程
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+mh_tour <- function(N, sigma = 1) {  current <- 3  mu <- numeric(N)  # 创建一个长度为 N 的零向量  # 循环进行 N 次迭代  for (i in 1:N) {    sim <- one_mh_iteration(current, sigma)  # 调用采样函数    mu[i] <- sim$next_stop  # 保存当前的下一个位置    current <- sim$next_stop  # 更新当前值  }  # 返回包含迭代次数和每次采样结果的数据框  result <- data.frame(iteration = 1:N,mu = mu)    return(result)}
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+# 调用定义好的函数，将采样次数设为5000set.seed(84735)mh_simulation <- mh_tour(N=5000)tail(mh_simulation, n = 5)
+```
+
+**采样结果图示**
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+# 绘制密度图density_plot <- ggplot2::ggplot(mh_simulation, aes(x = mu)) +  ggplot2::geom_histogram(aes(y = ..density..),                  bins = 30,                  color = "white",                  fill = "darkgrey",                  alpha = 0.7) +  ggplot2::geom_density(aes(y = ..density..),                color = "#6497b1",                size = 1) +  ggplot2::labs(x = "mu", y = "density") +  papaja::theme_apa()  +   ggplot2::scale_y_continuous(expand = c(0, 0) , limits = c(0, 0.7)) # 绘制轨迹图trace_plot <- ggplot2::ggplot(mh_simulation, aes(x = iteration, y = mu)) +  ggplot2::geom_line(color = "#6497b1") +  ggplot2::labs(x = "iteration", y = "mu") +  papaja::theme_apa()  +   ggplot2::scale_y_continuous(limits = c(3, 9)) # 将两个图并排显示options(repr.plot.width=16, repr.plot.height=7) density_plot + trace_plot
+```
+
+我们可以使用 bayesplot包简化这个绘图的过程
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+#创建绘图数据框sample <- as.data.frame(mh_simulation$mu)#采样密度图dens <- bayesplot::mcmc_dens(sample) +            ggplot2::labs(x = "mu", y = "density") +        papaja::theme_apa()#采样轨迹图trace <- bayesplot::mcmc_trace(sample) +          ggplot2::labs(x = "iteration", y = "density") +        papaja::theme_apa()dens + trace
+```
+
+### 调试(Tuning)Metropolis-Hastings 算法  在建议分布 $\mu_{n+1} | \mu_{n} \; \sim \; \text{Normal}(\mu_{n}, \sigma)$中，$\sigma$反映了 建议选项的分布宽度，对$\sigma$ 的选择也会影响马尔科夫链的表现  🧐思考：我们仍然使用MH算法，尝试三种不同的$\sigma$  * $\sigma = 0.01$  * $\sigma = 1$  * $\sigma = 100$      请你判断以下的轨迹图和密度图分别对应上述哪种情况  ![Image Name](https://www.bayesrulesbook.com/bookdown_files/figure-html/ch7-bad-idea-1.png)  可以结合以下代码进行判断
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+one_mh_iteration <- function(current, sigma = 1) {    # 提议值:从均值为current，方差为sigma（默认值为1）的正态分布中抽样  proposal <- rnorm(1, mean = current, sd = sigma)    # 设置先验并计算概率密度  proposal_prior <- dnorm(proposal, mean = 3, sd = 1)  current_prior <- dnorm(current, mean = 3, sd = 1)      # 定义似然函数  likelihood <- function(theta) {    Y <- 6  # 假设数据 Y 为 6    return(dnorm(Y, mean = theta, sd = 0.75))  # 计算似然  }    # 计算未归一化的后验概率  proposal_posterior <- proposal_prior * likelihood(proposal)  current_posterior <- current_prior * likelihood(current)    # 计算接受概率 alpha  if (is.na(proposal_posterior) || is.na(current_posterior) || current_posterior <= 0) {    alpha <- 0  } else {    alpha <- min(1, proposal_posterior / current_posterior)  }      # 根据接受概率 alpha 进行抽样  next_stop <- sample(c(proposal, current), 1, prob = c(alpha, 1 - alpha), replace = TRUE)                        # 返回建议值、接受概率和下一个位置组成的数据框  result <- data.frame(proposal = proposal, alpha = alpha, next_stop = next_stop)                        return(result)}mh_tour <- function(N, sigma = 1) {  current <- 3  mu <- numeric(N)  # 创建一个长度为 N 的零向量  # 循环进行 N 次迭代  for (i in 1:N) {    sim <- one_mh_iteration(current, sigma)  # 调用采样函数    mu[i] <- sim$next_stop  # 保存当前的下一个位置    current <- sim$next_stop  # 更新当前值  }  # 返回包含迭代次数和每次采样结果的数据框  result <- data.frame(iteration = 1:N,mu = mu)    return(result)}
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+#===========================================================================#                            请修改 sigma 的值。#===========================================================================set.seed(84735)mh_simulation = mh_tour(N=5000, sigma=1)#创建绘图数据框sample_x <- as.data.frame(mh_simulation$mu)#采样密度图dens_x <- bayesplot::mcmc_dens(sample_x) +            ggplot2::labs(x = "mu", y = "density") +        papaja::theme_apa()#采样轨迹图trace_x <- bayesplot::mcmc_trace(sample_x) +          ggplot2::labs(x = "iteration", y = "density") +        ggplot2::scale_y_continuous(limits = c(2.5, 9)) +        papaja::theme_apa()dens_x + trace_x
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+#===========================================================================#                            可以自行复制代码多试几次#===========================================================================mh_simulation = mh_tour(N=5000, sigma=...)#创建绘图数据框sample_x <- as.data.frame(mh_simulation$mu)#采样密度图dens_x <- bayesplot::mcmc_dens(sample_x) +            ggplot2::labs(x = "mu", y = "density") +        papaja::theme_apa()#采样轨迹图trace_x <- bayesplot::mcmc_trace(sample_x) +          ggplot2::labs(x = "iteration", y = "density") +        ggplot2::scale_y_continuous(limits = c(2.5, 9)) +        papaja::theme_apa()dens_x + trace_x
+```
+
+**总结**  * 当$w = 0.01$时：      建议分布的范围很窄，比如$Normal(3, 0.01)$，这会导致下一个建议值和当前值非常接近，则$f(\mu')L(\mu'|y) \approx f(\mu)L(\mu|y)$      $$      \alpha = \min\left\lbrace 1, \; \frac{f(\mu')L(\mu'|y)}{f(\mu)L(\mu|y)} \right\rbrace \approx \min\left\lbrace 1, \; 1 \right\rbrace \; = 1      $$      那么我们很容易接受下一个采样值，但尽管马尔科夫链一直在转移，但探索的范围太窄了，我们可以看到采样一直在3附近  * 当$w = 100$时：      类似的，我们可以推知此时建议分布的范围太宽了，超出了$\mu$可能的取值      下一个建议值和当前值间隔太远，这会导致我们经常拒绝下一个采样值，多次停在当前位置。
+
+### 小结  无论是在这些相对简单的单参数模型设置中，还是在更复杂的模型设置中，Metropolis-Hastings 算法都是通过两步之间的迭代，从后验中产生近似样本：  - 设定建议分布  - 根据建议分布的参数、未标准化后验计算接受率  本节课我们只考虑了一种 MCMC 算法，即 Metropolis-Hastings。这种算法虽然功能强大，但也有其局限性。  - 在以后的章节中，贝叶斯模型的参数会大大增加，手动调整 Metropolis-Hastings 算法以充分探索每个参数的空间会变得很繁琐。  - 然而，即使 Metropolis-Hastings 算法的实用性达到了极限，它仍然是一套更灵活的 MCMC 工具的基础，包括自适应 Metropolis-Hastings、Gibbs 和 Hamiltonian Monte Carlo (HMC) 算法。其中，HMC 是 stan 和 PyMC 默认使用的算法。
+
+## Stan实战  在上一部分，我们学习了 MCMC 算法的基本原理，并通过 R 代码实现了一次简单的 Metropolis-Hastings 迭代。  但随着模型复杂性提升，我们发现手动实现 MCMC 代码可能会变得非常繁琐.  同时在第五课中，我们使用网格法对 Beta-Binomial 模型进行了推断，并初步介绍了 Stan。  下面我们会深入讲解如何利用 Stan，借助 MCMC 方法进行高效的贝叶斯推断。
+
+### 为什么选择Stan？  * **灵活的操作**：Stan 提供了一种用户友好的界面，使得模型定义过程相对简单，用户可以灵活地使用 Stan 的建模语言来定义复杂的贝叶斯模型。  * **活跃的社区**：Stan 拥有一个活跃的用户社区，提供丰富的资源、教程和文档，方便新手学习和解决问题。  接下来我们介绍 Stan 的基本使用流程和核心模块。  1. **模型定义**：Stan 中用户可以通过`model`部分定义先验分布和似然函数，构建完整的统计模型。  2. **概率分布（Distributions）**：Stan 支持多种常见的概率分布，例如 Normal, Beta, Bernoulli, Binomial, Poisson 等。  3. **采样（Sampling）**：Stan 使用多种采样算法进行后验采样,如Metropolis-Hastings和NUTS（No-U-Turn Sampler）。  4. **后验预测**：Stan 支持从后验分布生成新的观测值，根据`generated quantities`它可以帮助我们验证模型的合理性，即模型生成的数据是否与真实数据一致。  5. **诊断和可视化**：在R中有多种现成的包可以对 Stan 的结果进行可视化。例如用户可以使用`bayesplot`绘制后验分布、采样轨迹、散点图等；`summary()` 函数可以总结后验统计量，包括均值、标准差、HPDI 等，帮助用户快速了解模型效果。
+
+使用 Stan 进行贝叶斯建模通常包括以下步骤（以beta-binomial模型进行演示）：  （1）使用stan语法定义模型；  （2）使用R或其他语言调用stan和模型并进行后验采样。  
+
+## A Beta-Binomial example in Stan  如之前的课程，假如有一个随机点运动任务的实验，每个试验中参与者判断正确的概率用 $\pi$ 表示。  **模型假设**  - 假定参与者判断正确的概率 $\pi$ 是从 **Beta 分布**中抽样的：  $$  \begin{equation}  \pi \sim \text{Beta}(\alpha, \beta)  \end{equation}  $$  - 在每次试验中，参与者的成功次数 $Y$ 服从一个 **Binomial分布**：  $$  \begin{equation}  Y \sim \text{Binomial}(n, \pi)  \end{equation}  $$  其中，$n$是试验的总次数，$Y$是成功次数。  
+
+**模型设定**  在这个例子中，可使用Beta-Binomial 模型来表示：  > 先验分布为：$\pi    \sim \text{Beta}(2, 2)$  > 似然函数为：$Y|\pi  \sim \text{Bin}(10, \pi)$  > 总试验数为10，成功次数为9 $(Y = 9)$  接下来，使用 Stan 来表达和设定 Beta-Binomial 模型：
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+# 使用Stan语法建构模型stan_model_code <- "data {  //数据块  int<lower=0> n;           // 试验次数  int<lower=0, upper=n> Y;  // 成功次数}parameters {  //参数块  real<lower=0, upper=1> pi;    // 成功概率参数}model {  //模型块  // 设置先验  pi ~ beta(2, 2);    // 设置似然  Y ~ binomial(n, pi);}"
+```
+
+在Stan语法中，定义模型通常包含了3个代码块：  **数据块`data{ }`**     - 用于定义模型所需的数据类型和约束条件。     - `int<lower=0> n`：定义$n$为一个整数（int）变量 ；`lower`代表变量的下界，即这个变量必须大于或等于0。     - `int<lower=0, upper=n> Y`：定义Y为整数变量 ；`upper`代表变量的上界，因此此处变量的取值必须在 0 到 n 之间。     - 除`int`整数外，还可以：        - 用`real`定义浮点数组，代表实数;        - 用`vector`定义向量，也代表实数，与real不同的是它具有一些内置属性和函数，可直接用于概率分布；        - 用`matrix[n,n] ...` 定义n * n的矩阵，也就是有 n 行和 n 列的二维数组。  **参数块`parameters{ }`**     - 用于定义模型的未知参数。     - `real<lower=0, upper=1> pi`：定义 $\pi$为实数，取值范围为0到1。  **模型块`model{ }`**     - 用于定义先验分布和似然函数。     - `pi ~ beta(2, 2)`: 定义$\pi \sim beta(2, 2)$ 的先验分布；     - `Y ~ binomial(n, pi)`: 定义$Y \sim binomial(n, \pi)$的似然函数。
+
+### 将模型与真实数据结合来对后验进行采样  在以下例子中，将 MCMC 采样方法得到的参数样本定义为 `trace`。  - 使用rstan包中的 `stan` 函数进行 MCMC 采样模拟过程。  - 设置参数 `iter` 来控制每个 MCMC 链采样的次数；另外还可以通过 `warmup` 来设置热身采样次数，此阶段的样本不用于最终统计推断，但有助于提高后续采样的效率与稳定性。  - `chains` 表示同时运行几条MCMC链。  
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+# 准备数据stan_data <- list(n = 10,Y = 9)# 拟合模型trace <- rstan::stan(  model_code = stan_model_code,      # 定义的模型或模型文件路径  data = stan_data,                  # 输入数据  chains = 2,                        # 马尔可夫链数量  iter = 2000,                       # 总迭代次数（每个链）  warmup = 1000,                     # 热身迭代次数（不保存）  seed = 202409)
+```
+
+我们可以使用ggplot2和rstan中的traceplot函数来可视化该结果  - 左图为参数分布图  - 右图为 trace 图，代表随着采样的进行(即x轴1-5000次采样)，每个参数值的大小(即y轴为每个采样参数的大小)。
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+# 创建绘图数据框idata <- rstan::extract(trace)       # 提取后验数据sample_pi <- as.data.frame(idata$pi)#采样密度图dens_pi <- bayesplot::mcmc_dens(sample_pi) +      ggplot2::labs(x = "pi", y = "density") +  papaja::theme_apa()  # 绘制轨迹图trace_pi <- rstan::traceplot(trace,color = '#6497b1')dens_pi + trace_pi
+```
+
+### 采样的时间进程  下图展示了第一条Makov链的前20个采样结果和前200个结果  
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+# 选取第一条Makov链的前20个采样结果和前200个结果sample_pi_20 <- as.data.frame(sample_pi[1:20, ])sample_pi_200 <- as.data.frame(sample_pi[1:200, ])# 绘图options(repr.plot.width=16, repr.plot.height=5) #前20dens_20 <- bayesplot::mcmc_dens(sample_pi_20) +            ggplot2::labs(x = "pi", y = "density") +        papaja::theme_apa()trace_20 <- bayesplot::mcmc_trace(sample_pi_20) +          ggplot2::labs(x = "pi", y = NULL) +        papaja::theme_apa() dens_20 + trace_20#前200dens_200 <- bayesplot::mcmc_dens(sample_pi_200) +            ggplot2::labs(x = "pi", y = "density") +        papaja::theme_apa()trace_200 <- bayesplot::mcmc_trace(sample_pi_200) +          ggplot2::labs(x = "pi", y = NULL) +        papaja::theme_apa() dens_200 + trace_200
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+rbind(head(sample_pi, 5), tail(sample_pi, 5))
+```
+
+### 采样结果可视化  * 将采样结果(5000次采样)对比真实的后验分布\[黑线, $Beta(11, 3)$\]  * 可以看到这个采样结果是对后验分布非常好的近似。
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+x <- seq(0.2, 1, length.out = 10000)# 真实的后验分布 beta（alpha + y, beta + n - y）y <- dbeta(x, 11, 3)posterior_data <- data.frame(x = x, y = y)#绘制采样结果直方图hist_pi <- bayesplot::mcmc_hist(sample_pi, bins=30) +            ggplot2::labs(x = "pi", y = "count") +        papaja::theme_apa()#绘制采样结果分布图和真实后验分布图dens_pi_mix <- bayesplot::mcmc_dens(sample_pi) +  #采样结果  ggplot2::geom_line(data = posterior_data, aes(x = x, y = y), color = "black",size = 0.8) +  #真实后验  ggplot2::labs(x = "pi", y = "density") +  papaja::theme_apa()hist_pi + dens_pi_mix 
+```
+
+## 练习  > 📃以**Normal-Normal模型**为例来练习使用Stan进行MCMC模拟    在lec5中，我们利用基于**Normal-Normal模型**的例子练习了网格近似法来估计参数。  接下来，我们基于 Normal-Normal 再次对平均反应时间和标准差进行推断。不过这次，我们将使用 Stan 实现 MCMC 采样，而不是网格法.  **模型设定：**  - 假设 $\mu$ 是参与者在随机点运动任务中的**平均反应时间**（单位：ms）。  - 假设 $\sigma$ 是参与者在随机点运动任务中的**标准差**（单位：ms）。    **先验分布**  我们对参与者的反应时间有一个初步的假设：  - 先验分布设为正态分布，平均反应时间$\mu$约为 300 ms，标准差 $\sigma$ 为 50 ms。  - 因此， $\mu$ 的先验分布可以表示为  $$  \mu \sim \text{Normal}(300, 50)  $$  **观测数据**  - 观测数据 $Y$ 表示参与者在实验中实际的反应时间。  - 假设我们收集了被试完成 5 次实验的反应时间：  $$  Y = [320, 310, 280, 340, 300] ms  $$  - 为简化问题，我们假定反应时间 $Y$ 的标准差 $\sigma$ 是已知的，$\sigma$ = 20 ms。  **似然模型**  - 观测数据 $Y_i$服从一个均值为$\mu$、标准差为 $\sigma$ 的正态分布：  $$  Y_i |\mu \stackrel{ind}{\sim} \text{Normal}(\mu, \sigma^2)  \tag{1}  $$  <div style="padding-bottom: 30px;"></div>  
+
+**完整的贝叶斯模型即为：**  $$  \begin{equation}  \begin{split}  Y_i|\mu & \stackrel{ind}{\sim} \text{Normal}(\mu, \sigma^2) \\  \mu & \sim \text{Normal}(\mu = 300, \sigma^2 = 50^2)\\  \end{split}  \tag{1}  \end{equation}  $$  <div style="padding-bottom: 30px;"></div>
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| scrolled: false
+#| trusted: true
+#===========================================================================#                            block1: 请修改 ... 中的值。#===========================================================================#构建模型stan_code <- "data {  int<lower=0> n;           // 观测数据的数量  vector[n] Y;              // 观测数据}parameters {  real mu;                  // 反应时间均值}model {  // 先验分布  mu ~ normal(300, 50);  // 似然函数  Y ~ normal(mu, 20);}"
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| scrolled: true
+#| trusted: true
+#===========================================================================#                            block2: 请修改 ... 中的值。#===========================================================================#准备数据data_list <- list(  Y = c(320, 310, 280, 340, 300), # 观测数据  n = 5                          # 观测数据的数量)trace <- rstan::stan(  model_code = stan_code,            # 定义的模型或模型文件路径  data = data_list,                  # 输入数据  chains = 4 ,                        # 马尔可夫链数量  iter = 2000 ,                       # 总迭代次数  warmup = 1000 ,                      # 热身迭代次数  seed = 202409)
+```
+
+```{r}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+pacman::p_load(patchwork,tidyverse,rstan)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| scrolled: false
+#| trusted: true
+#创建绘图数据框idata <- rstan::extract(trace)sample_mu <- as.data.frame(idata$mu)#采样密度图dens_mu <- bayesplot::mcmc_dens(sample_mu) +      ggplot2::labs(x = "mu_prior", y = "density") +  papaja::theme_apa()# 绘制轨迹图trace_mu <- rstan::traceplot(trace,color = '#6497b1')dens_mu + trace_mu
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| trusted: true
+#===========================================================================#                            为了和真实的后验分布进行比较，计算真实的后验分布。#===========================================================================# 先验分布的均值和标准差mu_prior <- 300  # 先验均值sigma_prior <- 50  # 先验标准差# 观测数据的标准差 (已知)sigma_obs <- 20# 假设观测数据observed_data <- c(320, 310, 280, 340, 300)  # 替换为实际观测数据# 计算观测数据的数量和均值n <- length(observed_data)  y_mean <- mean(observed_data)  # 计算后验分布的均值和方差posterior_mean <- (sigma_obs^2 * mu_prior + n * sigma_prior^2 * y_mean) / (n * sigma_prior^2 + sigma_obs^2)posterior_variance <- (sigma_prior^2 * sigma_obs^2) / (n * sigma_prior^2 + sigma_obs^2)posterior_std <- sqrt(posterior_variance)# 输出结果cat("后验分布的均值:", posterior_mean)cat("后验分布的标准差:", posterior_std)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68e75e68a16e086f2ca29129
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| scrolled: false
+#| trusted: true
+# 计算真实的后验分布x <- seq(200, 400, length.out = 5000)                     # 创建从200到400的序列y <- dnorm(x, mean = posterior_mean, sd = posterior_std)  # 计算后验分布的概率密度posterior_real <- data.frame(x = x, y = y)#绘制采样结果直方图hist_mu <- bayesplot::mcmc_hist(sample_mu, bins=50) +            ggplot2::labs(x = "mu", y = "count") +        papaja::theme_apa()#绘制采样结果分布图和真实后验分布图dens_mu_mix <- bayesplot::mcmc_dens(sample_mu) +  #采样结果  ggplot2::geom_line(data = posterior_real, aes(x = x, y = y), color = "red",size = 0.8) +  #真实后验  ggplot2::labs(x = "mu", y = "density") +  papaja::theme_apa()options(repr.plot.width=16, repr.plot.height=6) hist_mu + dens_mu_mix 
+```
+
+### 总结  在本节课中，相对深入地对Metropolis-Hastings 算法进行讲解。通过 Normal-Normal 模型 的例子，演示了如何使用 MCMC 来近似后验分布。MCMC 是一种非常强大的工具，尤其在解析解无法直接求得时，提供了一种灵活且有效的计算方法。  随着模型的复杂性增加，**后验分布可能变得难以解析，甚至无法获得。** 在这种情况下，近似方法是必要的。  我们学习了两种用于逼近后验分布的技术：  1. **网格近似法：** 通过离散化参数空间，计算每个点的后验分布，再通过这些点近似整个后验。  2. **马尔科夫链蒙特卡罗（MCMC）：** 通过随机采样，生成符合后验分布的样本，逼近目标分布。  
+
+**补充介绍：细致平衡 (detail Balance)**  从一个非后验分布的建议分布$q(x)$中采样，竟然可以得到关于参数的后验分布$p(x)$。  🤔这非常神奇，这到底是怎么做到的？  一切的关键在于，MCMC 的性质：细致平衡 (detailed balance)。  - 正如之前关于心情的例子一样，只要记录每天的心情，就可以得到关于心境的分布（类似于参数的**后验分布**）。  - 这个概率分布代表了心境的乐观水平，分布的均值越大，代表个体越乐观。  - 而我们在最开始记录心情之前，并不知道这个后验分布是什么形态的。  - 我们只是按照**转移矩阵**提供的概率转化心情。换句话说，心情受到影响后如何转化是我们确定的(建议分布)，但我们却不清楚自己的乐观程度(后验分布)。  - 最后需要注意的是，后验分布也**与最开始的心情无关**。无论最开始是开心还是悲伤，都不影响个体总体上乐观的心态。
+
+它的数学基础在于，当心境无限演化下去，状态转移的概率达到平衡，也就是所谓的细致平衡：  假设，状态转移矩阵为 P  | 心情 | 开心$\theta^{(n)}_{1}$ | 冷静$\theta^{(n)}_{2}$ | 悲伤$\theta^{(n)}_{3}$ | ... |  | :----: | :----: | :----: | :----: | :----: |  | 开心$\theta^{(n-1)}_{1}$ | 0.5 | 0.25 | 0.25 | ... |  | 冷静$\theta^{(n-1)}_{2}$ | 0.5 | 0 | 0.5 | ... |  | 悲伤$\theta^{(n-1)}_{3}$ | 0.25 | 0.25 | 0.5 | ... |  | ... | ... | ... | ... | ... |  假设每天记录 10000个个体的心情，我们可以用 $\pi$ 来描述这个群体的心情分布。  - 可以想象，第二天这 10000个个体的心情可能发生变化，也就是 $\pi * P$ (矩阵乘法)。  - 由于这 10000个个体的乐观程度（类似于特质）总体上不会变化，所以在总体上，他们的分布不会变化，也就是 $\pi * P = \pi$。  - 那么就会有 $\pi(i)* P(i,j) = \pi(j)* P(j,i)$。其中 i 代表上面矩阵的行，j代表矩阵的列。  其中，满足上述公式的 $\pi$ 就是参数的后验分布。  - 然而，我们一开始并不知道 $P$。  - 但我们可以通过加入建议分布$q(x)$和拒绝率$\alpha$来替代 $P$。  - 得到： $\pi(i)* q(i,j) * \alpha(i,j) = \pi(j)* q(j, i) * \alpha(j, i)$  也就是，我们通过建议分布产生参数*拒绝率的方式来采样模拟了P。  - 一个不恰当的比喻：状态转移矩阵 P 是你真实的乐观程度，但只有上帝知道你的本来面目 P。  - 然而，你能认识到自己当下的情绪 Q，并且在漫长人生中，你可以识别那些不属于自己的情绪 $\alpha$ 。  - 最后，你对自己的认识越来越接近上帝....  
+
+最后，推荐 MCMC 讲解最好的视频(没有之一)：【蒙特卡洛（Monte Carlo, MCMC）方法的原理和应用】 https://www.bilibili.com/video/BV17D4y1o7J2/?share_source=copy_web&vd_source=4b5b4646c3f53f1b80954c381226c913  如果还是不懂 MCMC 原理，那放弃也行.....  不了解 MCMC 原理，并不影响对于它的使用。
+
+## 附录  本课的Python代码与R代码为单独的代码脚本，见：https://gitee.com/hcp4715/PyBayesian
+

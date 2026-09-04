@@ -1,0 +1,1383 @@
+---
+jupyter: ir
+---
+
+<h1 style="text-align: center;">Lecture11 : Evaluating Bayesian Regression Models</h1><h2 style="text-align: center;">Instructor: Dr. Hu Chuan-Peng</h2><p></p>
+
+<h2>问题回顾</h2><p></p><p>可以使用 rstan 进行建立回归模型，我们可能会好奇：</p><p></p><p>🤔贝叶斯回归模型与传统的线性回归模型得到的结论是否一致？</p>
+
+<p>首先，让我们回顾上节课定义的三种线性模型，并且通过 stan 进行定义和拟合。</p><table style="min-width: 442px;"><colgroup><col style="width: 128px;"><col style="width: 289px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1" colwidth="128"><p>模型编号</p></th><th colspan="1" rowspan="1" colwidth="289"><p>模型语法</p></th><th colspan="1" rowspan="1"><p>解释</p></th></tr><tr><td colspan="1" rowspan="1" colwidth="128"><p>model 1</p></td><td colspan="1" rowspan="1" colwidth="289"><p>RT ~ Label</p></td><td colspan="1" rowspan="1"><p>简单线性回归模型：自变量为两水平的离散变量</p></td></tr><tr><td colspan="1" rowspan="1" colwidth="128"><p>model 2</p></td><td colspan="1" rowspan="1" colwidth="289"><p>RT ~ Label + Matching</p></td><td colspan="1" rowspan="1"><p>多元回归模型：自变量为两水平的离散变量和多水平的离散变量</p></td></tr><tr><td colspan="1" rowspan="1" colwidth="128"><p>model 3</p></td><td colspan="1" rowspan="1" colwidth="289"><p>RT ~ Label + Matching + Label:Matching</p></td><td colspan="1" rowspan="1"><p>多元回归模型：自变量额外增加了两个自变量间的交互作用</p></td></tr></tbody></table><p></p>
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: skip}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 安装和加载包
+options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
+if (!requireNamespace('pacman', quietly = TRUE)) {
+    install.packages('pacman')
+}
+pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja", "patchwork","bayesplot",
+               "rstan","bridgesampling", 'logspline', "easystats", "loo") 
+options(warn = -1)  # 抑制警告
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: true
+#| slideshow: {slide_type: skip}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 导入数据
+df_raw <- tryCatch({
+  read.csv('/home/mw/input/bayes3797/Kolvoort_2020_HBM_Exp1_Clean.csv')
+}, error = function(e) {
+  read.csv('data/Kolvoort_2020_HBM_Exp1_Clean.csv')
+})
+# 显示数据前几行
+head(df_raw)   
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 预处理数据: 数据分组和计算均值
+df <- df_raw %>%
+  dplyr::group_by(Subject, Label, Matching) %>%
+  dplyr::summarize(RT_sec = mean(RT_sec)) %>%
+  dplyr::ungroup() %>%
+# 将 Label 列的数字编码转为文字标签
+  dplyr::mutate(Label = case_when(
+    Label == '1' ~ "Self",
+    Label == '2' ~ "Friend",
+    Label == '3' ~ "Stranger"
+  )) %>%
+# 替换 Matching 列的值为小写标签
+  dplyr::mutate(Matching = ifelse(Matching == "Matching", 'matching','nonmatching')) %>%
+# 设置索引
+  dplyr::mutate(index = row_number()) %>%
+  # 设置索引为新创建的命名行
+  tibble::column_to_rownames(var = "index")  %>%
+  # 将 Label 列转换为有序的分类变量
+  dplyr::mutate(Label = factor(Label, levels = c('Self', 'Friend', 'Stranger'), ordered = TRUE),
+                Matching = factor(Matching, levels = c('matching','nonmatching')))
+
+# 将分类变量转换为哑变量
+X1 <- as.integer(df$Label == 'Friend')
+X2 <- as.integer(df$Label == 'Stranger')
+
+head(df)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: fragment}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 定义模型1
+model_code1 <- "
+data {
+  int<lower=0> N;            // 数据点数量
+  vector[N] y;               // 观测数据
+  vector[N] X1;              // Friend 
+  vector[N] X2;              // Stranger 
+}
+
+parameters {
+  real beta_0;                   // 截距
+  real beta_1;                   // Friend 的斜率
+  real beta_2;                   // Stranger 的斜率
+  real<lower=0> sigma;           // 误差标准差
+}
+
+model {
+  beta_0 ~ normal(5, 2);         // 截距的先验分布
+  beta_1 ~ normal(0, 1);         // Friend 的斜率的先验分布
+  beta_2 ~ normal(0, 1);         // Stranger 的斜率的先验分布
+  sigma ~ exponential(0.3);      // 误差标准差的先验分布
+  // 似然函数
+  y ~ normal(beta_0 + beta_1 * X1 + beta_2 * X2, sigma);
+}
+
+generated quantities {
+  real y_rep[N];             // 后验预测
+  vector[N] log_lik;         // 逐点对数似然
+ 
+  for (n in 1:N) {
+    // 后验预测值
+    y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n], sigma);
+    // 逐点对数似然
+    log_lik[n] = normal_lpdf(y[n] | beta_0 + beta_1 * X1[n] + beta_2 * X2[n], sigma);
+  }
+}
+"
+
+# 准备数据列表
+data_list1 <- list(
+  N = nrow(df),
+  y = df$RT_sec,
+  X1 = X1,
+  X2 = X2
+)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 转换分类变量为哑变量,以“matching”为基线“0”
+Matching <- as.integer(df$Matching == 'nonmatching')
+
+# 定义模型2（
+model_code2 <- "
+data {
+  int<lower=0> N;             // 样本数量
+  vector[N] y;                // 响应变量
+  vector[N] X1;               // 哑变量1（Friend）
+  vector[N] X2;               // 哑变量2（Stranger）
+  vector[N] Matching;         // 哑变量（Matching条件）
+}
+
+parameters {
+  real beta_0;                // 截距
+  real beta_1;                // Friend的主效应
+  real beta_2;                // Stranger的主效应
+  real beta_3;                // Matching的主效应
+  real<lower=0> sigma;        // 误差项的标准差
+}
+
+model {
+  // 先验分布
+  beta_0 ~ normal(5, 2);
+  beta_1 ~ normal(0, 1);
+  beta_2 ~ normal(0, 1);
+  beta_3 ~ normal(0, 1);
+  sigma ~ exponential(0.3);
+  
+  // 似然函数
+  y ~ normal(beta_0 + beta_1 * X1 + beta_2 * X2 + beta_3 * Matching, sigma);
+}
+generated quantities {
+  real y_rep[N];              // 后验预测值
+  vector[N] log_lik;          // 逐点对数似然
+
+  for (n in 1:N) {
+    // 后验预测值
+    y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n], sigma);
+    // 逐点对数似然
+    log_lik[n] = normal_lpdf(y[n] | beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n], sigma);
+  }
+}
+"
+
+# 准备数据列表
+data_list2 <- list(
+  N = nrow(df),
+  y = df$RT_sec,
+  X1 = X1,
+  X2 = X2,
+  Matching = Matching
+)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 准备数据并转换分类变量为哑变量
+# Matching <- as.integer(df$Matching == 'nonmatching')
+Interaction_1 <- X1 * Matching
+Interaction_2 <- X2 * Matching
+
+# 定义模型3（
+model_code3 <- 
+"
+data {
+  int<lower=0> N;                 // 样本数量
+  vector[N] y;                    // 响应变量
+  vector[N] X1;                   // 哑变量1（Friend）
+  vector[N] X2;                   // 哑变量2（Stranger）
+  vector[N] Matching;             // 哑变量（Matching条件）
+  vector[N] Interaction_1;        // Friend 和 Matching 的交互
+  vector[N] Interaction_2;        // Stranger 和 Matching 的交互
+}
+
+parameters {
+  real beta_0;                    // 截距
+  real beta_1;                    // Friend的主效应
+  real beta_2;                    // Stranger的主效应
+  real beta_3;                    // Matching的主效应
+  real beta_4;                    // Friend与Matching的交互效应
+  real beta_5;                    // Stranger与Matching的交互效应
+  real<lower=0> sigma;            // 误差项的标准差
+}
+
+model {
+  // 先验分布
+  beta_0 ~ normal(5, 2);
+  beta_1 ~ normal(0, 1);
+  beta_2 ~ normal(0, 1);
+  beta_3 ~ normal(0, 1);
+  beta_4 ~ normal(0, 1);
+  beta_5 ~ normal(0, 1);
+  sigma ~ exponential(0.3);
+  
+  // 似然函数
+  y ~ normal(beta_0 + beta_1 * X1 + beta_2 * X2 + beta_3 * Matching + 
+  beta_4 * Interaction_1 + beta_5 * Interaction_2, sigma);
+}
+generated quantities {
+  real y_rep[N];                  // 后验预测值
+  vector[N] log_lik;              // 逐点对数似然
+
+  for (n in 1:N) {
+    // 后验预测值（原有）
+    y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n] +
+                          beta_4 * Interaction_1[n] + beta_5 * Interaction_2[n], sigma);
+    // 逐点对数似然（原有）
+    log_lik[n] = normal_lpdf(y[n] | beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n] + 
+                            beta_4 * Interaction_1[n] + beta_5 * Interaction_2[n], sigma);
+  }
+}
+"
+
+# 准备数据列表
+data_list3 <- list(
+  N = nrow(df),
+  y = df$RT_sec,
+  X1 = X1,
+  X2 = X2,
+  Matching = Matching,
+  Interaction_1 = Interaction_1,
+  Interaction_2 = Interaction_2
+)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 定义函数，对模型进行采样
+run_stan_sampling <- function(save_name, model_code = NULL, data_list = NULL, 
+                              iter = 3000, warmup = 1000, chains = 4, 
+                              thin = 1, seed = 84735) {
+  # 运行Stan模型采样，存在结果文件时直接加载，否则执行采样并保存。
+  # 
+  # Parameters:
+  # - save_name: 保存/加载结果的文件名（无扩展名）
+  # - model_code: Stan模型代码字符串（仅采样时需提供）
+  # - data_list: Stan模型数据列表（仅采样时需提供）
+  # - iter: 总迭代次数（默认3000，含warmup）
+  # - warmup: 预热迭代次数（默认1000，将被丢弃）
+  # - chains: 采样链数（默认4）
+  # - thin: 采样 thinning 间隔（默认1）
+  # - seed: 随机种子（默认84735）
+  # 
+  # Returns:
+  # - fit: Stan采样结果对象
+  
+  # 定义保存文件路径（.rds格式，R标准二进制格式）
+  rds_file <- base::paste0(save_name, ".rds")
+  
+  # 检查文件是否存在
+  if (base::file.exists(rds_file)) {
+    base::cat(base::sprintf("加载现有的采样结果：%s\n", rds_file))
+    fit <- base::readRDS(rds_file)
+  } else {
+    # 校验模型代码和数据是否提供
+    if (base::is.null(model_code) || base::is.null(data_list)) {
+      base::stop("模型未定义或数据缺失，请提供model_code和data_list")
+    }
+    
+    base::cat(base::sprintf("未找到现有结果，正在执行采样：%s\n", save_name))
+    # 执行Stan采样
+    fit <- rstan::stan(
+      model_code = model_code,
+      data = data_list,
+      iter = iter,
+      chains = chains,
+      warmup = warmup,
+      thin = thin,
+      seed = seed
+    )
+    
+    # 保存采样结果到RDS文件
+    base::saveRDS(fit, file = rds_file)
+    base::cat(base::sprintf("采样结果已保存至：%s\n", rds_file))
+  }
+  
+  return(fit)
+}
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 运行模型1采样
+model1_fit <- run_stan_sampling(save_name = "lec11_model1", model_code = model_code1, data_list = data_list1)
+
+# 运行模型2采样
+model2_fit <- run_stan_sampling(save_name = "lec11_model2", model_code = model_code2, data_list = data_list2)
+
+# 运行模型3采样
+model3_fit <- run_stan_sampling(save_name = "lec11_model3", model_code = model_code3, data_list = data_list3)
+```
+
+<h3>与传统线性回归做法的对比：</h3><p></p><p>为确定模型是否合理，可以将贝叶斯模型与（我们比较熟悉的）传统线性回归模型进行对比。</p><p></p><p>以 model3 为例，使用“statsmodels”库来构建一个传统的线性回归模型，并将其结果与贝叶斯模型的结果进行比较。</p>
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 构建设计矩阵
+# 先构建自变量数据框
+X_df <- data.frame(
+  X1 = X1,
+  X2 = X2,
+  Matching = Matching,
+  Interaction_1 = Interaction_1,
+  Interaction_2 = Interaction_2
+)
+
+# 添加截距项（
+X <- stats::model.matrix(~ ., data = X_df)  # ~ . 表示包含所有自变量，自动添加截距列(Intercept)
+
+# 定义因变量
+y <- df$RT_sec
+
+# 传统线性回归模型
+model0 <- stats::lm(
+  formula = y ~ X - 1,  # -1 避免重复添加截距（model.matrix已生成截距列）
+  data = data.frame(y = y, X = X)  # 合并因变量和设计矩阵为数据框
+)
+
+# 查看回归结果
+summary(model0)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+head(df)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+head(X)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+contrasts(df$Matching)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+contrasts(df$Label) = contr.treatment(3)
+contrasts(df$Label)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+model0_alt <- stats::lm(
+    formula = RT_sec ~ Label * Matching,
+    data = df
+)
+
+summary(model0_alt)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 注意，可以使用bayestestR包中的bayesfactor_parameters函数计算贝叶斯因
+summary(model3_fit, par=c("beta_0","beta_1","beta_2","beta_3","beta_4","beta_5","sigma"))$summary
+```
+
+<p><strong>我们可以对比两个模型的结果</strong></p><ul><li><p>贝叶斯回归提供了更多关于参数不确定性的细节，</p></li><li><p>而传统的 OLS 回归提供了点估计、标准误差、置信区间和 p 值，适合用于传统的显著性检验和模型评估。</p></li></ul><table style="min-width: 75px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p>参数</p></th><th colspan="1" rowspan="1"><p>贝叶斯回归（Bayesian Regression）</p></th><th colspan="1" rowspan="1"><p>传统线性回归（OLS Regression）</p></th></tr><tr><td colspan="1" rowspan="1"><p><strong>$ \beta_0 $</strong></p></td><td colspan="1" rowspan="1"><p>Mean: 0.678<br>SD: 0.024<br>HDI: [0.629, 0.723]</p></td><td colspan="1" rowspan="1"><p>Mean: 0.678<br>SE: 0.024<br>95% CI: [0.681, 0.775]</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>$ \beta_1 $</strong></p></td><td colspan="1" rowspan="1"><p>Mean: 0.0796<br>SD: 0.0344<br>HDI: [0.026, 0.146]</p></td><td colspan="1" rowspan="1"><p>Mean: 0.0793<br>SE: 0.034<br>95% CI: [-0.018, 0.115]</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>$ \beta_2 $</strong></p></td><td colspan="1" rowspan="1"><p>Mean: 0.0894<br>SD: 0.034<br>HDI: [0.066, 0.155]</p></td><td colspan="1" rowspan="1"><p>Mean: 0.0895<br>SE: 0.034<br>95% CI: [-0.034, 0.099]</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>$ \beta_3 $</strong></p></td><td colspan="1" rowspan="1"><p>Mean: 0.0499<br>SD: 0.034<br>HDI: [-0.027, 0.116]</p></td><td colspan="1" rowspan="1"><p>Mean: 0.0501<br>SE: 0.034<br>95% CI: [-0.116, 0.016]</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>$ \beta_4 $</strong></p></td><td colspan="1" rowspan="1"><p>Mean: -0.0311<br>SD: 0.0481<br>HDI: [-0.0631, 0.0635]</p></td><td colspan="1" rowspan="1"><p>Mean: -0.0305<br>SE: 0.048<br>95% CI: [-0.063, 0.124]</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>$ \beta_5 $</strong></p></td><td colspan="1" rowspan="1"><p>Mean: -0.0569<br>SD: 0.048<br>HDI: [-0.0897, -0.0366]</p></td><td colspan="1" rowspan="1"><p>Mean: -0.0568<br>SE: 0.048<br>95% CI: [-0.037, 0.151]</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>$ \sigma $</strong></p></td><td colspan="1" rowspan="1"><p>Mean: 0.133<br>SD: 0.007<br>HDI: [0.120, 0.148]</p></td><td colspan="1" rowspan="1"><p>-</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>模型R²</strong></p></td><td colspan="1" rowspan="1"><p>-</p></td><td colspan="1" rowspan="1"><p>R-squared: 0.062</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>模型调整R²</strong></p></td><td colspan="1" rowspan="1"><p>-</p></td><td colspan="1" rowspan="1"><p>Adjusted R-squared: 0.036</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>F-statistic</strong></p></td><td colspan="1" rowspan="1"><p>-</p></td><td colspan="1" rowspan="1"><p>F-statistic: 2.362<br>$ p = 0.0418 $</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Log-Likelihood</strong></p></td><td colspan="1" rowspan="1"><p>-</p></td><td colspan="1" rowspan="1"><p>Log-Likelihood: 115.01</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>AIC</strong></p></td><td colspan="1" rowspan="1"><p>-</p></td><td colspan="1" rowspan="1"><p>AIC: -218.0</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>BIC</strong></p></td><td colspan="1" rowspan="1"><p>-</p></td><td colspan="1" rowspan="1"><p>BIC: -198.7</p></td></tr></tbody></table><p></p>
+
+<h2>模型评估与比较 (Model Evaluation &amp; Comparison)</h2><p></p><p>在模型评估中，<strong>贝叶斯回归</strong>和<strong>传统线性回归</strong>模型在参数估计上的结果非常接近。但是，它们的区别在于对参数的不确定性评估。</p><ul><li><p>贝叶斯模型提供了明确的参数分布，包括 <strong>均值</strong>、<strong>标准差</strong> 和 <strong>高密度区间</strong>（HDI），这使得我们可以更清晰地了解参数估计的不确定性。</p></li><li><p>而传统线性回归则侧重于给出参数的点估计，并通过 <strong>标准误差</strong> 和 <strong>95% 置信区间</strong> 进行评估。虽然传统模型没有明确给出不确定性，但它通过 <strong><em>p 值</em></strong>、<strong>R²</strong> 等统计量提供了其他重要信息。</p></li></ul><p></p><p><strong>🤔思考</strong></p><p><strong>传统回归分析</strong>提供了更多的 <strong>模型评估指标📊</strong>，如 <strong>R²</strong>、<strong>调整后的 R²</strong>、<strong>F 统计量</strong>、<strong>对数似然</strong>、<strong>AIC</strong> 和 <strong>BIC</strong> 等。这些指标不仅帮助我们评估模型的拟合优度，还能有效地比较不同模型的复杂性和预测效果。</p>
+
+<p></p><p>在第十课中，我们已经探索了多个研究假设和模型。那么，<strong>哪一个模型对于数据的预测效果最好</strong>呢？我们又该如何通过这些评估指标来做出更有力的比较呢？</p><p><strong>📈💡接下来的步骤：</strong><br>我们将深入讨论如何使用具体的 <strong>评估指标</strong> 来量化模型性能，并根据这些指标对模型进行<strong>评估</strong>和<strong>比较</strong>。</p><p></p><img src="https://cdn.kesci.com/upload/image/rkz1dqyo2e.png?imageView2/0/w/700" alt="Image Name"><p></p>
+
+<h3>什么是模型评估？</h3><p></p><p>模型评估则是指对模型是否公平性、有效性、可信性进行评估，既可以是对单个模型，也可以是对多个模型进行。</p><p></p><p>模型评估与比较(Model evaluation &amp; comparison)的目的在于选择最好的模型。</p><p></p><p>为什么需要模型比较？</p><ol><li><p>例如，比较 mode3 和 model2 可以帮助我们确定“Label”和“Matching”之间的交互或调节作用。</p></li><li><p>例如，比较 model2 和 model1 可以衡量增加预测因子是否能提升模型的预测能力。</p></li></ol><p></p><ul><li><p>总之，模型比较的目的随着研究目的变化而变化。</p></li></ul><table style="min-width: 523px;"><colgroup><col style="width: 165px;"><col style="width: 333px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1" colwidth="165"><p>模型</p></th><th colspan="1" rowspan="1" colwidth="333"><p>参数</p></th><th colspan="1" rowspan="1"><p>解释</p></th></tr><tr><td colspan="1" rowspan="1" colwidth="165"><p>model 1</p></td><td colspan="1" rowspan="1" colwidth="333"><p>RT ~ Label</p></td><td colspan="1" rowspan="1"><p>简单线性回归模型：自变量为两水平的离散变量</p></td></tr><tr><td colspan="1" rowspan="1" colwidth="165"><p>model 2</p></td><td colspan="1" rowspan="1" colwidth="333"><p>RT ~ Label + Matching</p></td><td colspan="1" rowspan="1"><p>多元回归模型：自变量为两水平的离散变量和多水平的离散变量</p></td></tr><tr><td colspan="1" rowspan="1" colwidth="165"><p>model 3</p></td><td colspan="1" rowspan="1" colwidth="333"><p>RT ~ Label + Matching + Label:Matching</p></td><td colspan="1" rowspan="1"><p>多元回归模型：自变量额外增加了两个自变量间的交互作用</p></td></tr></tbody></table><p></p>
+
+<p><strong>可以从以下三个角度来思考这个问题：</strong></p><p></p><ol><li><p>模型本身公正吗？(How fair is the model?)</p></li></ol><ul><li><p>公平性(How fair)：模型在数据收集和分析的整个流程中的公正性。</p></li></ul><p></p><ol start="2"><li><p>模型存在错误吗？(How wrong is the model?)</p></li></ol><ul><li><p>错误程度(How wrong)：模型在<strong>实践</strong>中是否有效？即是否能够准确地预测<strong>样本</strong>数据。</p></li></ul><p></p><ol start="3"><li><p>后验预测模型有多准确？(How accurate are the posterior predictive models?)</p></li></ol><ul><li><p>准确性(How accurate)：模型是否反映<strong>现实规律</strong>？即是否能够准确地预测<strong>样本外</strong>数据。</p></li></ul><p></p>
+
+<h2>模型公正吗(Is the model fair?)</h2><p>模型公正性是一个上位概念，它描述了模型是否符合我们(社会、道德、伦理)的预期，而不仅是关注模型和样本数据的关系。</p><p></p><p>可以借助几个相关问题来理解和思考模型的公正性：</p><p></p><ol><li><p>数据的收集过程是怎样的？</p></li></ol><ul><li><p>数据的收集过程直接影响模型的公正性。如果数据收集的过程存在偏见或不充分考虑多样性，那么模型就可能会产生不公正的结果。</p></li><li><p>例如，某些群体的数据可能被忽视或代表性不足，导致模型结果不具备广泛的适用性或公平性。</p></li></ul><p></p><ol start="2"><li><p>数据由谁收集，数据收集的目的是什么？</p></li></ol><ul><li><p> 数据收集者的身份、意图和研究目的，都会影响数据的性质和使用方式。</p></li><li><p>资本主义的核心观念推动了个体主义和竞争性思维，可能导致研究样本的偏倚，削弱了全球不同文化和社会背景的代表性。</p></li></ul><p></p>
+
+<p><strong>1. 数据的收集的过程公平吗？</strong></p><p></p><p>在本示例研究中，数据来源于基于自我匹配范式的实验数据，这些数据通过线下认知实验收集而得。</p><ul><li><p>数据收集过程是公平的，被试填写了实验的知情同意书，并获得相应的报酬。</p></li><li><p>此外，数据收集过程是匿名化的，保护了被试的隐私。</p></li></ul><p></p><p>潜在偏见，如：</p><ul><li><p>在数据收集过程中，仅选取大学生群体作为样本，而忽略其他重要的人群。</p></li></ul><p></p><p>🤔 基于这些数据的模型公正吗？</p>
+
+<p><strong>心理学研究背后的内隐哲学观</strong></p><p></p><p>在研究过程中未被明确提及，却深刻影响研究设计和解释的潜在观念和假设形成了心理学研究背后的内隐哲学观。</p><p></p><p>主要包括普遍性假设导致的对文化差异考量不足，以及资本主义核心观念导致的研究样本偏倚。</p><p></p><p>这些内隐观念可能使研究忽视文化多样性和社会不平等，从而影响研究的全面性、准确性和应用价值。</p><table style="min-width: 125px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p>内隐哲学观方面</p></th><th colspan="1" rowspan="1"><p>重要性</p></th><th colspan="1" rowspan="1"><p>作用</p></th><th colspan="1" rowspan="1"><p>影响</p></th><th colspan="1" rowspan="1"><p>新的提倡</p></th></tr><tr><td colspan="1" rowspan="1"><p>普遍性假设与文化差异考量不足</p></td><td colspan="1" rowspan="1"><p>构建准确全面且具文化适应性理论</p></td><td colspan="1" rowspan="1"><p>使研究忽略文化因素，影响各环节</p></td><td colspan="1" rowspan="1"><p>限制理论普适性，阻碍心理学全球发展</p></td><td colspan="1" rowspan="1"><p>数据收集多样化、文化敏感性培训、理论构建多元视角</p></td></tr><tr><td colspan="1" rowspan="1"><p>资本主义核心观念与研究样本偏倚</p></td><td colspan="1" rowspan="1"><p>确保研究样本多样性和代表性</p></td><td colspan="1" rowspan="1"><p>导致样本选择偏向西方或资本主义文化个体</p></td><td colspan="1" rowspan="1"><p>研究结果有偏差，不利于跨文化研究</p></td><td colspan="1" rowspan="1"><p>扩大样本来源、提高研究者文化敏感性、融合多元文化理论</p></td></tr></tbody></table><blockquote><p>参考文献：Bettache, K. (2024). Where Is Capitalism? Unmasking Its Hidden Role in Psychology. <em>Personality and Social Psychology Review</em>, <em>0</em>(0). <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.1177/10888683241287570">https://doi.org/10.1177/10888683241287570</a></p></blockquote><p></p>
+
+<p><strong>2. 研究目的公平吗？</strong></p><p></p><p>在本示例研究中，研究目的来源自心理学家的好奇和假设。这是合理的，因为心理学研究是一种探索性的研究方法。</p><p></p><p>一些极端的反例(存在利益冲突)：</p><p></p><ul><li><p>如果研究项目来源于开发缓解压力药的厂商。那么，研究目的就可能被操纵，以支持药厂的销售。</p></li><li><p>例如，有目的的选择被试。</p></li><li><p>例如，有目的性的将实验目告诉被试，从而收集到符合预期的数据。</p></li></ul><p></p><img src="https://p3.itc.cn/q_70/images03/20220113/68afb64941e546cd9eded2963085e6a7.png"><p></p>
+
+<p><strong>数据由谁收集，数据收集的目的是什么？</strong></p><p></p><p>数据收集者的身份、意图和研究目的，都会影响数据的性质和使用方式。</p><p></p><p>研究者可能内隐地假设心理学现象具有普遍性，但未充分考虑文化差异。</p><p></p><p>这种内隐假设影响了结果的解释，忽视了不同社会和文化背景对心理现象的深刻影响(Ghai, Forscher, &amp; Chuan-Peng, 2024)。</p><p></p><p>从这张图中，你可以发现什么？🤔</p><p></p><img src="https://cdn.kesci.com/upload/sno3jb9h3b.png?imageView2/0/w/720/h/960" alt="Image Name"><blockquote><p>参考文献：Ghai, S., Forscher, P.S. &amp; Chuan-Peng, H. (2024). Big-team science does not guarantee generalizability. <em>Nat Hum Behav</em> <strong>8</strong>, 1053–1056 . <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.1038/s41562-024-01902-y">https://doi.org/10.1038/s41562-024-01902-y</a></p></blockquote><p></p>
+
+<p><strong>3. 模型分析的结果，将对个人和社会产生什么影响？</strong></p><p></p><p></p><p>在本示例研究中，研究结果(模型分析的结果)具有一定的理论意义和实际意义。</p><ul><li><p>在理论层面， 自我匹配范式中的模型能够帮助揭示个体如何处理与“自我”相关的信息。</p></li><li><p>在实际意义层面，通过这些模型，可以更精确地识别个体在自我认知过程中的偏差。</p></li></ul><p></p>
+
+<p><strong>4. 分析过程中包含的偏见？</strong></p><p></p><p>一些反例：</p><ul><li><p>假设在一次研究中使用多种问卷收集多种因变量，然后选择有相关性的变量进行报告?</p></li><li><p>在多因素实验设计中，通过增加变量来获得显著的交互作用，并尝试多种简单效应分析。</p></li></ul><p></p>
+
+<p>在心理学研究中，模型公正性往往与<strong><em>心理学研究的可重复性</em></strong>相关。</p><p></p><ol><li><p>数据的收集过程是怎样的？</p></li><li><p>数据由谁收集，数据收集的目的是什么？</p></li><li><p>数据收集的过程，以及分析的结果，将对个人和社会产生什么影响？</p></li><li><p>分析过程中可能会包含哪些偏见</p><ul><li><p><em>p</em>-hacking/HARKing</p></li></ul></li></ol><img src="https://pic2.zhimg.com/80/v2-778de6c621356bc2c23c3a09ff2b0be5_1440w.webp" alt="Image Description"><p>(来源：胡传鹏, ..., 彭凯平. (2016). 心理学研究中的可重复性问题:从危机到契机. <em>心理科学进展, 24</em>(9), 1504-1518. doi: 10.3724/SP.J.1042.2016.01504)</p>
+
+<h2>这个模型可能有多错误(How wrong is the model?)</h2><p></p><blockquote><p></p><p><strong>“all models are wrong, but some are useful. ————George Box”</strong></p></blockquote><p></p><p></p><ul><li><p>尽管统计模型是对更复杂现实的简化表达，良好的统计模型仍然可以是有用的，并可以增进我们对世界复杂性的理解。</p></li><li><p>因此，在评估模型时，要问的下一个问题不是模型是否错误(is the model wrong?)，而是模型错误的程度(How wrong is the model?)</p></li></ul><p></p><p>🤔思考贝叶斯线性回归模型的假设在多大程度上与现实相符？</p>
+
+<h3>模型预设的影响</h3><p></p><p><strong>🤔 我们知道模型存在前提预设(assumption)，如果这些模型的前提预设不成立，模型会有多差？</strong></p><p></p><p>在lec9中，我们使用一个线性模型来定义标签“Label”与反应时间“RT”之间的关系，并且指定了该模型成立的一些前提预设。</p><p>$$ \begin{align*} Y_i &amp;= \beta_0 + \beta_1 X_i + \epsilon \;\;\;\;\;\;\;\;\epsilon \sim N(0,\sigma^2)\\ &amp;\Downarrow \\ Y_i | \beta_0, \beta_1, \sigma &amp;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right) \;\; \text{ with } \;\; \mu_i = \beta_0 + \beta_1X_i .\\ \end{align*} $$</p><ul><li><p>回归模型需满足如下假设：</p><ol><li><p>独立观测假设: 每个观测值$ Y_i $是相互独立的，即一个观测的值不受其他观测的影响.</p></li><li><p>线性关系假设: 预测值$ \mu_i $和自变量$ X_i $之间可以用线性关系来描述，即：$ \mu_i = \beta_0 + \beta_1 X_i $.</p></li><li><p>方差同质性假设: 在任意自变量的取值下，观测值$ Y_i $都会以$ \mu_i $为中心，同样的标准差$ \sigma $呈正态分布变化（$ \sigma $ is consistent）.</p></li></ol></li></ul><p></p>
+
+<p><strong>1. 当假设1 (独立观测假设) 被违反时：</strong></p><ul><li><p>在心理学的实验数据中，观测值之间常常存在依赖关系 (dependent)。</p></li><li><p>比如，反应时数据在单个被试内、或某种特定刺激类型内可能表现得更加同质：</p><ul><li><p>有的被试（Participant）总是比其他人反应得更快；</p></li><li><p>有的刺激类型（Stimulus）可能总是导致更快的反应。</p></li></ul></li><li><p>这种观测值的相互关联会导致对结果的不准确估计，具体体现在：</p><ul><li><p><strong>过低的标准误</strong>：错误高估了参数的显著性；</p></li><li><p><strong>错误的效应估计</strong>：未能正确捕捉组间差异。</p></li></ul></li><li><p>解决这种关联问题需要采用层级模型（Hierarchical Models），特别是<strong>层级贝叶斯模型（Hierarchical Bayesian Models）</strong>。这种方法能够同时建模个体差异（如被试间的反应）和组间差异（如刺激类型的影响）。</p></li></ul><p></p><p>例如，在下图中：</p><ul><li><p>左图可能低估被试间的变异性，假设所有被试的反应时间都完全由刺激难度解释。</p></li><li><p>右图通过引入随机截距（Random Intercept）更好地捕捉了被试间的差异，使得模型更贴合数据的实际结构。</p></li></ul><p></p><img src="https://cdn.kesci.com/upload/s3xt2u50rw.png?imageView2/0/w/960/h/960" alt="Image Name"><ol><li><p><strong>左图：单一模型（无随机效应）</strong></p><ul><li><p>仅考虑整体平均效应，没有控制“被试”或“刺激”的特定差异。</p></li><li><p>每个数据点的误差条（灰色线条）表示高水平的变异性，线性趋势可能无法很好地反映个体间差异。</p></li></ul></li><li><p><strong>右图：考虑随机截距模型（Random Intercept Model）</strong></p><ul><li><p>模型中引入了<strong>被试间的随机截距</strong>（by-participant random intercept），将不同被试的反应时间（RT）的基本差异纳入建模过程。</p></li><li><p>虚线代表各被试的随机截距，展示了“被试间”的系统性差异；实线代表整体效应估计（包含群体水平的趋势）。</p></li><li><p>结果更加细化，并能够同时反映群体趋势和个体变异。</p></li></ul></li></ol><blockquote><p>source: Brown, V. A. (2021). An Introduction to Linear Mixed-Effects Modeling in R. <em>Advances in Methods and Practices in Psychological Science, 4</em>(1), 2515245920960351. <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.1177/2515245920960351">https://doi.org/10.1177/2515245920960351</a></p></blockquote><p></p>
+
+**2. 当假设2(线性关系假设)和假设3(方差同质性假设)被违反时：**  
+
+* 假设2(线性关系假设)违反的情况：在左图中，我们可以看到，Y和X之间的关系并非线性的  
+
+* 假设3(方差同质性假设)违反的情况：并且，随着X的增大，Y的变异性越来越大。  
+
+  * 这要导致的后果是，后验预测分布比实际观测值的分布差异很大(右图)  
+
+![Image Name](https://www.bayesrulesbook.com/bookdown_files/figure-html/nonlinear-1-ch10-1.png)  
+
+
+<h3>对模型进行修改</h3><ul><li><p>并非所有数据都会满足这些预设，当这些预设无法满足并且会产生巨大的影响时，需要考虑修改模型。</p></li></ul><p></p>
+
+<p>对于违反假设1 的情况，我们在之后会学习使用层级贝叶斯模型来处理相互关联的数据。</p><p></p><p><strong>对于违反假设2和3的情况，通常有两种处理方式</strong></p><p></p><p><strong>a. 使用不同的数据模型</strong></p><ul><li><p>不假设实际值与观测值之间的关系是正态的 $ Y_i \sim N(\mu_i, \sigma^2) $</p></li><li><p>之后，我们会学习使用其他回归模型来描述其数据关系，比如泊松回归、二项回归、负二项回归。</p></li></ul><p></p>
+
+<p><strong>b. 对数据进行变换</strong></p><blockquote><p>如果数据模型并不是我们要担心的问题，我们可以对数据进行变换，仍然可以对变换后的数据可以使用正态模型：</p></blockquote><ul><li><p>对$ Y $进行变换：$ g(Y_i) | \beta_0, \beta_1, \sigma \stackrel{ind}{\sim}N(\mu_i, \sigma^2) $，$ \mu_i = \beta_0 + \beta_1 X_i $</p></li><li><p>对$ X $进行变换： $ Y_i | \beta_0, \beta_1, \sigma \stackrel{ind}{\sim}N(\mu_i, \sigma^2) $，$ \mu_i = \beta_0 + \beta_1 h(X_i) $</p></li><li><p>同时对$ Y $和$ X $进行变换：$ g(Y_i) | \beta_0, \beta_1, \sigma \stackrel{ind}{\sim}N(\mu_i, \sigma^2) $， $ \mu_i = \beta_0 + \beta_1 h(X_i) $</p></li></ul><p></p>
+
+在刚刚的例子当中，我们对$Y$的取值做一个对数变换  
+
+$$  
+\log(Y_i) | \beta_0, \beta_1, \sigma \stackrel{ind}{\sim}N(\mu_i, \sigma^2) \;\; \text{ with } \; \mu_i = \beta_0 + \beta_1 X_i  
+$$  
+
+* 在变换之后，可以看到$\log(Y)$与$X$之间的关系仍然是线性的，且随着$X$的增大，$Y$的变异性仍然是一致的。  
+
+* 可以使用正态的线性模型来拟合$\log(Y)$的后验分布  
+* 这部分内容将在逻辑回归(logistic regression)部分进行详细介绍，这里先不作深入解释。  
+
+<table>  
+        <tr>  
+            <td><img src="https://www.bayesrulesbook.com/bookdown_files/figure-html/nonlinear-1-ch10-1.png" alt="" width="500" height="250"></td>  
+            <td><img src="https://www.bayesrulesbook.com/bookdown_files/figure-html/nonlinear-2-ch10-1.png" alt="" width="500" height="250"></td>  
+        </tr>  
+        <tr>  
+            <td>变换之前</td>  
+            <td>log变换之后</td>  
+        </tr>  
+</table>  
+
+<h2>模型评估</h2><p></p><p>一般情况下，我们的贝叶斯模型不会是完全不公平的，或者错得太离谱的。 但除了这些问题，<strong>更为重要的是，模型是否可以用来准确预测新数据 Y 的结果。</strong></p><p></p><blockquote><p>如果说模型公平性和模型错误描述的是模型在<strong>质量上</strong>的优劣，那模型评估与比较就是在<strong>数量上</strong>衡量模型预测的准确性。</p></blockquote><p></p><p>我们可以通过什么指标来评估预测模型的整体质量呢？</p><ul><li><p>绝对指标，衡量模型对于样本的预测能力。</p></li><li><p>相对指标，衡量模型对于样本外数据的预测能力，也考虑了模型的复杂度。</p></li></ul><p></p><p>首先，我们先向大家介绍可用于评估模型在<strong>样本</strong>数据上的预测能力的绝对指标 ---- 绝对误差的中位数，median absolute error (MAE)</p><ul><li><p>衡量观测值和其后验预测均之间的典型差异。</p></li></ul><p></p>
+
+<h3>绝对误差的中位数，median absolute error (MAE)</h3><h3></h3><p></p><p><strong>定义</strong>：MAE 是观测值 $ (Y_i) $ 和后验预测均值 $ ( Y_i') $ 的绝对误差的中位数，公式为：</p><p><br>$$ \text{MAE} = \text{median}(|Y_i - Y_i'|) $$</p><ul><li><p>$ (Y_i) $ ：实际观测值。</p></li><li><p>$ ( Y_i') $：模型后验预测的均值。</p></li><li><p>假设 $ Y_1, Y_2…, Y_n $表示n个观察结果。</p></li><li><p>每个 $ Y_i $ 都有对应的后验预测值，其均值为 $ Y_i' $</p></li></ul><p></p><p><strong>作用</strong>：衡量模型预测值和实际观测值之间的典型差异。</p><p></p><p><strong>特点</strong>：</p><ul><li><p>MAE 是绝对误差的典型值，对异常值的敏感性较低。</p></li><li><p>作为绝对指标，直接反映模型的预测精度。</p></li></ul><p></p>
+
+<h3>相对指标：样本外预测能力</h3><p></p><p>仅在样本数据上评估模型并不足以验证其泛化能力，尤其是心理学数据经常受到时间和抽样偏差的影响。例如：</p><ul><li><p>比如，个体的压力状态可能随着季节变化，因此在不同季节收集到的数据会受到时间的影响。</p></li><li><p>抽样差异：训练模型的数据可能来自理工科学生，而测试模型的数据来自心理学学生，这种抽样差异可能导致预测性能下降。</p></li></ul><p></p><p>因此，一种更高效的方法是，一次性多收集一些数据，选择其中的一部分作为预测数据。</p><p></p><p>而<strong>相对指标</strong>更多的是评估模型在<strong>样本外</strong>数据上的，同时考虑模型的复杂度,这更有利于比较不同模型的预测能力。</p>
+
+<p></p><h3>交叉验证(cross validation)</h3><p>但问题在于，我们选择哪一部分数据作为预测数据？或者说，我们该如何有效的对数据进行抽取？</p><p></p><p><strong>交叉验证(cross validation)</strong> 的目的就在于：提供不同的抽取预测数据的策略</p><ul><li><p>其关键在于从已有样本中拿出一部分数据当作预测数据。</p></li></ul><p></p><img src="https://pic1.zhimg.com/80/v2-e9ad5ba61cda7ebd02848f336607eb70_1440w.webp" alt=""><blockquote><p>资料来源：【绝对干货】机器学习模型训练全流程！- 知乎 <a target="_blank" rel="noopener noreferrer nofollow" href="https://zhuanlan.zhihu.com/p/184673895">https://zhuanlan.zhihu.com/p/184673895</a></p></blockquote><p></p>
+
+常见的交叉验证策略：  
+1. 分半交叉验证 (Split-half cross-validation)  
+	- 分半交叉验证将观测数据对半分成两部分，分别在不同的数据集上拟合模型，并在另外一半数据集上验证模型，最后再对比不同的模型在两份数据集作为验证集时的预测准确度。  
+2. K 折交叉验证 (K-fold cross-validation)  
+	- K 折交叉验证把数据分成 K 分，其中一份作为训练集（拟合模型，对参数进行估计），其余的 K-1 分数据集作为验证集，总共重复这个流程 K 次。以 K 次验证结果的均值作为验证标准。  
+3. 留一法交叉验证 (Leave-one-out cross-validation)  
+	- 留一法交叉验证是 K 折交叉验证的一个特例，当分折的数量等于数据的数量时，K 折留一法便成了留一法交叉验证。留一法交叉验证相较于普通的交叉验证方法，几乎使用了所有数据去训练模型，因此留一法交叉验证的训练模型时的**偏差 (bias) 更小、更鲁棒**，但是又因为验证集只有一个数据点，验证模型的时候**留一法交叉验证的方差 (Variance) 也会更大**。
+
+**K 折交叉验证 (K-fold cross-validation)**  
+
+K 折交叉验证在分半交叉验证的基础上，将数据集分成 K 份(称为 CV-K)，其中一份作为测试集，其余 K-1 份作为训练集，重复这个流程 K 次。  
+
+K 折交叉验证，以 K 次测试结果的**均值**作为验证标准。例如，在压力-自我控制的例子中：  
+- 我们可以使用 K=5 折的交叉验证，将数据集分成 5 份，每次使用 4 份数据作为训练集，1份数据作为测试集。  
+- 对每一次迭代，我们使用 4 份数据训练模型，然后使用剩下的一份数据进行测试，并计算相应的MAE。  
+- 重复这个流程 5 次，然后取每次MAE测试结果的均值作为最终的测试结果。  
+
+![](https://pic3.zhimg.com/80/v2-ff846ee7eefdcd425e123d9d31b4d58a_1440w.webp)  
+
+> 资料来源：【绝对干货】机器学习模型训练全流程！- 知乎 https://zhuanlan.zhihu.com/p/184673895
+
+**留一法交叉验证 (Leave-one-out cross-validation)**  
+
+留一法交叉验证是 K 折交叉验证的一个特例，当分折的数量K等于数据的数量n时，K 折留一法便成了留一法交叉验证。  
+- 留一法交叉验证相较于普通的交叉验证方法，几乎使用了所有数据去训练模型。  
+- 留一法交叉验证 (Leave-one-out cross-validation)的缩写为 loo-cv，或者 loo。  
+
+![](https://www.baeldung.com/wp-content/uploads/sites/4/2022/05/loso.png)  
+
+> 资料来源：https://www.baeldung.com/cs/cross-validation-k-fold-loo
+
+<h3>ELPD (Expected log-predictive density)</h3><p>留一法交叉验证 LOO (包括之前的交叉验证方法)是用于评估模型在<strong>未知数据</strong>上预测能力的思想框架，其本身并不提供具体的统计指标。</p><p></p><p><strong>ELPD</strong> (Expected log-predictive density) 是 LOO 方法的具体实现，以对数似然函数作为统计指标。</p><p></p><p>其计算步骤：</p><ul><li><p>同 K 折交叉验证一样，首先将数据集分成 n 份，n为数据总的数量。</p></li><li><p>利用 n-1 份数据去训练模型，得到后验模型 $ p(\theta_{-i}|y_{-i}) $。</p></li><li><p>使用剩下的一份数据作为测试数据 $ y_{i} $，计算后验预测模型 $ p(y_{i}|y_{-i}) $。</p></li><li><p>重以上过程，重复 n 次，得到 n 个后验预测模型,并计算其对数化后的期望值 $ E(log(p(y_{i}|y_{-i}))) $。</p></li></ul><p></p><img src="https://cdn.kesci.com/upload/s4bmgg7han.png?imageView2/0/w/640/h/640" alt="Image Name"><p></p>
+
+### 补充：其他指标  
+
+之前讨论过模型评估中两种类型的指标：  
+- 绝对指标，衡量模型对于样本的预测能力。  
+- 相对指标，衡量模型对于样本外数据的预测能力，也考虑了模型的复杂度。  
+
+这两种指标包含了多种具体的统计值：  
+
+模型拟合优度的方法包括：  
+- MAE or MSE(mean square error)  
+- 对数似然 (log likelihood)  
+- $R^2$  
+
+模型预测进度的方法包括：  
+- AIC  
+- DIC  
+- WAIC  
+- LOO-CV  
+
+
+|                    | AIC                                  | DIC                                      | WAIC       | LOOCV           | BIC                                  |  
+| ------------------ | ------------------------------------ | ---------------------------------------- | ---------- | --------------- | ------------------------------------ |  
+| 适用框架           | 频率论                               | 贝叶斯                                   | 贝叶斯     | 贝叶斯          | 贝叶斯/频率论                        |  
+| 偏差（deviance）   | 最大似然参数 $\theta_mle$ 的对数似然 | 贝叶斯参数均值 $\bar{\theta}$ 的对数似然 | LPPD       | $ELPD_{LOO-CV}$ | 最大似然参数 $\theta_mle$ 的对数似然 |  
+| 矫正（correction） | 参数数量                             | 似然的变异                               | 似然的变异 |     由于采用 LOO-CV 思想，因此不需要矫正            | 参数数量+数据数量                    |
+
+目前认知建模在科学心理学中得到了广泛应用，而模型比较作为认知建模的核心环节，不仅是评估模型对数据的拟合优度（平衡过拟合与欠拟合），还需要考虑模型复杂度对预测能力的影响。  
+
+然而，由于模型比较指标种类繁多，研究者在选用时往往面临困惑。  
+
+在郭鸣谦等(2024) 的文章中便把常用指标划分为三类，其中AIC、DIC、WAIC 等基于交叉验证的指标，通过数据分割或后验分布计算预测性能，平衡拟合优度和复杂度。  
+
+![Image Name](https://cdn.kesci.com/upload/snng3h8fir.png?imageView2/0/w/640/h/640)  
+
+> 郭鸣谦, 潘晚坷, 胡传鹏. (2024). 认知建模中模型比较的方法. *心理科学进展*, *32*(10), 1736-1756. doi: 10.3724/SP.J.1042.2024.01736  
+
+
+<h2>偏差-方差权衡 (Bias-Variance Trade-off)</h2><ul><li><p>偏差（Bias）：指的是算法的期望预测与真实预测之间的偏差程度， 反应了模型本身的拟合能力。</p></li><li><p>方差（Variance）：用不同训练数据进行模型评估时，模型表现的变化程度。</p></li></ul><p></p><p>在模型训练过程中，偏差和方差之间存在一定的权衡关系：</p><ul><li><p>高偏差通常伴随着低方差，即模型较为简单，但能够在不同训练数据集上保持较为稳定的表现；</p></li><li><p>低偏差通常伴随着高方差，即模型较为复杂，可以在训练数据上做得很好，但在其他数据集上表现不稳定；</p></li><li><p>因此，偏差和方差之间需要达到一种平衡，即偏差-方差权衡，以避免模型过于简单或过于复杂。</p></li></ul><p></p>
+
+<p>在模型评估中，无论是<strong>绝对评估</strong>还是<strong>相对评估</strong>，都可以结合偏差-方差权衡的概念来理解。偏差-方差权衡揭示了以下关键事实：</p><ul><li><p><strong>模型越复杂</strong>：虽然能够更好地拟合训练数据，但往往会失去对样本外数据的解释能力（即过拟合）。</p></li><li><p><strong>模型越简单</strong>：尽管能够在不同样本间保持一致性，但对于任何特定样本的解释力可能较弱（即欠拟合）。</p></li></ul><p></p><p>举例说明：</p><ul><li><p>如果我们的目标是建立一个能够准确预测响应变量 ( Y ) 的模型，就需要包含足够多的预测因子，以获得对 ( Y ) 的充分信息。</p></li><li><p>然而，加入过多的预测因子可能适得其反。模型不仅会过度拟合训练数据，还可能导致复杂性增加，从而降低泛化能力。</p></li></ul><p></p><p>通过平衡模型的偏差和方差，我们可以选择一个既能够捕捉数据结构，又具有良好预测能力的模型。这种权衡是建模过程中不可忽视的核心问题。</p><p></p><img src="https://vitalflux.com/wp-content/uploads/2020/12/overfitting-and-underfitting-wrt-model-error-vs-complexity-768x443.png" alt="Image Name"><p>资料来源：<a target="_blank" rel="noopener noreferrer nofollow" href="https://vitalflux.com/overfitting-underfitting-concepts-interview-questions/">https://vitalflux.com/overfitting-underfitting-concepts-interview-questions/</a></p>
+
+模型评估的核心在于模型捕捉到了数据中的关键模式，既非太简单而错过数据中有价值的信息(**欠拟合, underfitting**)，也不会太复杂从而将数据中的噪音加入到模型中(**过拟合, overfitting**)。  
+
+**欠拟合(underfitting)**  
+
+* 欠拟合的模型在当前样本的数据拟合效果不好，且其泛化能力(模型在当前样本外新的数据上的预测的准确度)也同样不佳。  
+* 导致欠拟合的原因  
+  * 数据特征较少  
+    * 数据特征指的是数据的属性，比如第一部分中展示的数据的各个变量就是数据的特征。在所有变量都能独立地对目标变量做出解释的前提下，数据特征越多，数据拟合程度越好。  
+  * 模型复杂度过低  
+    * 模型的复杂度代表模型能够描述的所有函数，比如线性回归最多能表示所有的线性函数。  
+    * 模型的复杂度和模型的参数数量有关，一般来说，模型参数越多，复杂度越高，模型参数越少，复杂度越低。  
+
+**过拟合(overfitting)**  
+
+* 模型在当前样本的数据上的拟合程度极好，但是泛化能力也较差。  
+* 模型把训练样本学习地“太好了”，把样本自身地一些噪音也当作了所有潜在样本都会具有的一些性质，这样就会导致其泛化性能下降。  
+* 导致过拟合的原因  
+  * 当前样本的噪音过大，模型将噪音当作数据本身的特征  
+  * 当数据的有些特征与目标变量无关，这些特征就是噪音，但它也可能被误当作数据特征，这就会造成模型过拟合  
+  - 样本选取有误，样本不能代表整体  
+  - 模型参数太多，模型复杂度太高  
+
+
+
+![Image Name](https://cdn.kesci.com/upload/s4bp7piw04.png?imageView2/0/w/640/h/640)  
+
+
+资料来源：https://blog.csdn.net/weixin_43378396/article/details/90707493
+
+### 如何避免欠拟合  
+
+- 增加数据的特征  
+
+- 增加模型复杂度  
+
+### 如何避免过拟合  
+
+- 选择更具代表性的数据  
+
+- 降低模型复杂度  
+
+
+**问题的本质在于：模型与数据真实的生成模型匹配**  
+
+为了选择一个能够在过拟合和欠拟合之间的达到平衡的最佳模型，就需要进行模型评估、比较和选择。  
+
+## 模型评估指标的代码演示  
+
+在我们了解模型评估的基本原理和方法后，接下来我们通过代码来演示如何使用这些方法来评估模型。包括：  
+- 绝对指标，MAE  
+- 相对指标，ELPD-LOO
+
+### 计算 MAE  
+
+MAE 是观测值 $(Y_i)$ 和后验预测均值 $( Y_i')$ 的绝对误差的中位数，公式为：  
+$$ \text{MAE} = \text{median}(|Y_i - Y_i'|) $$  
+
+-  $(Y_i)$ ：实际观测值。  
+- $( Y_i')$：模型后验预测的均值。  
+
+接下来我们通过代码来演示如何计算 MAE，以 model 1 为例。
+
+
+1. 提取后验预测数据，从模型中提取后验预测数据是后续计算的基础。
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 从采样结果中提取后验预测样本
+posterior_predictive <- tidybayes::spread_draws(model1_fit, y_rep[i])
+
+# 在chain和draw维度上计算后验均值
+posterior_mean <- posterior_predictive %>%
+  dplyr::group_by(i) %>%  # 按每个观测值分组
+  dplyr::summarise(
+    posterior_mean = mean(y_rep, na.rm = TRUE),  # 计算每个观测值的后验预测均值
+    .groups = "drop"
+  ) %>%
+  dplyr::rename(observation = i)  # 重命名索引列为"observation"
+
+head(posterior_mean, n = 5)
+```
+
+2. 计算 MAE  
+通过提取的后验预测值，计算 MAE，作为模型预测误差的绝对指标。
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 合并原始观测值与后验均值
+combined_data <- dplyr::tibble(
+  observed = df$RT_sec,          # 原始观测值（RT_sec）
+  predicted = posterior_mean$posterior_mean  # 后验预测均值
+)
+
+# 计算MAE（观测值和后验均值的绝对误差的中位数）
+mae <- stats::median(
+  abs(combined_data$observed - combined_data$predicted),  # 绝对误差
+  na.rm = TRUE  # 忽略可能的缺失值
+)
+
+base::cat(sprintf("MAE: %.4f\n", mae)) 
+```
+
+对于 MAE 的解读。  
+
+- 绝对误差的中位数，median absolute error (MAE)衡量了预测观测值$Y_i$与后验预测均值之间$Y_i'$的差异。  
+- **MAE越小**表明后验模型的**预测越准确**。  
+
+我们可以对比三个模型的 MAE 结果。
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+calculate_mae <- function(trace, observed_data) {
+  # 从stanfit对象中提取所有后验预测样本（适用于任何变量名）
+  # 提取后验预测样本矩阵（行=迭代×链，列=观测值）
+  posterior_pred <- rstan::extract(trace)$y_rep  
+  
+  # 计算每个观测值的后验均值（按列求平均）
+  posterior_mean <- colMeans(posterior_pred, na.rm = TRUE)
+  
+  # 校验长度
+  if (length(observed_data) != length(posterior_mean)) {
+    stop("观测值与后验预测均值长度不匹配")
+  }
+  
+  # 计算MAE
+  mae <- stats::median(abs(observed_data - posterior_mean), na.rm = TRUE)
+  return(mae)
+}
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+tibble::tibble(
+  "Model 1" = calculate_mae(model1_fit, df$RT_sec),
+  "Model 2" = calculate_mae(model2_fit, df$RT_sec),
+  "Model 3" = calculate_mae(model3_fit, df$RT_sec)
+)
+```
+
+<h3>计算 ELPD-LOO</h3><p>在实际操作中，我们通过 <code>loo</code> 包的函数 <code>loo::loo</code> 计算 $ ELPD_{LOO-CV} $。</p><ul><li><p>在 <code>loo::loo</code> 返回的值中，<code>elpd_loo</code>&nbsp;为$ E(log(p(y_{i}|y_{-i}))) $，</p></li><li><p><code>elpd_loo</code>越高表示模型的预测值越精确</p></li></ul><p></p><p>注意：由于 $ ELPD_{LOO-CV} $ 的计算量也比较大，<code>loo</code> 会使用 Pareto Smooth Importance Sampling Leave Once Out Cross Validation (PSIS-LOO-CV) 来近似 $ ELPD_{LOO-CV} $。</p><p></p><p>PSIS-LOO-CV 有两大优势：</p><ol><li><p>计算速度快，且结果稳健</p></li><li><p>提供了丰富的模型诊断指标</p></li></ol><p></p><p>注意：</p><ul><li><p>要计算 elpd_loo 需要在 <code>generated quantities</code> 块中定义逐点对数似然变量（如log_lik）</p></li><li><p>在模型采样完成后通过 <code>loo::extract_log_lik</code> 提取对数似然。</p></li></ul><p></p><p>首先，我们以 model 3为例</p>
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 以 model 3 为例计算elpd_loo
+
+library(loo)
+
+# 提取对数似然
+log_lik <- loo::extract_log_lik(model3_fit, parameter_name = "log_lik")
+
+# 3. 计算ELPD_{LOO-CV}
+elpd_loo_result <- loo::loo(log_lik)
+
+# 查看结果
+print(elpd_loo_result)
+```
+
+<p>模型<code>elpd_loo</code>的结果为107.9</p><ul><li><p>然而，仅凭单个值，并不能反映模型的预测精确程度。</p></li><li><p>虽然 <strong>ELPDs 无法为任何单一模型的后验预测准确性提供可解释的度量，但它在比较多个模型的后验预测准确性时非常有用</strong>。</p></li></ul><p></p><p>我们可以通过 <code>loo::loo_compare</code> 方法来对比多个模型的 elpd。从下面结果可见：</p><ul><li><p>模型1的 elpd_loo 最大，表明它对<strong>样本外数据</strong>的预测性能最好。</p></li><li><p>而模型3的 elpd_loo 最小，表明它的预测性能最差。</p></li><li><p>并且这些结果与我们通过 MAE 计算及上节课的贝叶斯因子计算和HDI+rope 区间计算得到的判断一致。</p></li></ul><p></p><p>需要注意的是：</p><ul><li><p>loo 提供的结果包括了 elpd se，这使得我们可以判断两个模型的预测差异 elpd_diff 是否超过两至三个标准误se。</p></li></ul><p></p>
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 为每个模型计算ELPD_loo结果
+# 模型1
+log_lik1 <- loo::extract_log_lik(model1_fit, parameter_name = "log_lik")
+loo1 <- loo::loo(log_lik1)
+
+# 模型2
+log_lik2 <- loo::extract_log_lik(model2_fit, parameter_name = "log_lik")
+loo2 <- loo::loo(log_lik2)
+
+# 模型3
+log_lik3 <- loo::extract_log_lik(model3_fit, parameter_name = "log_lik")
+loo3 <- loo::loo(log_lik3)
+
+# 构建模型比较列表
+comparison_list <- list(
+  model1 = loo1,
+  model2 = loo2,
+  model3 = loo3
+)
+
+# 比较模型
+loo::loo_compare(comparison_list)
+```
+
+<h3>补充：在 R 中实现 DIC</h3><p>在贝叶斯统计中，DIC 适用于基于 MCMC (Markov chain Monte Carlo) 采样估计的模型。</p><p>由于Rstan中没有直接计算DIC的方式，我们补充这一内容，方便同学们在练习中参考。</p><p></p><p><strong>DIC 的计算公式为：</strong></p><p>$$ \text{DIC} = -2D(\bar{\theta}) + 2 \times p_D $$</p><ul><li><p>其中，$ \bar{\theta} $ 为参数后验分布的均值，而 $ D(\theta) $ 则是真实数据与模型预测分布之间的偏差（Deviance），用以衡量模型的性能；</p></li><li><p>DIC 公式的第一项是 $ -2 $ 乘上参数后验分布上的均值的偏差，代表了模型拟合的程度；</p></li><li><p>第二项 $ p_D $ 被称作有效参数（effective number of parameters），是模型拟合的复杂度的惩罚项。</p></li></ul><p></p><p>DIC 综合考虑了模型的拟合优度和复杂度。模型的 DIC 值越低，说明模型在平衡拟合优度与复杂度后表现越好。</p><p>DIC（Deviance Information Criterion）是用于模型选择和评估的指标，通常用于贝叶斯模型。在统计学中，DIC 是一种衡量模型拟合优度和复杂度的指标，类似于AIC（Akaike Information Criterion）和BIC（Bayesian Information Criterion）。</p><p></p><p><strong>偏差的公式为：</strong></p><p>$$ D(\theta_s) = \log L(y|\theta_s) \tag{15} $$</p><p>其中 $ s $ 代表了 MCMC 的样本，因此 $ \theta_s $ 是 MCMC 样本的参数值。</p><p></p><p><strong>有效参数 $ p_D $</strong></p><p>$ p_D $ 为有效参数(effective number of parameters), 是模型拟合的复杂度的惩罚项, 计算公式如下：</p><p>$$ p_D = \text{Var}(D(\theta)) = \frac{1}{M} \sum_{m=1}^{M} D(\theta^{(m)}) - D(\hat{\theta}) $$</p><ul><li><p>其中，$ D(\theta^{(m)}) $ 是第 $ m $ 个样本的偏差，$ \hat{\theta} $ 是后验均值。</p></li></ul><p></p>
+
+<p><strong>代码实现：</strong></p><p></p><p>要根据模型的 log-likelihood 结果计算 DIC (Deviance Information Criterion)，可以按照以下步骤操作：</p><p></p><p>从模型中提取log_likelihood矩阵（通过 <code>loo::extract_log_lik</code>，该矩阵的行对应后验样本 / 链，列对应观测值）</p><p></p><p>log-likelihood 的结构：</p><p></p><p>log_likelihood 是一个包含多个链和采样的对数似然值矩阵。</p>
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+calculate_dic <- function(model_fit) {
+  # log-likelihood 计算 DIC (Deviance Information Criterion)。 参考 Evans, N. J. (2019). Assessing the practical differences between model selection methods in inferences about choice response time tasks. Psychonomic Bulletin & Review, 26(4), 1070–1098. https://doi.org/10.3758/s13423-018-01563-
+
+  # 从模型中提取log_likelihood矩阵
+  log_likelihood <- loo::extract_log_lik(model_fit, parameter_name = "log_lik")
+  
+  # 计算每个样本的Deviance
+  deviance_samples <- -2 * log_likelihood
+  
+  # 计算平均Deviance
+  D_bar <- mean(deviance_samples, na.rm = TRUE)
+  
+  # 计算有效参数 p_D
+  p_D <- max(deviance_samples, na.rm = TRUE) - D_bar
+  
+  # 计算DIC
+  DIC <- -2 * (D_bar - p_D)
+  
+  # 返回DIC值（单个数值）
+  return(DIC)
+}
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 调用 compute_dic 函数
+model1_dic <- calculate_dic(model1_fit)
+cat("模型1 DIC：", round(model1_dic, 2), "\n")
+```
+
+同样我们可以计算所有模型（model1，model2，model3）的 DIC 值进行对比：
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+data.frame(
+  "Model 1" = calculate_dic(model1_fit),  
+  "Model 2" = calculate_dic(model2_fit), 
+  "Model 3" = calculate_dic(model3_fit)
+)
+```
+
+🤔思考：  
+
+1. 如果你的目标是在不控制任何其他因素的情况下探索反应时间和什么有关，你会使用哪种模型？  
+    
+    - 考虑到模型1优于模型2和模型3--因此，选择模型1可能能更好地反应反应时间的变化。  
+        
+2. 如果你的目标是最大限度地提高模型的预测能力，而在模型中只能选择一个预测因子，您会选择Label还是Matching？  
+    
+    - 由于模型1优于模型2，如果仅选择一个预测变量的话，选择Label能获得对于反应时间更好的预测。  
+        
+3. 这四个模型中，哪个模型的**总体预测结果**最好？  
+    - 模型1以微弱优势超过了模型2。这表明，在建立模型的过程中，预测因子并不是越多越好，适当的预测因子会带来更好的预测效果。  
+    - 事实上，模型3比模型2还差一点，这表明Label和matching之间的交互效应很弱，加入两者的交互项，会减弱模型的预测能力。  
+ 
+ 因此，为了简单高效，我们更有理由选择模型2。  
+ 
+ ![](https://th.bing.com/th/id/R.31c49d0bc73e477eda2cf52fef1b859f?rik=fdM9GvPWnNMg4Q&riu=http%3a%2f%2fwww.esafety.cn%2fblog%2fUploadFiles%2f2018-7%2f51155444445.jpg&ehk=O2MXHgnsmdvS68QMhw6CaIw82aHg2E0q%2fSKKtutAZjk%3d&risl=&pid=ImgRaw&r=0)  
+ 
+ > 资料来源: http://www.esafety.cn/Blog/u/9490/archives/2018/154367.html
+
+<h2>练习: 当自变量为连续变量</h2><h3>模型回顾</h3><p>在第十课的练习部分，我们探究了自我控制水平是否压力和吸烟有关，分别建立了三个回归模型，本节课的练习将基于上节课建立的三个模型进行。</p><p>💡 如果上节课的练习没有完成，是无法完成本节课的练习的哦！（难度 🔝🔝🔝）</p><table style="min-width: 100px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><td colspan="1" rowspan="1"><p>模型</p></td><td colspan="1" rowspan="1"><p>model1</p></td><td colspan="1" rowspan="1"><p>model2</p></td><td colspan="1" rowspan="1"><p>model3</p></td></tr><tr><td colspan="1" rowspan="1"><p>自变量</p></td><td colspan="1" rowspan="1"><p>压力(连续变量)</p></td><td colspan="1" rowspan="1"><p>压力(连续变量)，吸烟(离散变量)【无交互】</p></td><td colspan="1" rowspan="1"><p>压力(连续变量)，吸烟(离散变量)【有交互】</p></td></tr><tr><td colspan="1" rowspan="1"><p>自变量含义</p></td><td colspan="3" rowspan="1"><p>压力（14-70的压力评级）；吸烟（`0` 表示不吸烟，`1` 表示吸烟）</p></td></tr><tr><td colspan="1" rowspan="1"><p>先验</p></td><td colspan="1" rowspan="1"><p>β0 ~ N(50, 10) <br>β1 ~ N(0, 10) <br>σ ~ Exp(0.6) <br></p></td><td colspan="1" rowspan="1"><p>β0 ~ N(50, 10) <br>β1 ~ N(0, 10) <br>β2 ~ N(0, 10) <br>σ ~ Exp(0.6) <br></p></td><td colspan="1" rowspan="1"><p>β0 ~ N(50, 10) <br>β1 ~ N(0, 10) <br>β2 ~ N(0, 10) <br>β3 ~ N(0, 10) <br>σ ~ Exp(0.6) <br></p></td></tr></tbody></table><p></p>
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 安装和加载包
+options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
+if (!requireNamespace('pacman', quietly = TRUE)) {
+    install.packages('pacman')
+}
+pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja", "patchwork","bayesplot",
+               "rstan","bridgesampling", "logspline", "easystats", "loo") 
+options(warn = -1)  # 抑制警告
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 导入数据
+df_re <- tryCatch({
+  read.csv('/home/mw/input/bayes3797/Data_Sum_HPP_Multi_Site_Share.csv')
+}, error = function(e) {
+  read.csv('data/Data_Sum_HPP_Multi_Site_Share.csv')
+})
+
+# 筛选站点为"Tsinghua"的数据
+df <- df_re %>%
+  dplyr::filter(Site == "Tsinghua") %>%  # 筛选条件
+  dplyr::select(stress, scontrol, smoke)  # 选择需要的列
+
+# 1 表示吸烟，2表示不吸烟
+df <- df %>%
+  dplyr::mutate(smoke = ifelse(smoke == 2, 0, 1),  # 将 'smoke' 列重新编码 
+                smoke = ifelse(smoke == 1, "yes", "no"))  # 添加新的 'smoke_recode' 列
+
+# 设置索引
+df <- df %>%
+  dplyr::mutate(index = row_number()) %>%  # 创建索引列
+  column_to_rownames("index")        # 将 'index' 设置为行名
+
+# 查看处理后的数据框
+head(df)
+```
+
+### 定义模型4、5、6，补全...部分
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 定义模型4 （压力预测自我控制）
+stan_model4 <- 
+"
+data {
+  int<lower=0> N;     
+  vector[N] y;                  // scontrol
+  vector[N] X;                  // 连续变量: stress
+}
+
+parameters {
+  ... beta_0;                   // 截距
+  ... beta_1;                   // stress的斜率
+  ... sigma;                    // 误差标准差       
+}
+
+model {
+  ...    
+  
+  // 似然函数
+  ... ~ ...
+}
+
+generated quantities {
+  real y_rep[N];             // 后验预测
+  vector[N] log_lik;         // 逐点对数似然
+ 
+  for (n in 1:N) {
+    // 后验预测值  (计算 MAE 需要)
+    y_rep[n] = normal_rng(...);
+    // 逐点对数似然 (计算 loo 和 DIC 需要)
+    log_lik[n] = normal_lpdf(y[n] | ...);
+  }
+}
+"
+# 准备数据列表
+data_list4 <- list(
+  ...
+)
+```
+
+```{r}
+#| vscode: {languageId: r}
+# 定义模型5
+# 提示：在模型4的基础上增加第二个预测变量：是否吸烟（需要用哑变量编码）
+
+# 将分类变量转换为哑变量（以'no'为基线）
+smoke <- as.integer(df$smoke == 'yes')
+
+stan_model5 <- 
+"
+data {
+  int<lower=0> N;           
+  vector[N] y;            
+  vector[N] X1;                   // 连续变量: stress
+  vector[N] X2;                // 二分类变量: smoke 
+}
+
+parameters {
+  ... beta_0;                   // 截距
+  ... beta_1;                   // stress的斜率
+  ... beta_2;                   // smoke的斜率
+  ... sigma;           // 误差标准差      
+}
+
+model {
+  ...    
+  
+  // 似然函数
+  ... ~ ...
+}
+
+generated quantities {
+  real y_rep[N];             // 后验预测
+  vector[N] log_lik;         // 逐点对数似然
+ 
+  for (n in 1:N) {
+    // 后验预测值
+    y_rep[n] = normal_rng(...);
+    // 逐点对数似然
+    log_lik[n] = normal_lpdf(y[n] | ...);
+  }
+}
+"
+# 准备数据列表
+data_list5 <- list(
+  ...
+)
+```
+
+**补充：交互效应建模两种实现方式**
+- 外部预计算交互项：先准备交互项数据（变量），即 `Interaction <- smoke * df$stress` ，再将其作为独立变量传入 Stan 数据块，Stan 模型中直接调用该变量即可 (与课堂上的model3一致)
+- 内部计算交互项：无需提前生成交互项数据，仅将主效应变量（X1 = 压力、X2 = 吸烟哑变量）传入 Stan，在似然函数和生成量块中，通过 X1 .* X2（向量逐元素乘积）或 X1[n]*X2[n]（单元素乘积）实时计算交互项。
+  
+  ```stan
+  // 似然函数
+  y ~ normal(beta_0 + beta_1*X1 + beta_2*X2 + beta_3*(X1 .* X2), sigma);
+  ```
+
+两种方式结果完全等价，仅数据预处理和代码书写习惯不同。请任选一种方式完成练习~
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 定义模型6（交互效应模型：压力×吸烟状态）
+# 提示：基于模型5，新增“压力×吸烟”的交互效应
+
+# 将分类变量转换为哑变量（以'no'为基线）
+smoke <- as.integer(df$smoke == 'yes')
+# 准备交互效应的数据 （外部计算需要交互项的数据，并在后面的stan模型中添加这个变量）
+Interaction <- smoke * df$stress
+
+stan_model6 <- 
+"
+data {
+  int<lower=0> N;          
+  vector[N] y;              // scontrol
+  vector[N] X1;             // 连续变量: stress
+  vector[N] X2;             // 二分类变量: smoke 
+}
+
+parameters {
+  ... beta_0;                   // 截距
+  ... beta_1;                   // stress的斜率
+  ... beta_2;                   // smoke的斜率
+  ... sigma;                    // 误差标准差            
+}
+
+model {
+  ...    
+  
+  // 似然函数
+  ... ~ ...
+}
+
+generated quantities {
+  real y_rep[N];             // 后验预测
+  vector[N] log_lik;         // 逐点对数似然
+ 
+  for (n in 1:N) {
+    // 后验预测值  (计算 MAE 需要)
+    y_rep[n] = normal_rng(...);
+    // 逐点对数似然 (计算 loo 和 DIC 需要)
+    log_lik[n] = normal_lpdf(y[n] | ...);
+  }
+}
+"
+# 准备数据列表
+data_list6 <- list(
+  ...
+)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+#========================================
+#     注意！！！以下代码可能需要运行 5 分钟左右,直接运行即可
+#     直接运行即可，无需修改
+#========================================
+
+run_stan_sampling <- function(save_name, model_code = NULL, data_list = NULL, 
+                              iter = 3000, warmup = 1000, chains = 4, 
+                              thin = 1, seed = 84735) {
+  # 运行Stan模型采样，存在结果文件时直接加载，否则执行采样并保存。
+  # 
+  # Parameters:
+  # - save_name: 保存/加载结果的文件名（无扩展名）
+  # - model_code: Stan模型代码字符串（仅采样时需提供）
+  # - data_list: Stan模型数据列表（仅采样时需提供）
+  # - iter: 总迭代次数（默认3000，含warmup）
+  # - warmup: 预热迭代次数（默认1000，将被丢弃）
+  # - chains: 采样链数（默认4）
+  # - thin: 采样 thinning 间隔（默认1）
+  # - seed: 随机种子（默认84735）
+  # 
+  # Returns:
+  # - fit: Stan采样结果对象
+  
+  # 定义保存文件路径（.rds格式，R标准二进制格式）
+  rds_file <- base::paste0(save_name, ".rds")
+  
+  # 检查文件是否存在
+  if (base::file.exists(rds_file)) {
+    base::cat(base::sprintf("加载现有的采样结果：%s\n", rds_file))
+    fit <- base::readRDS(rds_file)
+  } else {
+    # 校验模型代码和数据是否提供
+    if (base::is.null(model_code) || base::is.null(data_list)) {
+      base::stop("模型未定义或数据缺失，请提供model_code和data_list")
+    }
+    
+    base::cat(base::sprintf("未找到现有结果，正在执行采样：%s\n", save_name))
+    # 执行Stan采样
+    fit <- rstan::stan(
+      model_code = model_code,
+      data = data_list,
+      iter = iter,
+      chains = chains,
+      warmup = warmup,
+      thin = thin,
+      seed = seed
+    )
+    
+    # 保存采样结果到RDS文件
+    base::saveRDS(fit, file = rds_file)
+    base::cat(base::sprintf("采样结果已保存至：%s\n", rds_file))
+  }
+  
+  return(fit)
+}
+
+# 运行模型4采样
+model4_fit <- run_stan_sampling(save_name = "lec11_model4", model_code = stan_model4, data_list = data_list4)
+
+# 运行模型5采样
+model5_fit <- run_stan_sampling(save_name = "lec11_model5", model_code = stan_model5, data_list = data_list5)
+
+# 运行模型6采样
+model6_fit <- run_stan_sampling(save_name = "lec11_model6", model_code = stan_model6, data_list = data_list6)
+```
+
+### 计算MAE：  
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+calculate_mae <- function(trace, observed_data) {
+  # 从stanfit对象中提取所有后验预测样本（适用于任何变量名）
+  # 提取后验预测样本矩阵（行=迭代×链，列=观测值）
+  posterior_pred <- rstan::extract(trace)$y_rep  
+  
+  # 计算每个观测值的后验均值（按列求平均）
+  posterior_mean <- colMeans(posterior_pred, na.rm = TRUE)
+  
+  # 校验长度
+  if (length(observed_data) != length(posterior_mean)) {
+    stop("观测值与后验预测均值长度不匹配")
+  }
+  
+  # 计算MAE
+  mae <- stats::median(abs(observed_data - posterior_mean), na.rm = TRUE)
+  return(mae)
+}
+```
+
+```{r}
+#| vscode: {languageId: r}
+##================================================
+#                练习，修改... 部分
+#                
+#================================================
+
+tibble::tibble(
+  "Model 4" = calculate_mae(model4_fit, ...),
+  "Model 5" = calculate_mae(model5_fit, ...),
+  "Model 6" = calculate_mae(model6_fit, ...)
+)
+```
+
+### 计算elpd_loo 
+
+```{r}
+#| vscode: {languageId: r}
+##================================================
+#                练习，修改... 部分       
+#================================================
+
+# 为每个模型计算ELPD_loo结果
+# 模型4
+log_lik4 <- loo::extract_log_lik(model4_fit, parameter_name = "log_lik")
+loo4 <- loo::loo(log_lik4)
+
+# 模型5
+log_lik5 <- loo::extract_log_lik(model5_fit, parameter_name = "log_lik")
+loo5 <- loo::loo(log_lik5)
+
+# 模型6
+log_lik6 <- loo::extract_log_lik(model6_fit, parameter_name = "log_lik")
+loo6 <- loo::loo(log_lik6)
+
+# 构建模型比较列表
+comparison_list <- list(
+  model4 = ...,
+  model5 = ...,
+  model6 = ...
+)
+
+# 比较模型
+loo::loo_compare(comparison_list)
+```
+
+### 计算DIC
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 691eb5bf1aa2a61b2a824c66
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+calculate_dic <- function(model_fit) {
+  # log-likelihood 计算 DIC (Deviance Information Criterion)。 参考 Evans, N. J. (2019). Assessing the practical differences between model selection methods in inferences about choice response time tasks. Psychonomic Bulletin & Review, 26(4), 1070–1098. https://doi.org/10.3758/s13423-018-01563-
+
+  # 从模型中提取log_likelihood矩阵
+  log_likelihood <- loo::extract_log_lik(model_fit, parameter_name = "log_lik")
+  
+  # 计算每个样本的Deviance
+  deviance_samples <- -2 * log_likelihood
+  
+  # 计算平均Deviance
+  D_bar <- mean(deviance_samples, na.rm = TRUE)
+  
+  # 计算有效自由度 p_D
+  p_D <- max(deviance_samples, na.rm = TRUE) - D_bar
+  
+  # 计算DIC
+  DIC <- -2 * (D_bar - p_D)
+  
+  # 返回DIC值（单个数值）
+  return(DIC)
+}
+```
+
+```{r}
+#| vscode: {languageId: r}
+##================================================
+#                练习，修改... 部分
+#                
+#================================================
+
+data.frame(
+  "Model 4" = calculate_dic(...),
+  "Model 5" = calculate_dic(...),
+  "Model 6" = calculate_dic(...),
+)
+```
+
+## 总结  
+
+本节课从不同模型评估的角度，介绍了模型评估与比较的基本思想。  
+
+通过学习，我们对贝叶斯分析的整体流程（Bayesian workflow）有了初步的理解。  
+
+在接下来的课程中，我们将不断实践这一流程，帮助大家更深入地领略贝叶斯分析的独特魅力。  
+
+![Image Name](https://cdn.kesci.com/upload/image/rkz1ehen1l.png?imageView2/0/w/960/h/960)  
+
+

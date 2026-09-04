@@ -1,0 +1,398 @@
+---
+jupyter: ir
+---
+
+<h1>Lecture12 : Logistic Regression</h1><h2>Instructor: Dr. Hu Chuan-Peng</h2><p></p>
+
+<h2>回顾：贝叶斯视角下的回归模型</h2><p>在贝叶斯统计框架下，回归模型的构建与检验方法与传统频率学派有所不同。</p><ul><li><p>在贝叶斯回归中，模型的参数被视为随机变量，通过数据来更新其概率分布。</p></li><li><p>贝叶斯方法通过对参数的<strong>后验分布</strong>进行推断，从而评估模型的适应性与显著性。</p></li><li><p>这种方法使得我们不仅能得到参数的点估计，还能获得关于这些参数的不确定性的信息。</p></li></ul><p>在之前的课件中，我们以自我优势匹配范式为例，建立了一个简单的线性回归模型：</p><p>$$ RT_{sec} \sim \mathcal{N}(\beta_0 + \beta_1 \cdot Label, \sigma^2) $$</p><p>在这个模型中，反应时间（$ RT_{sec} $）是一个连续的因变量。</p>
+
+<p>🤔 然而，在许多心理学研究中，另一个常见的因变量是反应是否正确，这通常是一个二分变量（正确/错误）。</p><p>当因变量是二分变量时，传统的线性回归模型就不再适用。 在这种情况下，大家可能会想到使用<strong>逻辑回归</strong>（Logistic Regression）模型来探讨因变量为二分变量的情况。</p><p>那么，在贝叶斯框架下，我们应该如何构建和处理逻辑回归（Logistic Regression）模型呢？</p><p></p><img src="https://cdn.kesci.com/upload/image/rkz1ehen1l.png?imageView2/0/w/720/h/960" alt="Image Name"><p></p>
+
+<h3>以随机点运动任务为例：贝叶斯逻辑回归</h3><p>接下来，我们以之前介绍过的<strong>随机点运动任务</strong>（Random Motion Dot Task）为例，来理解贝叶斯逻辑回归模型的应用。</p><ul><li><p>在这个实验中，参与者观察屏幕上随机运动的点，这些点的运动方向具有一定的一致性（即大部分点朝某一方向移动）。</p></li><li><p>参与者的任务是判断这些点的主要移动方向（例如，向左还是向右）。</p></li></ul><p>实验的设计可以控制点的运动一致性（如10%或40%），从而影响参与者作出正确决策的难度。</p><table style="min-width: 50px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><td colspan="1" rowspan="1"><img src="https://cdn.kesci.com/upload/sjwnyi477j.gif?imageView2/0/w/400/h/400" alt=""></td><td colspan="1" rowspan="1"><img src="https://cdn.kesci.com/upload/sjwnyt1yq4.gif?imageView2/0/w/400/h/400" alt=""></td></tr><tr><td colspan="1" rowspan="1"><p>一致性10%</p></td><td colspan="1" rowspan="1"><p>一致性40%</p></td></tr></tbody></table><p><strong>和之前的内容不同，本次课我们将研究点的运动一致性与判断是否正确之间的关系</strong>：</p><ol><li><p><strong>自变量：</strong>&nbsp;点的运动一致性（10% 一致性 与 40% 一致性）；</p></li><li><p><strong>因变量：</strong>&nbsp;判断是否正确（即被试是否准确判断了点的主要运动方向，1代表反应正确，0代表反应错误）。</p></li></ol><p></p>
+
+<p>以Evans et al.（2020, Exp. 1） 的数据为例进行探索。</p><blockquote><p>Evans, N. J., Hawkins, G. E., &amp; Brown, S. D. (2020). The role of passing time in decision-making. Journal of Experimental Psychology: Learning, Memory, and Cognition, 46(2), 316–326.&nbsp;<a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.1037/xlm0000725">https://doi.org/10.1037/xlm0000725</a></p></blockquote><p></p>
+
+```{r}
+#| slideshow: {slide_type: skip}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| notebookId: 6915b3c48456fe3212cfa784
+#| trusted: true
+# 安装和加载包options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))if (!require(remotes)) {    install.packages("remotes")}remotes::install_github('njudd/ggrain')if (!requireNamespace('pacman', quietly = TRUE)) {    install.packages('pacman')}pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja", "patchwork","bayesplot",               "rstan",'logspline', "easystats","ggrain") options(warn = -1)  # 抑制警告
+```
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# sessionInfo()
+```
+
+```{r}
+#| slideshow: {slide_type: fragment}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| notebookId: 6915b3c48456fe3212cfa784
+#| trusted: true
+# 导入数据df <- tryCatch({  read.csv('/home/mw/input/bayes3797/evans2020JExpPsycholLearn_exp1_full_data.csv')}, error = function(e) {  read.csv('data/evans2020JExpPsycholLearn_exp1_full_data.csv')})# 筛选 subject == 31727 且 percentCoherence 为 10 或 40 的数据df_clean <- df %>%  filter(subject == 31727, percentCoherence %in% c(10, 40)) %>%  select(subject, percentCoherence, correct)# 显示结果df_clean
+```
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# 计算每个 percentCoherence 组的 correct 列的平均值df_summary <- df_clean %>%  group_by(percentCoherence) %>%  summarise(mean_correct = mean(correct, na.rm = TRUE), .groups = 'drop')# 显示结果df_summary
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| trusted: true
+# 计算每个 percentCoherence 组的 correct 均值，并绘制条形图df_clean %>%  group_by(percentCoherence) %>%  summarise(mean_correct = mean(correct, na.rm = TRUE)) %>%  ggplot(aes(x = factor(percentCoherence), y = mean_correct)) +  geom_bar(stat = "identity", fill = "steelblue") +  labs(x = "Percent Coherence", y = "Accuracy") +  papaja::theme_apa()
+```
+
+<p>通过散点图，我们可以直观地观察到数据中不同变量的分布情况：</p><p></p><img src="https://cdn.kesci.com/upload/so1p92nbg9.jpeg?imageView2/0/w/960/h/960" alt="Image Name"><p></p>
+
+<h4>二分数据、伯努利分布与线性回归</h4><p>在示例数据中中，</p><ul><li><p>因变量“correct”是一个二分类变量，表示被试是否获得正确反应。</p></li><li><p>我们考虑的自变量“percentCoherence”可以是连续变量，表示被试的刺激强度 (percentCoherence 或 motion strength)。</p></li><li><p>我们感觉兴趣的是“correct”与“percentCoherence”之间的关系。</p></li></ul><p><strong>问题：我们是否能用线性回归来对分析这些数据？</strong></p><img src="https://cdn.kesci.com/upload/skeayxhg1s.png?imageView2/0/w/700"><blockquote><p>Shooshtari, S. V., Sadrabadi, J. E., Azizi, Z., &amp; Ebrahimpour, R. (2019). Confidence representation of perceptual decision by EEG and eye data in a random dot motion task. Neuroscience, 406, 510–527. <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.1016/j.neuroscience.2019.03.031">https://doi.org/10.1016/j.neuroscience.2019.03.031</a></p></blockquote><p></p>
+
+<p>仅考虑两种刺激强度(percentCoherence)下的数据，即 $ x = 0.1 $ 和 $ x = 0.4 $。</p><p>如何使用线性回归来对这种数据进行拟合？ $ y_i = \beta_0 + \beta_1 * x_i $ or $ Y_i \sim N(\mu, \sigma), \mu = \beta_0 + \beta_1 * x_i $</p><p>通常线性回归模型中因变量需要是连续的、从正无穷到负无穷，但上述数据中，不管是每个试次的反应，还是伯努利分布的参数$ \pi $都不满足线性回归的预设。</p><p></p><img src="https://cdn.kesci.com/upload/snyz4sbvfv.png?imageView2/0/w/640/h/640" alt="Image Name"><p></p>
+
+<p><strong>Step 1</strong>: 如果不能直接对二分变量进行回归分析，是否可以考虑对产生二分变量的模型参数进行回归分析？</p><p>正确反应的概率可以看作是一个伯努利分布，即 $ Y_i | \pi_i \sim \text{Bern}(\pi_i) $，其中 $ \pi_i $ 是在刺激强度 $ x_i $ 下被试获得正确反应的概率。</p><ul><li><p>曲线上的每一个点，都服从伯努利分布 $ Y_i | \pi_i \sim \text{Bern}(\pi_i) $</p></li></ul><p>此时，$ \pi $ 在 0-1之间，因此仍然不满足线性回归的要求，但似乎可以用了.</p><p>思考：传统上我们对正确率进行<em>t</em>-test是不是就相当于直接对 $ \pi $ 进行回归分析？这种做法有什么问题？</p>
+
+<h2>Probability &amp; Odds</h2><p><strong>Step 2</strong>: 进一步对$ \pi $进行转换，引入概念：<strong>发生比(odds)</strong>。</p>
+
+<p><strong>发生比(odds)</strong></p><p>与概率不同，发生比(odds)描述的是 <strong>事件发生概率</strong> 与 <strong>事件不发生概率</strong>之比 ，而概率则描述了事件发生的绝对可能性。</p><p>我们用“明天是否会下雨”的例子来进行说明。</p><p>在这个例子中，$ \pi $为因变量$ Y $发生的概率</p><p>$$ \begin{equation} \text{odds} = \frac{\pi}{1-\pi} \;\;,\;\;\; \pi = \frac{\text{odds}}{1 + \text{odds}} \end{equation} $$</p><ul><li><p>比如，明天下雨发生的概率是$ \pi = 2/3 $，则明天不下雨的概率为$ 1 - \pi = 1/3 $</p><ul><li><p>在这个例子中，将 $ \pi $ 带入公式得到发生比 odds 为2，明天下雨的可能性是不下雨可能性的两倍</p></li><li><p>$ \pi $的值在$ (0,1) $之间，odds的范围则可以是$ (0,+\infty) $</p></li></ul></li></ul><p>$$ \text{odds of rain } = \frac{2/3}{1-2/3} = 2 $$</p>
+
+<p>事件的发生概率$ \pi \in [0,1] $，事件对应的发生比为$ \;\;\;\pi / (1-\pi) \in [0, \infty) $</p><blockquote><p>将发生比与1进行比较来衡量事件发生的不确定性：</p></blockquote><ol><li><p>当事件发生的概率$ \pi &lt; 0.5 $时，事件的发生比小于1</p></li><li><p>当事件发生的概率$ \pi = 0.5 $时，事件的发生比为等于1</p></li><li><p>当事件发生的概率$ \pi &gt; 0.5 $时，事件的发生比为大于1</p></li></ol><p>问题：Odds仍然不是在正负无穷上均有取值，怎么办？</p>
+
+<p><strong>Step 3</strong>: 进一步对Odds进行转换，让其在正负无穷上均有取值：$ log(odds) $</p><p></p><p style="text-align: center;">$ \log(\text{odds}_i) = \beta_0 + \beta_1 X_{i1} $</p><p>这种情况之下，我们可以使用线性回归模型来完成数据分析了，只是对因变量进行了几次转换，使之满足了线性回归模型的假设条件。</p><p>总结起来：</p><p style="text-align: center;">$ y_i \sim Bern (\pi) $</p><p style="text-align: center;"></p><p style="text-align: center;">$ odds = \frac {\pi}{1 - \pi} $</p><p style="text-align: center;"></p><p style="text-align: center;">$ \log(\text{odds}) = \beta_0 + \beta_1 X $</p><p style="text-align: center;"></p><ul><li><p>在广义线性模型中，我们需要<strong>连接函数(link function)</strong>$ g(\cdot) $，使得参数g($ \pi_i $)可以被表示为自变量$ X_{i1} $的线性组合</p></li></ul><p></p><img src="https://cdn.kesci.com/upload/snyjmb20r4.png?imageView2/0/w/960/h/960" alt="Image Name"><p></p>
+
+<h3>公式中各参数的意义</h3><p>$$ \log(\text{odds}) = \log\left(\frac{\pi}{1-\pi}\right) = \beta_0 + \beta_1 X_1 + \cdots + \beta_p X_p $$</p><p>也可以写成：<br>$$\text{odds} = e^{\beta_0 + \beta_1 X_{1} +\cdots + \beta_p X_p} $$</p><p>$ \beta_0 $ 是截距项，也称为 常数项，它表示当所有自变量（$ X_1, X_2, \dots, X_p $）都为零时，log（odds） 的基线值。换句话说，$ \beta_0 $ 表示模型在无任何预测变量影响时的log（odds）。</p><p>$ \beta_1, \beta_2, \dots, \beta_p $ 是回归系数，分别表示每个预测变量（$ X_1, X_2, \dots, X_p $）对 log（odds）的影响。每个 $ \beta_i $ 表示对应自变量 $ X_i $ 增加一个单位时，log（odds）变化的大小。</p><blockquote><p>Gelman, A., &amp; Hill, J. (2006). Data Analysis Using Regression and Multilevel/Hierarchical Models. Cambridge: Cambridge University Press.</p></blockquote><p></p>
+
+<ul><li><p>$ \beta_0 $</p><ul><li><p>当$ (X_1,X_2,\ldots,X_p) = 0 $时，$ \text{odds} = e^{\beta_0} $，即$ e^{\beta_0} $表示当所有自变量为0时，事件的发生比</p></li></ul></li><li><p>$ \beta_1 $</p><ul><li><p>$ \beta_1 = \log(\text{odds}_{x+1}) - \log(\text{odds}_x)\;\;\; $ → $ \;\;\; e^{\beta_1} = \frac{\text{odds}_{x+1}}{\text{odds}_x} $</p></li><li><p>当其他自变量保持不变时，$ X_1 $每增加一个单位（从$ x $ → $ x+1 $），$ e^{\beta_1} $表示事件发生比的倍数变化</p></li></ul></li></ul><p></p>
+
+<ul><li><p>计算</p><p>$ \log\left(\frac{\pi_i}{1 - \pi_i}\right) = \beta_0 + \beta_1 X_{i1}\;\;\; $ → $ \;\;\;\frac{\pi_i}{1-\pi_i} = e^{\beta_0 + \beta_1 X_{i1}}\;\;\; $ → $ \;\;\;\pi_i = \frac{e^{\beta_0 + \beta_1 X_{i1}}}{1 + e^{\beta_0 + \beta_1 X_{i1}}} $</p></li></ul><p></p>
+
+<h2>广义线性模型(Generalized Linear Model, GLM)</h2><ul><li><p>对线性回归模型的推广</p></li><li><p>在因变量不满足线性模型的预设条件时，仍然使用线性模型的思路。</p></li><li><p>核心在于通过连接函数对因变量进行变换，使其满足线性模型的条件。</p></li><li><p>对二分变量的广义线性模型称为逻辑回归，还有大量适用于其他数据的广义线性模型，本质上是一致的。</p></li><li><p>回归系数的解释是难点，需要领域特殊的知识。</p></li></ul><p></p>
+
+<h3>补充知识：更多可用的分布</h3><table style="min-width: 100px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p>分布类型</p></th><th colspan="1" rowspan="1"><p>描述概率</p></th><th colspan="1" rowspan="1"><p>描述发生比</p></th><th colspan="1" rowspan="1"><p>适用情况说明</p></th></tr><tr><td colspan="1" rowspan="1"><p>二项分布</p></td><td colspan="1" rowspan="1"><p>是</p></td><td colspan="1" rowspan="1"><p>否</p></td><td colspan="1" rowspan="1"><p>描述n次独立伯努利试验中成功次数的概率分布。</p></td></tr><tr><td colspan="1" rowspan="1"><p>贝塔分布</p></td><td colspan="1" rowspan="1"><p>是</p></td><td colspan="1" rowspan="1"><p>是</p></td><td colspan="1" rowspan="1"><p>描述伯努利试验中成功概率的先验分布，也可以用来描述发生比。</p></td></tr><tr><td colspan="1" rowspan="1"><p>对数正态分布</p></td><td colspan="1" rowspan="1"><p>否</p></td><td colspan="1" rowspan="1"><p>是</p></td><td colspan="1" rowspan="1"><p>描述正态分布变量取对数后的分布，常用于描述正比于发生比的数据。</p></td></tr><tr><td colspan="1" rowspan="1"><p>泊松分布</p></td><td colspan="1" rowspan="1"><p>是</p></td><td colspan="1" rowspan="1"><p>否</p></td><td colspan="1" rowspan="1"><p>描述在固定时间或空间内发生某事件的次数的概率分布。</p></td></tr><tr><td colspan="1" rowspan="1"><p>伽马分布</p></td><td colspan="1" rowspan="1"><p>否</p></td><td colspan="1" rowspan="1"><p>是</p></td><td colspan="1" rowspan="1"><p>描述等待时间的分布，常用于作为泊松分布中事件发生率的先验分布，因此可以用来描述发生比。</p></td></tr><tr><td colspan="1" rowspan="1"><p>负二项分布</p></td><td colspan="1" rowspan="1"><p>是</p></td><td colspan="1" rowspan="1"><p>否</p></td><td colspan="1" rowspan="1"><p>描述在获得r次成功之前经历n次试验的概率分布，适用于成功概率不固定的情况。</p></td></tr><tr><td colspan="1" rowspan="1"><p>多项分布</p></td><td colspan="1" rowspan="1"><p>是</p></td><td colspan="1" rowspan="1"><p>否</p></td><td colspan="1" rowspan="1"><p>描述多项式试验中各种结果次数的概率分布。</p></td></tr><tr><td colspan="1" rowspan="1"><p>Dirichlet分布</p></td><td colspan="1" rowspan="1"><p>是</p></td><td colspan="1" rowspan="1"><p>是</p></td><td colspan="1" rowspan="1"><p>描述多项分布中各种结果概率的先验分布，也可以用来描述发生比。</p></td></tr></tbody></table><p></p>
+
+<h2>贝叶斯广义线性模型的定义</h2><p>现在，我们已经了解了逻辑回归模型的基本结构，我们可以开始定义模型了。</p><ul><li><p>我们需要确定变量类型和分布。</p></li><li><p>需要根据连接函数（link function）来设置转化参数。</p></li><li><p>并且为转化后的参数设置先验分布。</p></li></ul><p>$$ \begin{array}{lcrl} \text{data:} &amp; \hspace{.01in} &amp; Y_i|\beta_0,\beta_1 &amp; \stackrel{ind}{\sim} \text{Bern}(\pi_i) \;\; \text{ with } \;\; \pi_i = \frac{e^{\beta_0 + \beta_1 X_{i1}}}{1 + e^{\beta_0 + \beta_1 X_{i1}}} \\ \text{priors:} &amp; &amp; \beta_{0} &amp; \sim N\left(0, 10^2 \right) \\ &amp; &amp; \beta_1 &amp; \sim N\left(0, 10^2 \right)\\ \end{array} $$</p><p>注意：这里的参数先验是经过 logit 转后后的值，而不是概率。 因此，我们需要根据先验预测检验来确定先验分布参数设置是否正确。</p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# 数据准备Treatment_Coding <- df_clean %>%  mutate(    percentCoherence = factor(percentCoherence),    x = as.numeric(percentCoherence) - 1  # Treatment coding: 10 -> 0, 40 -> 1  )# Stan 数据stan_data <- list(  N = nrow(Treatment_Coding),  y = Treatment_Coding$correct,  x = Treatment_Coding$x,  K = 1  # 只有一个预测变量（treatment 编码）)stan_data
+```
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# Stan 模型代码（字符串形式）stan_model_code <- "data {  int<lower=0> N;          // 样本数  int<lower=0,upper=1> y[N]; // 因变量  vector[N] x;               // 预测变量（treatment: 0 or 1）}parameters {  real beta_0;             // 截距  real beta_1;             // 斜率（10% vs 40% 的差异）}model {  // 先验  beta_0 ~ normal(0, 10);  beta_1 ~ normal(0, 10);    // 似然  y ~ bernoulli_logit(beta_0 + beta_1 * x);}generated quantities {  vector[N] log_lik;       // 用于 LOO  vector[N] y_rep;         // 后验预测  real<lower=0,upper=1> pi_10;  // 10% 相干性的预测概率  real<lower=0,upper=1> pi_40;  // 40% 相干性的预测概率    for (n in 1:N) {    real logit_p = beta_0 + beta_1 * x[n];    log_lik[n] = bernoulli_logit_lpmf(y[n] | logit_p);    y_rep[n] = bernoulli_rng(inv_logit(logit_p));  }    pi_10 = inv_logit(beta_0);           // x = 0  pi_40 = inv_logit(beta_0 + beta_1);   // x = 1}"# 编译并拟合模型fit <- stan(  model_code = stan_model_code,  data = stan_data,  chains = 4,  iter = 2000,  warmup = 1000,  seed = 123)
+```
+
+<p><strong>MCMC采样 &amp; 模型诊断</strong></p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+fit_trace <- bayesplot::mcmc_trace(fit,pars = c('beta_0','beta_1','pi_10','pi_40'))+    papaja::theme_apa()fit_trace
+```
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+trace <- rstan::extract(fit)trace_beta_1_par <- as.data.frame(trace$beta_1)#get HDIbayestestR::hdi(trace_beta_1_par)
+```
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+print(fit,pars = c('beta_0','beta_1','pi_10','pi_40'))
+```
+
+<p><strong>后验参数解释</strong></p><p>以下的结果显示：</p><ul><li><p>截距项的后验均值为 $\hat{\beta}_0 = 0.79$（95% 可信区间：[0.53, 1.06]）。当预测变量 $x = 0$（即 10% 相干性条件）时，事件发生的 <strong>log-odds</strong> 为 0.79，对应的 <strong>odds</strong> 为 $e^{0.79} \approx 2.20$，预测概率为 $\pi_{10} = \text{inv\_logit}(0.79) \approx 0.69$（95% CI: [0.63, 0.74]）。</p></li></ul><p></p><ul><li><p>斜率参数的后验均值为 $\hat{\beta}_1 = 1.78$（95% 可信区间：[1.27, 2.29]）。由于 $x$ 是二元变量（0 表示 10% 相干性，1 表示 40% 相干性），$\beta_1$ 表示从 10% 到 40% 相干性条件下 log-odds 的变化量。其指数形式为 $e^{1.78} \approx 5.93$，表明在 40% 相干性条件下的 <strong>odds 是 10% 条件下的约 5.93 倍</strong>。</p></li></ul><p></p><ul><li><p>相应地，40% 相干性条件下的预测概率为 $\pi_{40} = \text{inv\_logit}(0.79 + 1.78) \approx 0.93$（95% CI: [0.89, 0.95]）。</p></li></ul><p></p><ul><li><p><strong>关键推断</strong>：由于 $\beta_1$ 的 95% 可信区间 <strong>完全大于 0</strong>（[1.27, 2.29]），表明相干性水平（10% vs. 40%）对判断正确与否的概率具有**显著且稳健的正向影响**。换言之，参与者在 40% 相干性条件下做出正确判断的概率显著高于 10% 条件。</p></li></ul><p></p>
+
+<h3>先验预测检验</h3><p>我们进行先验预测检验，来查看由当前先验组合生成的$ \pi $是否都在$ (0-1) $范围内。</p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# 设置模拟样本数S <- 10000# 从先验中抽样beta_0_prior <- rnorm(S, mean = 0, sd = 10)beta_1_prior <- rnorm(S, mean = 0, sd = 10)# 计算先验预测概率pi_10_prior <- plogis(beta_0_prior)          # x = 0pi_40_prior <- plogis(beta_0_prior + beta_1_prior)  # x = 1# 转换为数据框用于绘图prior_df <- data.frame(  pi_10 = pi_10_prior,  pi_40 = pi_40_prior) %>%  pivot_longer(cols = everything(), names_to = "condition", values_to = "pi")# 绘图：先验预测概率分布ggplot(prior_df, aes(x = pi, fill = condition)) +  geom_histogram(alpha = 0.7, bins = 100, position = "identity") +  scale_x_continuous(limits = c(0, 1), name = "Predicted probability (π)") +  scale_fill_manual(    values = c("pi_10" = "skyblue", "pi_40" = "salmon"),    labels = c("10% coherence", "40% coherence")  ) +  labs(    title = "Prior Predictive Distribution of π",    y = "Density (approx.)",    fill = "Condition"  ) +  papaja::theme_apa()
+```
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+set.seed(123)# 要绘制的 percentCoherence 范围percent_coherence <- seq(0, 50, length.out = 200)# 随机抽取 50 个样本n_curves <- 50sample_idx <- sample(S, n_curves)# 构建每条直线：只基于 (10, pi10) 和 (40, pi40) 两点线性插值curve_data <- map_dfr(sample_idx, ~ {  pi10 <- plogis(beta_0_prior[.x])              # x = 10 → logit = beta0  pi40 <- plogis(beta_0_prior[.x] + beta_1_prior[.x])  # x = 40 → logit = beta0 + beta1    # 线性插值：用两点定义直线 y = a + b * x  # 已知: (x1=10, y1=pi10), (x2=40, y2=pi40)  slope <- (pi40 - pi10) / (40 - 10)  intercept <- pi10 - slope * 10    tibble(    draw = .x,    percentCoherence = percent_coherence,    prob_correct = intercept + slope * percent_coherence  )})# 绘图ggplot(curve_data, aes(x = percentCoherence, y = prob_correct, group = draw)) +  geom_line(color = "grey60", alpha = 0.7, size = 0.5) +  # 可选：添加两个关键点的平均值  geom_point(    data = tibble(      pc = c(10, 40),      pi_mean = c(        mean(plogis(beta_0_prior)),         mean(plogis(beta_0_prior + beta_1_prior))      )    ),    aes(x = pc, y = pi_mean),    color = "red",    size = 2,    inherit.aes = FALSE  ) +  labs(    x = "percentCoherence",    y = "probability of correct",    title = "50 Prior Predictive Linear Models",    subtitle = "Each line connects (10%, π₁₀) and (40%, π₄₀) with straight line"  ) +  scale_x_continuous(breaks = seq(0, 50, by = 10)) +  ylim(0, 1) +  papaja::theme_apa()
+```
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+set.seed(123)# 定义连续的 percentCoherencepercent_coherence <- seq(0, 50, length.out = 200)x_continuous <- (percent_coherence - 10) / 30  # 10%→0, 40%→1# 随机抽取 50 条曲线n_curves <- 50sample_idx <- sample(S, n_curves)# 构建曲线数据curve_data <- map_dfr(sample_idx, ~ {  tibble(    draw = .x,    percentCoherence = percent_coherence,    prob_correct = plogis(beta_0_prior[.x] + beta_1_prior[.x] * x_continuous)  )})# 绘图ggplot(curve_data, aes(x = percentCoherence, y = prob_correct, group = draw)) +  geom_line(color = "grey60", alpha = 0.7, size = 0.5) +  # 添加两个条件下的平均预测概率（红点）  geom_point(    data = tibble(      pc = c(10, 40),      pi_mean = c(        mean(plogis(beta_0_prior)),         mean(plogis(beta_0_prior + beta_1_prior))      )    ),    aes(x = pc, y = pi_mean),    color = "red",    size = 2,    inherit.aes = FALSE     ) +  labs(    x = "percentCoherence",    y = "probability of correct",    title = "Relationships between percentCoherence and the probability of correct",    subtitle = paste0("50 prior predictive logistic curves (", n_curves, " draws from prior)")  ) +  scale_x_continuous(breaks = seq(0, 50, by = 10)) +  ylim(0, 1) +  papaja::theme_apa()
+```
+
+<h2>后验回归模型</h2><h3>绘制后验预测回归线</h3><ul><li><p>和先验预测模型类似的，通过MCMC采样，也同样生成了对$ \pi $的估计，储存在<code>posterior</code>中</p></li><li><p>有4条马尔科夫链，每条链上的采样数为2000，所以对于每一个x，都生成了20000个预测值$ \pi $，这样就对应着20000条后验预测回归线</p></li><li><p>这里我们只需要画出100条即可</p></li></ul><p></p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# 1. 提取后验样本（保留链和迭代信息）post_array <- as.array(fit)  # dimensions: iterations x chains x parameters# 2. 合并 chains 和 iterations → 得到 S 个后验样本# 提取 beta_0 和 beta_1beta_0_samples <- as.vector(post_array[, , "beta_0"])beta_1_samples <- as.vector(post_array[, , "beta_1"])# 3. 设定绘制多少条曲线（例如 50 条）n_curves <- 50set.seed(123)  # 为了可重复性sample_idx <- sample(length(beta_0_samples), size = n_curves)# 4. 构建数据框：每条线有2个点 (x=0 和 x=1)coherence_levels <- c(10, 40)  # x = 0 → 10%, x = 1 → 40%plot_data <- tibble(  curve_id = rep(1:n_curves, each = 2),  coherence = rep(coherence_levels, times = n_curves),  prob = c(    plogis(beta_0_samples[sample_idx]),                    # pi_10 at x=0 (10%)    plogis(beta_0_samples[sample_idx] + beta_1_samples[sample_idx])  # pi_40 at x=1 (40%)  ))# 5. 绘图ggplot(plot_data, aes(x = coherence, y = prob, group = curve_id)) +  geom_line(color = "grey60", alpha = 0.5) +  scale_x_continuous(breaks = coherence_levels, name = "Percent Coherence") +  scale_y_continuous(limits = c(0, 1), name = "Probability of Correct") +  labs(    title = paste(n_curves, "Posterior Plausible Models")  ) +  papaja::theme_apa()
+```
+
+<h2>对新数据进行预测&amp;分类</h2><ul><li><p>除了对当前数据结果做出解释，也可以使用当前的参数预测值，对新数据做出预测</p></li><li><p>现在假设有一批新数据，那么被试在“percentCoherence”为 40的情况下，对新数据进行正确判断的概率是多少？</p></li><li><p>即当 $ X_{i}=40 $ 时对新数据进行预测和分类</p></li><li><p>由于例子中的自变量使用了treatment coding的编码方式，所以$ X_{i}=40 $ 应对应为$ X_{i}=1 $</p></li></ul><p>$$ Y | \beta_0, \beta_1 \sim \text{Bern}(\pi) \;\; \text{ with } \;\; \log\left( \frac{\pi}{1-\pi}\right) = \beta_0 + \beta_1 * 1 $$</p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# 1. 提取后验样本（beta_0 和 beta_1）post_array <- as.array(fit)beta_0_samp <- as.vector(post_array[, , "beta_0"])beta_1_samp <- as.vector(post_array[, , "beta_1"])# 2. 计算 x = 1 时的预测概率（pi_40）pi_40_samp <- plogis(beta_0_samp + beta_1_samp)# 3. 生成后验预测样本：对每个后验样本，模拟一个新观测 y_new ~ Bernoulli(pi_40)set.seed(123)  # 为了可重复性y_pred <- rbinom(length(pi_40_samp), size = 1, prob = pi_40_samp)# 4. 计算 0 和 1 的比例prop_table <- prop.table(table(y_pred))prop_df <- data.frame(  correct = as.integer(names(prop_table)),  proportion = as.numeric(prop_table))# 5. 绘制柱状图ggplot(prop_df, aes(x = factor(correct), y = proportion, fill = factor(correct))) +  geom_col(width = 0.6, show.legend = FALSE) +  scale_fill_manual(values = c("#70AD47", "#4472C4")) +  # 绿色和蓝色，可自定义  geom_text(aes(label = scales::percent(proportion, accuracy = 0.1)),             vjust = -0.4, size = 4) +  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +  labs(    title = "Out-of-sample Prediction (x = 1)",    x = "Correct",    y = "Proportion"  ) +  papaja::theme_apa() +  scale_x_discrete(labels = c("0" = "Incorrect", "1" = "Correct"))  
+```
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# 不确定性区间（95%预测区间）quantile(pi_40_samp, c(0.025, 0.975))
+```
+
+<h3>评估分类结果</h3><ul><li><p>$ Y $为每个自变量对应的二分因变量，$ \hat{Y} $为对应的后验分类结果</p></li><li><p>我们可以使用<strong>混淆矩阵</strong>(confusion matrix)来对真实结果与分类结果进行比较和评估</p><ul><li><p>a: 真阴性（True Negative，TN）表示被正确预测为负例的样本数</p></li><li><p>b: 假阳性（False Positive，FP）表示被错误预测为正例的样本数</p></li><li><p>c: 假阴性（False Negative，FN）表示被错误预测为负例的样本数</p></li><li><p>d: 真阳性（True Positive，TP）表示被正确预测为正例的样本数</p></li></ul></li></ul><table style="min-width: 75px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p></p></th><th colspan="1" rowspan="1"><p>$ \hat{Y} = 0 $</p></th><th colspan="1" rowspan="1"><p>$ \hat{Y} = 1 $</p></th></tr><tr><td colspan="1" rowspan="1"><p>$ Y=0 $</p></td><td colspan="1" rowspan="1"><p>a</p></td><td colspan="1" rowspan="1"><p>b</p></td></tr><tr><td colspan="1" rowspan="1"><p>$ Y=1 $</p></td><td colspan="1" rowspan="1"><p>c</p></td><td colspan="1" rowspan="1"><p>d</p></td></tr></tbody></table><p></p>
+
+<p>在二分类问题中，准确性（Accuracy）、敏感性（Sensitivity）和特异性（Specificity）是常用的评估指标，可以通过在得到 a b c d 的数量之后进行计算：</p><ol><li><p><strong>准确性(accuracy)</strong> ：准确性是指分类模型正确预测的样本数占总样本数的比例。</p></li></ol><ul><li><p>准确性衡量了模型总体的分类正确率，数值越高表示模型的整体性能越好。</p></li></ul><p>$$ \text{accuracy} = \frac{(TP + TN)}{(TP + TN + FP + FN)} =\frac{a + d}{a + b + c + d} $$</p><ol start="2"><li><p><strong>敏感性(sensitivity)</strong> ：敏感性也称为召回率（Recall），它是指在所有实际为正例的样本中，被正确预测为正例的比例。</p></li></ol><ul><li><p>敏感性衡量了模型对于正例的识别能力，数值越高表示模型对于正例的预测能力越好。</p><p>$$ \text{sensitivity} = \frac{TP}{(TP + FN)} = \frac{d}{c + d} $$</p></li></ul><ol start="3"><li><p><strong>特异性(specificity)</strong> ：特异性是指在所有实际为负例的样本中，被正确预测为负例的比例。</p></li></ol><ul><li><p>特异性衡量了模型对于负例的识别能力，数值越高表示模型对于负例的预测能力越好。</p><p>$$ \text{specificity} = \frac{TN}{(TN + FP)} = \frac{a}{a + b} $$</p></li></ul><p></p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+df <- Treatment_Coding# 1. 计算每个观测的后验平均预测概率 pi# 注意：这里我们使用后验均值，而不是每个后验样本pi_10_mean <- mean(plogis(beta_0_samp))          # x = 0pi_40_mean <- mean(plogis(beta_0_samp + beta_1_samp))  # x = 1df$pi <- ifelse(df$x == 0, pi_10_mean, pi_40_mean)# 2. 为每个观测生成一个预测结果（基于其 pi）set.seed(123)df$prediction <- rbinom(n = nrow(df), size = 1, prob = df$pi)# 3. 查看前几行head(df[, c("subject", "percentCoherence", "correct", "pi", "prediction")])
+```
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# 定义计算混淆矩阵函数（TP, TN, FP, FN）calculate_confusion_table <- function(df, y_col = "correct", yhat_col = "prediction") {  # 计算各种情况的数量  TN <- sum((df[[y_col]] == 0) & (df[[yhat_col]] == 0))  # 真阴性  FP <- sum((df[[y_col]] == 0) & (df[[yhat_col]] == 1))  # 假阳性  FN <- sum((df[[y_col]] == 1) & (df[[yhat_col]] == 0))  # 假阴性  TP <- sum((df[[y_col]] == 1) & (df[[yhat_col]] == 1))  # 真阳性    # 创建 DataFrame 来表示列联表  contingency_df <- data.frame(    `$\\hat{Y} = 0$` = c(TN, FN),    `$\\hat{Y} = 1$` = c(FP, TP),    row.names = c('$Y=0$', '$Y=1$')  )    # 返回结果  return(list(    TN = TN,    FP = FP,    FN = FN,    TP = TP,    contingency_df = contingency_df  ))}
+```
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# 计算混淆矩阵cm <- calculate_confusion_table(df, y_col = "correct", yhat_col = "prediction")cm$contingency_df
+```
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# 计算指标 Accuracy, Sensitivity, Specificityaccuracy <- (cm$TP + cm$TN) / nrow(df)sensitivity <- ifelse(cm$TP + cm$FN > 0, cm$TP / (cm$TP + cm$FN), 0)specificity <- ifelse(cm$TN + cm$FP > 0, cm$TN / (cm$TN + cm$FP), 0)cat("\n")cat("True Positive:", cm$TP, "\n")cat("False Positive:", cm$FP, "\n")cat("True Negative:", cm$TN, "\n")cat("False Negative:", cm$FN, "\n")cat("准确性:", accuracy, "\n")cat("敏感性:", sensitivity, "\n")cat("特异性:", specificity, "\n")
+```
+
+<h2>总结</h2><p>本节课学习了如何通过广义线性模型(Generalized linear model, GLM)拟合二元决策变量。</p><p>重点在于：</p><ul><li><p>了解二元决策变量适合的分布，伯努利(Bernoulli)分布。</p></li><li><p>了解如何通过概率、发生率和链接函数(link function)来表示线性模型。</p></li><li><p>学习模型评估指标：准确性（Accuracy）、敏感性（Sensitivity）和特异性（Specificity）。</p><img src="https://cdn.kesci.com/upload/image/rkz1ehen1l.png?imageView2/0/w/720/h/960" alt="Image Name"></li></ul><p></p>
+
+<h2>补充：使用brms建立logistic回归模型</h2><p>这里我们使用 brms提供的默认先验来构建模型。 可以看到：</p><ul><li><p>先验为：</p><p>Intercept ~ Normal(mu: 0.0, sigma: 3.6269)</p><p>C(percentCoherence) ~ Normal(mu: 0.0, sigma: 5.0062)</p></li><li><p>模型分布为：bernoulli</p></li><li><p>链接函数为：p = logit</p></li><li><p><code>C(percentCoherence)</code> 代表将 percentCoherence 变量编码为分类变量 (categorical variable)。</p></li></ul><p></p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+library(brms)# 1. 准备数据：确保 percentCoherence 是因子df_clean <- df_clean %>%  mutate(percentCoherence = as.factor(percentCoherence))# 2. 建模（无需 Stan）model <- brm(  formula = correct ~ percentCoherence,   # 自动处理为 C(percentCoherence)  data = df_clean,  family = bernoulli(link = "logit"),  chains = 4,  iter = 2000,  warmup = 1000,  seed = 84735,  cores = 4)# 3. 参数摘要summary(model)# 4. 预测概率newdata = data.frame(percentCoherence = factor(c("10", "40")))predictions = fitted(model, newdata = newdata)cat("p(coherence=10) =", round(predictions[1], 3), "\n")cat("p(coherence=40) =", round(predictions[2], 3), "\n")# 5. 后验预测检查（PPC）ppc_dens_overlay(y = df_clean$correct, yrep = posterior_predict(model, ndraws = 100)) +  labs(title = "Posterior Predictive Check")+  papaja::theme_apa()
+```
+
+<p></p><img src="https://cdn.kesci.com/upload/1764219555475_1.jpg"><p></p>
+
+<h2>练习</h2><p>我们以一个新的例子进行练习对logistic模型的使用。</p><p>我们关注的研究问题：<strong>个体依恋风格中的回避倾向</strong>如何影响个体的<strong>恋爱情况</strong>？</p><ul><li><p>成人依恋量表是一种常用于评估个体依恋风格的工具，包括亲密关系中的情感需求和行为模式。其中的回避分数反映了个体在恋爱关系中表现出的回避特征。这些特征通常表现为对亲密关系的回避、不愿意与伴侣建立过多的情感联系、保持独立性和独立思考的倾向。</p></li><li><p>研究假设：具有高回避分数的个体可能更倾向于避免或抵制与伴侣建立深入的情感联系，更难以建立恋爱关系</p></li><li><p>在此示例研究中，我们使用成人依恋量表中的分量表测得回避分数，并使用标准化后的回避分数进行后续分析。</p></li></ul><blockquote><ul><li><p>数据来源: Hu, C.-P. et al. (2018). Raw data from the Human Penguin Project. Open Science Framework. <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.17605/OSF.IO/H52D3">https://doi.org/10.17605/OSF.IO/H52D3</a></p></li><li><p>回避分数量表来源：Fraley, R. C., Waller, N. G. &amp; Brennan, K. A. An item response theory analysis of self-report measures of adult attachment. J. Pers. Soc. Psychol. 78, 350–365 (2000).</p></li></ul></blockquote><p></p>
+
+<ul><li><p>我们对以下关键步骤进行练习</p><ul><li><p>模型定义</p></li><li><p>绘制后验预测回归线</p></li><li><p>对新数据进行预测</p></li><li><p>后验预测评估</p></li></ul></li></ul><p></p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# === 1. 数据加载 ===df_raw <- tryCatch({  read.csv("/home/mw/input/bayes3797/Data_Sum_HPP_Multi_Site_Share.csv")}, error = function(e) {  read.csv("data/Data_Sum_HPP_Multi_Site_Share.csv")})# === 2. 数据筛选与清洗 ===df <- df_raw %>%  filter(Site == "Tsinghua") %>%  select(romantic, avoidance_r, sex) %>%  mutate(    romantic = ifelse(romantic == 2, 0, 1),  # 2 → "no" → 0; 1 → "yes" → 1    romantic = factor(romantic, levels = c(0, 1), labels = c("no", "yes")),  # 转换为因子    index = 1:n()  # 设置索引（1 到 n）  )# === 3. 绘制raincloud图 ===p_raincloud <- ggplot(df, aes(x = romantic, y = avoidance_r, fill = romantic)) +  geom_rain(alpha = 0.6, rain.side = "l", point.args = list(alpha = 0.4)) +  scale_fill_manual(values = c("no" = "red", "yes" = "blue")) +  labs(    x = "Romantic Relationship",    y = "Avoidance (Reversed)",    fill = "Romantic"  ) +  theme_apa() +  theme(legend.position = "none")p_raincloud
+```
+
+<h2>模型定义</h2><p>$$ \begin{array}{lcrl} \text{data:} &amp; \hspace{.01in} &amp; Y_i|\beta_0,\beta_1 &amp; \stackrel{ind}{\sim} \text{Bern}(\pi_i) \;\; \text{ with } \;\; \pi_i = \frac{e^{\beta_0 + \beta_1 X_{i1}}}{1 + e^{\beta_0 + \beta_1 X_{i1}}} \\ \text{priors:} &amp; &amp; \beta_{0} &amp; \sim N\left(0, 0.5^2 \right) \\ &amp; &amp; \beta_1 &amp; \sim N\left(0, 0.5^2 \right)\\ \end{array} $$</p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# === 4. 准备 Stan 数据 ===stan_data <- list(  N = nrow(df),  y = df$romantic,  x = df$avoidance_r)# === 5. 定义 Stan 模型（logistic 回归）===stan_model_code <- "data {  int<lower=0> N;  int<lower=0,upper=1> y[N];  vector[N] x;}parameters {  real beta_0;  real beta_1;}model {  beta_0 ~ ...;  beta_1 ~ ...;  y ~ ...;}generated quantities {  vector[N] pi;  vector[N] y_rep;  for (n in 1:N) {    pi[n] = inv_logit(...);    y_rep[n] = bernoulli_rng(pi[n]);  }}"# === 6. 拟合模型（MCMC 采样）===fit <- stan(  model_code = ...,  data = ...,  chains = 4,  iter = 5000,  warmup = 1000,  seed = 84735,  cores = 4)
+```
+
+<h3>MCMC诊断</h3><p></p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+trace <- bayesplot::mcmc_trace(...,pars = c('...','...'))+    papaja::theme_apa()trace
+```
+
+<img src="https://cdn.kesci.com/upload/1763290440830_1.png"><p></p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# density plotpost_array <- as.array(fit)p_density <- mcmc_dens_overlay(post_array, pars = c("...", "...")) +  papaja::theme_apa()p_density
+```
+
+<img src="https://cdn.kesci.com/upload/1763295916696_1.png"><p></p>
+
+<h3>绘制后验预测回归线</h3><p></p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# === 8. 绘制后验预测回归线 + 真实数据点 ===# 提取后验样本beta_0_samp <- as.vector(post_array[, , "beta_0"])beta_1_samp <- as.vector(post_array[, , "beta_1"])# 创建网格x_grid <- seq(min(df$avoidance_r), max(df$avoidance_r), length.out = 100)# 选择 50 条后验曲线set.seed(123)idx <- sample(length(beta_0_samp), 50)# 构建曲线数据curve_df <- map_dfr(idx, ~ {  tibble(    draw = .x,    avoidance_r = x_grid,    pi = plogis(beta_0_samp[.x] + beta_1_samp[.x] * x_grid)  )})# 绘图p_posterior_line <- ggplot(curve_df, aes(x = avoidance_r, y = pi, group = draw)) +  geom_line(color = "grey60", alpha = 0.5) +  geom_point(data = df, aes(x = avoidance_r, y = romantic, color = factor(romantic)),             size = 2, alpha = 0.7,             inherit.aes = FALSE) +  scale_color_manual(values = c("red", "blue"), labels = c("no", "yes")) +  labs(    title = "Posterior Predictive Regression Lines",    x = "avoidance_r",    y = "P(romantic = yes)"  ) +  papaja::theme_apa() +  theme(legend.position = "top")p_posterior_line
+```
+
+<img src="https://cdn.kesci.com/upload/1763296050915_1.png"><p></p>
+
+<h3>对新数据进行预测&amp;分类</h3><p></p>
+
+<ul><li><p>除了对当前数据结果做出解释，我们也可以使用当前的参数预测值，对新数据做出预测</p></li><li><p>比如，当回避分数位于一个标准差时，即 $ X_{i1}=1 $时，个体是处在恋爱情况还是单身情况</p></li></ul><p>$$ Y | \beta_0, \beta_1 \sim \text{Bern}(\pi) \;\; \text{ with } \;\; \log\left( \frac{\pi}{1-\pi}\right) = \beta_0 + \beta_1 * 1 $$</p><ul><li><p>我们使用<code>plogis()</code>传入新的数据，使用<code>rbinom()</code>对新数据生成后验预测值</p><ul><li><p>假设我们传入的数据是(X=1, Y=0)</p></li></ul></li></ul><p></p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# === 9. 对新数据 X=1 进行预测（柱状图）===# 假设新样本的 avoidance_r = 1（标准化后）new_x <- 1pi_new <- plogis(... + ... * ...)y_pred_new <- rbinom(length(pi_new), 1, pi_new)# 汇总比例prop_df <- tibble(  class = c("no", "yes"),  proportion = as.numeric(prop.table(table(factor(y_pred_new, levels = 0:1)))))p_prediction_bar <- ggplot(prop_df, aes(x = class, y = proportion, fill = class)) +  geom_col(width = 0.6, show.legend = FALSE) +  scale_fill_manual(values = c("no" = "#70AD47", "yes" = "#4472C4")) +  geom_text(aes(label = scales::percent(proportion, accuracy = 0.1)),             vjust = -0.4, size = 4) +  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +  labs(    title = "Out-of-sample Prediction (X = 1)",    x = "Romantic",    y = "Proportion"  ) +  papaja::theme_apa()+  theme(plot.title = element_text(hjust = 0.5))p_prediction_bar
+```
+
+<img src="https://cdn.kesci.com/upload/1763296299219_1.png"><p></p>
+
+<h3>后验预测评估</h3><p></p>
+
+```{r}
+#| notebookId: 6915b3c48456fe3212cfa784
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# === 10. 后验预测评估：混淆矩阵 & 指标 ===# 为原始数据生成预测（使用后验均值）df$pi_mean <- plogis(mean(...) + mean(...) * df$avoidance_r)df$prediction <- rbinom(nrow(df), 1, df$pi_mean)# 计算指标tp <- sum(df$romantic == ... & df$prediction == ...)fp <- sum(df$romantic == ... & df$prediction == ...)tn <- sum(df$romantic == ... & df$prediction == ...)fn <- sum(df$romantic == ... & df$prediction == ...)accuracy <- (tp + tn) / nrow(df)sensitivity <- ifelse(tp + fn > 0, tp / (tp + fn), 0)specificity <- ifelse(tn + fp > 0, tn / (tn + fp), 0)# 打印结果cat("\n")cat("True Positive:", tp, "\n")cat("False Positive:", fp, "\n")cat("True Negative:", tn, "\n")cat("False Negative:", fn, "\n")cat("准确性:", accuracy, "\n")cat("敏感性:", sensitivity, "\n")cat("特异性:", specificity, "\n")
+```
+
+<img src="https://cdn.kesci.com/upload/1763296356834_1.png"><p></p>
+
+<img src="https://cdn.kesci.com/upload/1763297045625_1.png"><p></p>
+

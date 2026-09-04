@@ -1,0 +1,52 @@
+---
+title: "Presentation Title"
+subtitle: "From Theory to Practice"
+author: "Author Name"
+format:
+  revealjs:
+    slide-number: true
+    show-slide-number: all
+    transition: slide
+    theme: [default]
+    width: 1600
+    height: 900
+  pptx:
+    reference-doc: template.pptx # Optional
+---
+
+## Learning Objectives
+
+- Objective 1
+- Objective 2
+- Objective 3
+
+# Section 1: Theory
+
+## Concept Overview
+- Key Idea
+- Why it matters
+
+---
+
+## Detailed Mechanism
+- Step 1
+- Step 2
+- [Include Diagram Placeholder]
+
+# Section 2: Practice
+
+## Getting Started
+- Prerequisites
+- Environment setup
+
+---
+
+## Live Code / Walkthrough
+```{python}
+# Example code
+print("Hello World")
+```
+
+# Summary
+- Recap
+- Further Reading

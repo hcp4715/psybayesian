@@ -1,0 +1,766 @@
+---
+jupyter: ir
+---
+
+<h1>Lecture 10: Multiple regression</h1><h2>Instructor: Dr. Hu Chuan-Peng</h2><p></p>
+
+## 回顾  在前面的九次课程中，我们系统性地介绍了贝叶斯统计的核心概念，并通过一个简单的线性回归模型展示了如何构建和应用一个相对简单的贝叶斯workflow。  ![Image Name](https://cdn.kesci.com/upload/smkhdwv5zt.png?imageView2/0/w/720)  
+
+<p>在上节课中，以一个认知实验中的研究问题——<strong>自我和他人条件下的反应时间是否有差异</strong> 出发，建立了一个简单的线性回归模型，并完成了贝叶斯数据分析的全流程。</p><p></p><img src="https://cdn.kesci.com/upload/smipfxtgj4.png?imageView2/0/w/640/h/640" alt="Image Name"><p></p><img src="https://cdn.kesci.com/upload/smkijcu8co.png?imageView2/0/w/460" alt="Image Name"><blockquote><p>Sui, J., He, X., &amp; Humphreys, G. W. (2012). Perceptual effects of social salience: Evidence from self-prioritization effects on perceptual matching. Journal of Experimental Psychology: Human Perception and Performance, 38(5), 1105–1117. <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.1037/a0029792">https://doi.org/10.1037/a0029792</a></p></blockquote><p></p>
+
+<p>至此，我们可以开始进入更真实的场景，尝试使用贝叶斯数据分析来解决真实的问题。</p><p>上节课中使用的简化数据，背后的完整数据是什么？</p><p></p><p><strong>真实数据如下：</strong></p>
+
+```{r}
+#| slideshow: {slide_type: skip}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 安装和加载包options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))if (!requireNamespace('pacman', quietly = TRUE)) {    install.packages('pacman')}pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja", "patchwork","bayesplot",               "rstan","bridgesampling", 'logspline', "easystats") options(warn = -1)  # 抑制警告
+```
+
+```{r}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# sessionInfo()
+```
+
+```{r}
+#| slideshow: {slide_type: fragment}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 导入数据df_raw <- tryCatch({  read.csv('/home/mw/input/bayes3797/Kolvoort_2020_HBM_Exp1_Clean.csv')}, error = function(e) {  read.csv('data/Kolvoort_2020_HBM_Exp1_Clean.csv')})# 显示数据前几行head(df_raw)    
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 数据分组和计算均值df <- df_raw %>%  dplyr::group_by(Subject, Label, Matching) %>%  dplyr::summarize(RT_sec = mean(RT_sec)) %>%  dplyr::ungroup() %>%# 将 Label 列的数字编码转为文字标签  dplyr::mutate(Label = case_when(    Label == '1' ~ "Self",    Label == '2' ~ "Friend",    Label == '3' ~ "Stranger"  )) %>%# 替换 Matching 列的值为小写标签  dplyr::mutate(Matching = ifelse(Matching == "Matching", 'matching','nonmatching')) %>%# 设置索引  dplyr::mutate(index = row_number()) %>%  tibble::column_to_rownames(var = "index")  # 设置索引为新创建的命名行head(df)
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+cat("Label列共有", toString(unique(df$Label)), "这几类\n")
+```
+
+通过查看数据可知，在自我匹配任务中，被试学习几何图形和身份标签的关系应为，例如，三角形代表自我（Self）；圆形代表朋友（Friend），正方形代表陌生人（Stranger），随后判断所呈现的几何图形和文字标签是否与之前学习的关系相匹配。   ![Image Name](https://cdn.kesci.com/upload/snajcrx0jy.png?imageView2/0/w/640/h/960)  > Sui, J., He, X., & Humphreys, G. W. (2012). Perceptual effects of social salience: Evidence from self-prioritization effects on perceptual matching. Journal of Experimental Psychology: Human Perception and Performance, 38(5), 1105–1117. https://doi.org/10.1037/a0029792  
+
+<p>因此，真实的实验情境是一个2*3的被试内实验设计的数据。</p><p>其中，标签（自我相关性）是可以有三个水平的：自我、朋友和陌生人。</p><p></p><p>如果我们对自我相关性这个自变量的效应感兴趣，可能就要回答这个问题：<strong>“三种Label条件下的反应时差异是怎么样的？”</strong></p><p></p><p><strong>即：如何构建“Label”变量编码为3个水平的线性模型？</strong></p>
+
+<p>同时，该实验设计还有另一个自变量，即匹配水平(“Matching”)，包括“匹配”和“不匹配”两个水平。这个自变量会对反应时间产生影响吗？</p><p>这是第二个研究问题：<strong>“匹配水平(“matching”)是否会影响反应时间？</strong>”。</p><p></p><p>通常，我们也可能想知道第三个问题：两个自变量之间是否有交互作用？在不同的匹配水平(“matching”)下，标签“Label”的效应是否会发生变化？。</p><p></p><p></p><blockquote><p>回顾：经典的心理统计学中，我们使用什么统计检验来回答上述的问题？</p></blockquote><p></p>
+
+<p>本节课我们将展示如何在贝叶斯统计框架下，通过3个线性回归模型来回答以上问题：</p><ul><li><p>三水平的简单线性回归模型</p></li><li><p>2 X 3的多元线性回归模型（无交互）</p></li><li><p>2 X 3的多元线性回归模型（有交互）</p></li></ul><p></p>
+
+<p>注：为了简化研究问题，本节课使用的是多个被试的数据。“Subject” 为被试编号，代表不同被试。</p><p>此外，数据中的因变量不是被试在每个试次上的反应时和正确性，而是在不同条件下的平均反应时和正确率。</p>
+
+<h2>模型一：三水平的简单线性回归模型</h2><p>上课中使用二分类编码（例如Self = 0, Other = 1）来表示“Label”条件。</p><p></p><p>对于三水平的单因素“Label”条件（Self、Friend、Stranger），应该如何处理？</p><p></p><p>此时，需要使用**哑变量编码(dummy coding)**来处理这类多水平的自变量。</p>
+
+<h3>哑变量编码规则</h3><p>对于三水平分类变量 “Label” (Self, Friend, Stranger)，我们可以使用 Treatment Coding 编码，以第一个水平 "Self" 作为基准（baseline）。</p><p>那么，什么是treatment编码？🤔</p><p>在回归分析中，自变量可以是数值型的（如身高、体重）或分类型的（如性别、实验组别）。对于分类变量（如 Label：Self、Friend、Stranger），因为它们是文本或类别，无法直接输入到回归模型中，因此需要将它们转换为数值形式。</p><p>treatment编码是将分类变量转化为数值型变量的一种常见方式，通常是：</p><ol><li><p>选择一个基线水平（Baseline level）：通常是分类变量的第一个水平；</p></li><li><p>创建哑变量：通过 n-1 个对比列，表示其他水平相对于基准水平的差异。</p></li></ol><p>那么，当我们选择“Self”作为基线水平，编码矩阵应该如下：</p><table style="min-width: 100px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p>Label</p></th><th colspan="1" rowspan="1"><p>截距(baseline)</p></th><th colspan="1" rowspan="1"><p>对比列 1 (Friend vs Self)</p></th><th colspan="1" rowspan="1"><p>对比列 2 (Stranger vs Self)</p></th></tr><tr><td colspan="1" rowspan="1"><p>Self</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>0</p></td><td colspan="1" rowspan="1"><p>0</p></td></tr><tr><td colspan="1" rowspan="1"><p>Friend</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>0</p></td></tr><tr><td colspan="1" rowspan="1"><p>Stranger</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>0</p></td><td colspan="1" rowspan="1"><p>1</p></td></tr></tbody></table><ul><li><p>截距(baseline)，对应 Self，即当所有对比列值为 0 时，截距 $ \beta_0 $ 对应 Self 条件下平均反应时的估算。</p></li><li><p>Friend：在第一列中为 1，表示其相对于 Self 的差异。</p></li><li><p>Stranger：在第二列中为 1，表示其相对于 Self 的差异。</p></li></ul><p></p>
+
+<h2><strong>其他编码模式</strong></h2><p></p><p>“treatment coding”这种以 [0, 1] 的编码方式是R语言中的默认方式，也称为哑变量编码（dummy coding）。</p><p></p><p>以 [0, 1] 为编码规则，默认将第一个因子水平作为参考类别（reference level），其他水平与其进行比较。</p><p></p><p>此外无序因子常用的还有sum coding，采用的是[1, -1]的编码方式，以使因子效应在模型中进行加权平均。</p><p></p><p>其他的编码方式还有很多，如果感兴趣，可以通过以下参考资料自行了解。</p><table style="min-width: 50px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p>编码方式</p></th><th colspan="1" rowspan="1"><p>编码规则</p></th></tr><tr><td colspan="1" rowspan="1"><p><strong>Treatment Coding</strong></p></td><td colspan="1" rowspan="1"><p>参考水平编码为 0，其余水平编码为 1</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Sum Coding</strong></p></td><td colspan="1" rowspan="1"><p>一个水平编码为 -1，其余水平编码为 1，所有系数和为 0</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Helmert Coding</strong></p></td><td colspan="1" rowspan="1"><p>每个水平与之后所有水平的平均值比较</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Orthogonal Polynomial Coding</strong></p></td><td colspan="1" rowspan="1"><p>使用正交多项式编码函数（线性、二次、三次趋势）</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Backward Difference Coding</strong></p></td><td colspan="1" rowspan="1"><p>每个水平与前一个水平比较</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Custom Coding</strong></p></td><td colspan="1" rowspan="1"><p>用户自定义编码规则</p></td></tr></tbody></table><blockquote><p>参考资料：</p><ol><li><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://bookdown.org/pingapang9/linear_models_bookdown/contrasts.html">Chapter 10 Contrasts | Analysing Data using Linear Models</a></p></li><li><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://www.statsmodels.org/devel/contrasts.html">Patsy: Contrast Coding Systems for categorical variables - statsmodels 0.15.0 (+522)</a></p></li><li><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://stats.oarc.ucla.edu/r/modules/coding-for-categorical-variables-in-regression-models/#:~:text=%E2%80%9CDummy%E2%80%9D%20or%20%E2%80%9Ctreatment%E2%80%9D%20coding%20basically%20consists%20of%20creating,variable%20is%20contrasted%20to%20a%20specified%20reference%20level.">Coding for Categorical Variables in Regression Models | R Learning Modules</a></p></li><li><p>Schad, D. J., Vasishth, S., Hohenstein, S., &amp; Kliegl, R. (2020). <strong>How to capitalize on a priori contrasts in linear (mixed) models: A tutorial</strong>. Journal of Memory and Language,110, 104038.</p></li></ol></blockquote><p></p>
+
+<h2>为什么需要哑变量编码？</h2><p></p><p>在三水平简单线性回归模型中，因变量（$Y$：RT_sec）和分类自变量$X$（Label：Self, Friend, Stranger）的关系可以表示为：</p><p>$$ Y = \beta_0 + \beta_1 \cdot X_1 + \beta_2 \cdot X_2 + \epsilon_i $$</p><p></p><p>其中：</p><ul><li><p>$ \beta_0 $：基准水平 Self 的均值。</p></li><li><p>$ \beta_1 $：Friend 相对于 Self 的均值差异。</p></li><li><p>$ \beta_2 $：Stranger 相对于 Self 的均值差异。</p></li><li><p>$ X_1$, $X_2 $：对比列变量（Friend vs Self 和 Stranger vs Self）。</p></li><li><p></p></li></ul><p>通过 Treatment 编码：</p><ul><li><p>$ \beta_0 $：直接表示基准组（Self）的均值。</p></li><li><p>$ \beta_1 $ 和 $ \beta_2 $：表示其他水平相对于基准组的差异。</p></li><li><p></p></li></ul><p>🤓可以发现，$ \beta_1 $ 和 $ \beta_2 $ 分别对应我们关心的两种研究问题：自我条件下的反应时是否快于朋友条件? 以及自我条件下的反应时是否快于陌生人条件？</p><p>我们可以通过上节课学习的后验推断方法来对两种假设进行检验。</p>
+
+### 模型拟合和推断  在了解哑变量之后，我们就可以开始进行模型拟合和推断了。  为了演示简便，我们使用一个简化的 workflow 流程。  <p align="center">    <img src="https://cdn.kesci.com/upload/sm7veon5ei.png?imageView2/0/w/720/h/960" alt="Image Name">  </p>
+
+**选择模型和数据处理**  根据哑变量编码明确了所选择的模型为： $Y = \beta_0 + \beta_1 \cdot X_1 + \beta_2 \cdot X_2 + \epsilon_i$。  由于模型需要 $X_1$ 和 $X_2$ 两个变量，因此需要首先对数据进行这两个变量的编码处理。
+
+```{r}
+#| slideshow: {slide_type: fragment}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+#将 Label 列转换为有序的分类变量df <- df %>%  mutate(Label = factor(Label, levels = c('Self', 'Friend', 'Stranger'), ordered = TRUE))head(df)
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 将分类变量转换为哑变量X1 <- as.integer(df$Label == 'Friend')X2 <- as.integer(df$Label == 'Stranger')
+```
+
+<h2><strong>先验设定</strong>：</h2><p></p><p>本模型使用三个水平的哑变量编码，相比上节课的简单线性模型，产生一个额外参数 $ \beta_2 $。</p><p></p><p>因此，我们需要为截距（$ \beta_0 $）、斜率（$ \beta_1, \beta_2 $）、以及误差项（$ \sigma $）设置先验分布。</p><p></p><ol><li><p>截距 $ \beta_0 $ ：基准水平 Self 的均值，即在 Self 条件下反应时间的平均值。</p></li></ol><p></p><p>$$\beta_0 \sim N(5, 2^2)$$</p><p></p><p>即，假设 Self 条件下的平均反应时间为 5 秒，标准差为 2，表示在 3 至 7 秒范围内有较高的概率。</p><p></p><p>2. $\beta_1$：Friend 相对于 Self 的均值差异；</p><p>$\beta_2$：Stranger 相对于 Self 的均值差异。</p><p></p><p>$$\beta_1 \sim N(0, 1^2), \quad \beta_2 \sim N(0, 1^2) $$</p><ul><li><p>$ \beta_1 $：假设 Friend 相对于 Self 的均值差异小且对称分布，可能是正值或负值。</p></li><li><p>$ \beta_2 $：假设 Stranger 相对于 Self 的均值差异小，且对称分布，可能是正值或负值。</p></li></ul><p></p><ol start="3"><li><p>误差项 $ \sigma $：数据围绕预测均值 $ \mu_i $ 的波动。使用指数分布 $ Exp(0.3) $，与两水平时一致： $$ \sigma \sim Exp(0.3) $$</p></li></ol><p>即，假设反应时间的波动集中在小范围，允许中等程度的波动（通常在 0 到 10 秒范围）。</p>
+
+<p><strong>完整模型设定</strong></p><p>模型可表示为：</p><p><br>$$ Y_i \mid \beta_0, \beta_1, \beta_2, \sigma \sim N(\mu_i, \sigma^2), \quad \mu_i = \beta_0 + \beta_1 \cdot X_1 + \beta_2 \cdot X_2$$ </p><p></p><p>先验分布： </p><ul><li><p>$\beta_0$：  $$ \beta_0 \sim N(5, 2^2) $$</p></li></ul><ul><li><p>$ \beta_1 $ 和 $ \beta_2 $ ： $$ \beta_1 \sim N(0, 1^2), \quad \beta_2 \sim N(0, 1^2) $$</p></li><li><p>$ \sigma $： $$ \sigma \sim Exp(0.3) $$</p></li></ul><p></p>
+
+<p>先验设置：</p><p></p><blockquote><p>$ \sigma \sim \text{Exp}(0.3) $</p><p></p><p>$ \beta_{0} \sim N\left(5, 2^2 \right) $</p><p></p><p>$ \beta_1 \sim N\left(0, 1^2 \right) $</p><p></p><p>$ \beta_2 \sim N\left(0, 1^2 \right) $</p></blockquote><p></p><p>定义似然函数：</p><blockquote><p>$ Y_i {\sim} N\left(\mu_i, \sigma^2\right) $</p></blockquote><blockquote><p>$ \mu_i = \beta_0 + \beta_1 X_1 + \beta_2 X_2 $</p></blockquote><p></p>
+
+我们可以通过 Stan 构建该模型，并使用 MCMC 算法进行采样。
+
+```{r}
+#| slideshow: {slide_type: fragment}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+#建立模型model_code1 <- "data {  int<lower=0> N;            // 数据点数量  vector[N] y;               // 观测数据  vector[N] X1;              // Friend   vector[N] X2;              // Stranger }parameters {  real beta_0;                   // 截距  real beta_1;                   // Friend 的斜率  real beta_2;                   // Stranger 的斜率  real<lower=0> sigma;           // 误差标准差}model {  beta_0 ~ normal(5, 2);         // 截距的先验分布  beta_1 ~ normal(0, 1);         // Friend 的斜率的先验分布  beta_2 ~ normal(0, 1);         // Stranger 的斜率的先验分布  sigma ~ exponential(0.3);      // 误差标准差的先验分布  // 似然函数  y ~ normal(beta_0 + beta_1 * X1 + beta_2 * X2, sigma);}//Stan可以使用随机数生成器在每次迭代中为每个数据点生成预测值。//Generated Quantities 模块可用于获取我们想要的关于后验的任何其他信息，或对新数据进行预测。generated quantities { real y_rep[N]; for (n in 1:N) { y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n], sigma); }}"
+```
+
+**进行后验采样**  
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 数据准备data_list <- list(  N = nrow(df),  y = df$RT_sec,  X1 = X1,  X2 = X2)# 采样model1_fit <- stan(model_code = model_code1, data = data_list,                      iter = 3000,                      chains = 4,                      warmup = 1000,                      thin = 1,                      seed = 84735)
+```
+
+**MCMC诊断和后验推断**  输出模型结果，通过 n_eff列 和 Rhat列 可以进行MCMC诊断  使用 bayesplot 的neff_ratio() 函数可以获得对于 MCMC 链的 ESS Ratio指标。
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+neff_ratio1 <- as.data.frame(bayesplot::neff_ratio(model1_fit))head(neff_ratio1,4)model_summary1 <- summary(model1_fit)round(head(model_summary1$summary, 4),3)
+```
+
+使用 ROPE+HDI 对参数进行检验  - 可以看到，$\beta_1$ 和 $\beta_2$ 参数的置信区间没有包含 0，但两者均与 ROPE 重叠，表明效应不明显。 可以使用贝叶斯因子进行进一步假设检验。  - 此外，$\beta_1$ 的效应在均值和 HDI 范围均大于 $\beta_2$。
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+library(bayestestR)# 提取后验样本trace <- rstan::extract(model1_fit)trace_beta1 <- as.data.frame(trace$beta_1)trace_beta2 <- as.data.frame(trace$beta_2)# 计算HDIbeta1_hdi95 <- bayestestR::hdi(trace_beta1)beta2_hdi95 <- bayestestR::hdi(trace_beta2)# 计算ROPErope1 <- bayestestR::rope(trace_beta1,range = c(-0.05, 0.05))rope2 <- bayestestR::rope(trace_beta2,range = c(-0.05, 0.05))beta1_plot <- plot(rope1, rope_color = "grey70") +     ggplot2::annotate("text", # 添加标签显示 Rope 值             x = 0, y = 0.5,             label = paste0("ROPE: ", round(rope1$ROPE_Percentage * 100, 1), "%"),              color = "black", size = 6) +    ggplot2::annotate("text",  # 添加标签显示 HDI 区间             x = mean(trace$beta_1), y = 0.1,             label = paste0("95% HDI:\n[", round(beta1_hdi95$CI_low, 3), ", ", round(beta1_hdi95$CI_high, 3), "]"),             color = "black", size = 6) +    ggplot2::labs(title = expression(paste("Region of Practical Equivalence (ROPE) of ",beta[0]))) +    papaja::theme_apa() +     ggplot2::scale_y_continuous(expand = c(0, 0)) +    ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置beta2_plot <- plot(rope2, rope_color = "grey70") +     ggplot2::annotate("text", # 添加标签显示 Rope 值             x = 0, y = 0.5,             label = paste0("ROPE: ", round(rope2$ROPE_Percentage * 100, 1), "%"),              color = "black", size = 6) +    ggplot2::annotate("text",  # 添加标签显示 HDI 区间             x = mean(trace$beta_2), y = 0.1,             label = paste0("95% HDI:\n[", round(beta2_hdi95$CI_low, 3), ", ", round(beta2_hdi95$CI_high, 3), "]"),             color = "black", size = 6) +    ggplot2::labs(title = expression(paste("Region of Practical Equivalence (ROPE) of ",beta[1]))) +    papaja::theme_apa() +     ggplot2::scale_y_continuous(expand = c(0, 0)) +    ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置# 显示图形options(repr.plot.width=14, repr.plot.height=6) beta1_plot + beta2_plot
+```
+
+- 使用贝叶斯因子进行差异检验      可以使用bayestestR包中的bayesfactor_parameters函数计算贝叶斯因子，该函数使用的是 Savage-Dickey 方法      这个贝叶斯因子指示了后验分布相对于先验分布在多大程度上偏离或接近零值，从而表明在观察到的数据情况下，零值是变得更不可能还是更有可能。  - 在本例中无论对于 $\beta_1$ 还是 $\beta_2$，$BF$ 都小于1，表明两个参数都没有证据支持它们和0有区别。
+
+```{r}
+#| slideshow: {slide_type: fragment}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 定义先验模型stan_prior_code <- "data {  int<lower=0> N;                // 数据点数量  vector[N] y;              // 观测数据  vector[N] X1;    // Friend 指示变量  vector[N] X2;    // Stranger 指示变量}parameters {  real beta_0;                   // 截距  real beta_1;                   // Friend 的斜率  real beta_2;                   // Stranger 的斜率  real<lower=0> sigma;           // 误差标准差}model {  beta_0 ~ normal(5, 2);         // 截距的先验分布  beta_1 ~ normal(0, 1);         // Friend 的斜率的先验分布  beta_2 ~ normal(0, 1);         // Stranger 的斜率的先验分布  sigma ~ exponential(0.3);      // 误差标准差的先验分布    // 不定义似然函数}"# 从先验采样model1_pri <- stan(model_code = stan_prior_code,                      data = data_list,                      iter = 3000,                      warmup = 1000,                     chains = 4,                     seed = 84735)
+```
+
+```{r}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# 提取先验样本prior_samples1 <- extract(model1_pri)# 提取后验样本post_samples1 <- extract(model1_fit)# 可以使用bayestestR包中的bayesfactor_parameters函数计算贝叶斯因子（Savage-Dickey）beta1_BF <- bayestestR::bayesfactor_parameters(post_samples1$beta_1, prior_samples1$beta_1, direction = "two-sided", null = 0)beta2_BF <- bayestestR::bayesfactor_parameters(post_samples1$beta_2, prior_samples1$beta_2, direction = "two-sided", null = 0)print(beta1_BF)print(beta2_BF)
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 配合see包可以对贝叶斯因子可视化library(see)plot_BF1 <- plot(beta1_BF)+  see::scale_fill_material_d(palette = "beta_1") +  see::scale_color_material_d(palette = "beta_1") +  xlim(-0.3,0.3) +  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[0]))) +  papaja::theme_apa() +  ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置plot_BF2 <- plot(beta2_BF)+  see::scale_fill_material_d(palette = "beta_2") +  see::scale_color_material_d(palette = "beta_2") +  xlim(-0.3,0.3) +  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[1]))) +  papaja::theme_apa() +  ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置options(repr.plot.width=16, repr.plot.height=6) plot_BF1 + plot_BF2
+```
+
+**后验预测**  最后，我们可以使用 y_rep 来快速查看和可视化后验预测
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+y_rep <- as.matrix(model1_fit, pars = "y_rep")pp_check <- bayesplot::ppc_dens_overlay(data_list$y, y_rep[1:200, ]) +             ggplot2::labs(title = "Posterior predictive check for model1") +             papaja::theme_apa()options(repr.plot.width=10, repr.plot.height=6) pp_check
+```
+
+<p>我们可以自己定义函数来绘制后验预测线性模型，更加灵活和美观</p>
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 提取后验样本post_samples1 <- extract(model1_fit)# 先将列表转换为矩阵temp_matrix <- do.call(rbind, post_samples1)# 转置矩阵posterior_samples1 <- t(temp_matrix)column1_means <- apply(posterior_samples1, 2, mean, na.rm = TRUE)# 计算预测值df$pred_mean1 <- column1_means[1] + column1_means[2] * data_list$X1 + column1_means[3] * data_list$X2# 创建箱线图风格的后验预测图real_boxp <- ggplot(df, aes(x = Label, y = RT_sec, fill = Matching)) +      ggplot2::geom_boxplot() +      ggplot2:: scale_fill_manual(         values = c("matching" = "#66c2a5", "nonmatching" = "#fc8d62"),         labels = c("matching" = "Matching", "nonmatching" = "Non-matching"))  +      papaja::theme_apa()p1 <- real_boxp +      ggplot2::geom_point(aes(y = pred_mean1),              color = "red",              size = 3,              shape = 16,             position = position_dodge(width = 0.8)) +      ggplot2::labs(title = "Posterior predictive check for model1 (Box plot)") p1
+```
+
+可以看到，当仅考虑“Label”条件时，由于没有考虑到“Matching”条件的影响，模型预测的 y 值与真实值存在较大的偏差。
+
+## 模型二：2 X 3 的多元线性回归模型：无交互  模型一仅考虑了“Label”对模型的影响。  然而，反应时间可能不仅受到标签的影响，还可能受到匹配水平(matching)的影响。因此，第二个研究问题是：“**匹配条件是否会影响反应时间？**”。  如果把“matching”条件加入到模型中，会不会让模型更好？我们来看看如何建立模型二。
+
+### 哑变量编码规则  模型二加入了新的自变量“Matching”（matching， non-matching），我们先不考虑两个自变量之间的交互作用，即“Label”和“Matching”是独立的影响因素。在新的模型中，“Label”是一个三水平因子（Self、Friend、Stranger），而“Matching”是一个二水平因子（matching、non-matching）。  因此，我们需要对两者分别进行treatment编码，然后将其合并为模型矩阵。  **模型设计与编码规则**  - Label (三水平因子): 采用 treatment 编码，将 "Self" 作为基线，生成两个对比列：      - Contrast 1：Friend vs Self      - Contrast 2：Stranger vs Self  - Matching (二水平因子): 采用 treatment 编码，将 "matching" 作为基线，生成一个对比列：      - Contrast3 (matching vs non-matching)  
+
+<p>最终，模型矩阵将有：</p><ul><li><p>一个截距列（表示基线条件 “Self-matching” 的反应时间）。</p></li><li><p>两个与 “Label” 相关的对比列。</p></li><li><p>一个与 “matching” 相关的对比列。</p></li></ul><p>三个 $ \beta $ 参数对应了三种对比假设。即，假设 Friend 与 Self 的反应时间相同，Stranger 与 Self 的反应时间相同，nonmatching 与 matching 的反应时间相同。</p><table style="min-width: 150px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p>Label</p></th><th colspan="1" rowspan="1"><p>Matching</p></th><th colspan="1" rowspan="1"><p>截距 (baseline)</p></th><th colspan="1" rowspan="1"><p>Contrast1 (Friend vs Self)</p></th><th colspan="1" rowspan="1"><p>Contrast2 (Stranger vs Self)</p></th><th colspan="1" rowspan="1"><p>Contrast3 (matching vs nonmatching)</p></th></tr><tr><td colspan="1" rowspan="1"><p>Self</p></td><td colspan="1" rowspan="1"><p>matching</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>0</p></td><td colspan="1" rowspan="1"><p>0</p></td><td colspan="1" rowspan="1"><p>0</p></td></tr><tr><td colspan="1" rowspan="1"><p>Friend</p></td><td colspan="1" rowspan="1"><p>matching</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>0</p></td><td colspan="1" rowspan="1"><p>0</p></td></tr><tr><td colspan="1" rowspan="1"><p>Stranger</p></td><td colspan="1" rowspan="1"><p>matching</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>0</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>0</p></td></tr><tr><td colspan="1" rowspan="1"><p>Self</p></td><td colspan="1" rowspan="1"><p>nonmatching</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>0</p></td><td colspan="1" rowspan="1"><p>0</p></td><td colspan="1" rowspan="1"><p>1</p></td></tr><tr><td colspan="1" rowspan="1"><p>Friend</p></td><td colspan="1" rowspan="1"><p>nonmatching</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>0</p></td><td colspan="1" rowspan="1"><p>1</p></td></tr><tr><td colspan="1" rowspan="1"><p>Stranger</p></td><td colspan="1" rowspan="1"><p>nonmatching</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>0</p></td><td colspan="1" rowspan="1"><p>1</p></td><td colspan="1" rowspan="1"><p>1</p></td></tr></tbody></table><p></p>
+
+在模型二中，两个分类自变量$X$（Label：Self, Friend, Stranger） 和 $M$ （Matching：matching, nonmatching ）的关系可以表示为：  $$  Y = \beta_0 + \beta_1 \cdot X_1 + \beta_2 \cdot X_2 + \beta_3 \cdot M_1 + \epsilon_i  $$  通过Treatment 编码：  - $\beta_0$：表示基准条件（Self-matching）的均值；  - $\beta_1$：Friend 条件相对于 Self 条件的均值差异（在 matching 条件下）；  - $\beta_2$：Stranger 条件相对于 Self 条件的均值差异（在 matching 条件下）；  - $\beta_3$：nonmatching 条件相对于 matching 条件的均值差异。
+
+<p>那么现在，我们有了$ \beta_3 $，代表的是“matching”变量的斜率，因此我们也需要给$ \beta_3 $设置先验分布：</p><ul><li><p>$ \beta_0 $：<br>$$ \beta_0 \sim N(5, 2^2) $$</p></li><li><p>$ \beta_1 $ 和 $ \beta_2 $ ：<br>$$ \beta_1 \sim N(0, 1^2), \quad \beta_2 \sim N(0, 1^2) $$</p></li><li><p>$ \sigma $：<br>$$ \sigma \sim Exp(0.3) $$</p></li></ul><p><strong>新增参数</strong></p><ul><li><p>$ \beta_3 $：<br>$$ \beta_3 \sim N(0, 1^2) $$</p></li></ul><p></p>
+
+<p><strong>完整模型设定</strong></p><p></p><p>模型可表示为：<br>$$ Y_i \mid \beta_0, \beta_1, \beta_2, \beta_3, \sigma \sim N(\mu_i, \sigma^2)$$ </p><p>$$ \mu_i = \beta_0 + \beta_1 \cdot X_1 + \beta_2 \cdot X_2 + \beta_3 \cdot M_1 $$</p><p></p><p>先验分布：</p><ul><li><p>$ \beta_0 $： $$ \beta_0 \sim N(5, 2^2) $$</p></li><li><p>$ \beta_1 $ ~ $ \beta_3 $ ： $$ \beta_1 \sim N(0, 1^2), \quad \beta_2 \sim N(0, 1^2), \quad \beta_3 \sim N(0, 1^2) $$</p></li><li><p>$ \sigma $： $$ \sigma \sim Exp(0.3) $$</p></li></ul><p></p>
+
+<p>先验设置：</p><ul><li><p></p></li></ul><blockquote><p>$ \sigma \sim \text{Exp}(0.3) $</p><p>$ \beta_{0} \sim N\left(5, 2^2 \right) $</p><p>$ \beta_1 \sim N\left(0, 1^2 \right) $</p><p>$ \beta_2 \sim N\left(0, 1^2 \right) $</p><p>$ \beta_3 \sim N\left(0, 1^2 \right) $</p></blockquote><p></p><p>定义回归模型：</p><ul><li><p></p></li></ul><blockquote><p>$ Y_i {\sim} N\left(\mu_i, \sigma^2\right) $</p></blockquote><blockquote><p></p><p>$ \mu_i = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 M_1 $</p></blockquote><p></p>
+
+### 模型拟合和推断  我们可以通过 Stan构建该模型，并使用 MCMC 算法进行采样。
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 准备数据并转换分类变量为哑变量Matching <- as.integer(df$Matching == 'matching')
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 定义Stan模型model_code2 <- "data {  int<lower=0> N;             // 样本数量  vector[N] y;           // 响应变量  vector[N] X1;               // 哑变量1（Friend）  vector[N] X2;               // 哑变量2（Stranger）  vector[N] Matching;         // 哑变量（Matching条件）}parameters {  real beta_0;                // 截距  real beta_1;                // Friend的主效应  real beta_2;                // Stranger的主效应  real beta_3;                // Matching的主效应  real<lower=0> sigma;        // 误差项的标准差}model {  // 先验分布  beta_0 ~ normal(5, 2);  beta_1 ~ normal(0, 1);  beta_2 ~ normal(0, 1);  beta_3 ~ normal(0, 1);  sigma ~ exponential(0.3);    //似然函数  y ~ normal(beta_0 + beta_1 * X1 + beta_2 * X2 + beta_3 * Matching, sigma);}generated quantities { real y_rep[N]; for (n in 1:N) { y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n]+ beta_3 * Matching[n], sigma); }}"# 准备数据列表data_list2 <- list(  N = nrow(df),  y = df$RT_sec,  X1 = X1,  X2 = X2,  Matching = Matching)
+```
+
+**进行后验采样**  
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 采样model2_fit <- stan(model_code = model_code2, data = data_list2,                   iter = 3000,                   chains = 4,                   warmup = 1000,                   thin = 1,                   seed = 84735)
+```
+
+<p><strong>MCMC诊断和后验推断</strong></p><p>输出模型结果，通过 n_eff列 和 Rhat列 可以进行MCMC诊断</p><p>使用 bayesplot 的neff_ratio() 函数可以获得对于 MCMC 链的 ESS Ratio指标。</p>
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+neff_ratio2 <- as.data.frame(bayesplot::neff_ratio(model2_fit))head(neff_ratio2,5)model_summary <- summary(model2_fit)round(head(model_summary$summary, 5),3)
+```
+
+使用 ROPE+HDI 对参数进行检验  - 可以看到，$beta_3$ 非常接近0，表明该参数没有显著性。 
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 定义 ROPE 区间，根据研究的需要指定实际等效范围rope_interval <- c(-0.05, 0.05)# 提取后验样本trace2 <- rstan::extract(model2_fit)trace2_beta1 <- as.data.frame(trace2$beta_1)trace2_beta2 <- as.data.frame(trace2$beta_2)trace2_beta3 <- as.data.frame(trace2$beta_3)# 计算HDIbeta1_hdi95 <- bayestestR::hdi(trace2_beta1)beta2_hdi95 <- bayestestR::hdi(trace2_beta2)beta3_hdi95 <- bayestestR::hdi(trace2_beta3)# 计算ROPErope1 <- bayestestR::rope(trace2_beta1,range = c(-0.05, 0.05))rope2 <- bayestestR::rope(trace2_beta2,range = c(-0.05, 0.05))rope3 <- bayestestR::rope(trace2_beta3,range = c(-0.05, 0.05))beta1_plot <- plot(rope1, rope_color = "grey70") +   ggplot2::annotate("text", # 添加标签显示 Rope 值                    x = 0, y = 0.5,                    label = paste0("ROPE: ", round(rope1$ROPE_Percentage * 100, 1), "%"),                     color = "black", size = 6) +  ggplot2::annotate("text",  # 添加标签显示 HDI 区间                    x = mean(trace2$beta_1), y = 0.1,                    label = paste0("95% HDI:\n[", round(beta1_hdi95$CI_low, 3), ", ", round(beta1_hdi95$CI_high, 3), "]"),                    color = "black", size = 6) +  ggplot2::labs(title = expression(paste("Region of Practical Equivalence (ROPE) of ",beta[1]))) +  papaja::theme_apa() + ggplot2::scale_y_continuous(expand = c(0, 0)) +  ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置beta2_plot <- plot(rope2, rope_color = "grey70") +   ggplot2::annotate("text", # 添加标签显示 Rope 值                    x = 0, y = 0.5,                    label = paste0("ROPE: ", round(rope2$ROPE_Percentage * 100, 1), "%"),                     color = "black", size = 6) +  ggplot2::annotate("text",  # 添加标签显示 HDI 区间                    x = mean(trace2$beta_2), y = 0.1,                    label = paste0("95% HDI:\n[", round(beta2_hdi95$CI_low, 3), ", ", round(beta2_hdi95$CI_high, 3), "]"),                    color = "black", size = 6) +  ggplot2::labs(title = expression(paste("Region of Practical Equivalence (ROPE) of ",beta[2]))) +  papaja::theme_apa() + ggplot2::scale_y_continuous(expand = c(0, 0)) +  ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置beta3_plot <- plot(rope3, rope_color = "grey70") +   ggplot2::annotate("text", # 添加标签显示 Rope 值                    x = 0, y = 0.5,                    label = paste0("ROPE: ", round(rope3$ROPE_Percentage * 100, 1), "%"),                     color = "black", size = 6) +  ggplot2::annotate("text",  # 添加标签显示 HDI 区间                    x = mean(trace2$beta_3), y = 0.1,                    label = paste0("95% HDI:\n[", round(beta3_hdi95$CI_low, 3), ", ", round(beta3_hdi95$CI_high, 3), "]"),                    color = "black", size = 6) +  ggplot2::labs(title = expression(paste("Region of Practical Equivalence (ROPE) of ",beta[3]))) +  papaja::theme_apa() + ggplot2::scale_y_continuous(expand = c(0, 0)) +  ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置# 显示图形options(repr.plot.width=16, repr.plot.height=6) beta1_plot + beta2_plot + beta3_plot
+```
+
+使用贝叶斯因子进行差异检验  - $beta_3$ 的 $BF$ 接近0，表明有较强的证据说明不同匹配条件下 $Y$ 的均值相同。
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 定义先验模型stan_prior_code2 <- "data {  int<lower=0> N;             // 样本数量  vector[N] y;           // 响应变量  vector[N] X1;               // 哑变量1（Friend）  vector[N] X2;               // 哑变量2（Stranger）  vector[N] Matching;         // 哑变量（Matching条件）}parameters {  real beta_0;                // 截距  real beta_1;                // Friend的主效应  real beta_2;                // Stranger的主效应  real beta_3;                // Matching的主效应  real<lower=0> sigma;        // 误差项的标准差}model {  // 先验分布  beta_0 ~ normal(5, 2);  beta_1 ~ normal(0, 1);  beta_2 ~ normal(0, 1);  beta_3 ~ normal(0, 1);  sigma ~ exponential(0.3);    // 不定义似然函数}"# 从先验采样model2_pri <- stan(model_code = stan_prior_code2,                    data = data_list2,                    iter = 3000,                    warmup = 1000,                   chains = 4,                   seed = 84735)
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 提取先验样本prior_samples2 <- extract(model2_pri)# 提取后验样本post_samples2 <- extract(model2_fit)# 可以使用bayestestR包中的bayesfactor_parameters函数计算贝叶斯因子（Savage-Dickey）beta1_BF <- bayestestR::bayesfactor_parameters(post_samples2$beta_1, prior_samples2$beta_1, direction = "two-sided", null = 0)beta2_BF <- bayestestR::bayesfactor_parameters(post_samples2$beta_2, prior_samples2$beta_2, direction = "two-sided", null = 0)beta3_BF <- bayestestR::bayesfactor_parameters(post_samples2$beta_3, prior_samples2$beta_3, direction = "two-sided", null = 0)print(beta1_BF)print(beta2_BF)print(beta3_BF)# 配合see包可以对贝叶斯因子可视化plot_BF1 <- plot(beta1_BF)+  see::scale_fill_material_d(palette = "beta_1") +  see::scale_color_material_d(palette = "beta_1") +  xlim(-0.3,0.3) +  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[1]))) +  papaja::theme_apa() +  ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置plot_BF2 <- plot(beta2_BF)+  see::scale_fill_material_d(palette = "beta_2") +  see::scale_color_material_d(palette = "beta_2") +  xlim(-0.3,0.3) +  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[2]))) +  papaja::theme_apa() +  ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置plot_BF3 <- plot(beta3_BF)+  see::scale_fill_material_d(palette = "beta_3") +  see::scale_color_material_d(palette = "beta_3") +  xlim(-0.3,0.3) +  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[3]))) +  papaja::theme_apa() +  ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置options(repr.plot.width=20, repr.plot.height=6) plot_BF1 + plot_BF2 + plot_BF3
+```
+
+<p><strong>后验预测</strong></p><p>最后，我们可以使用 <code>y_rep</code> 来快速查看和可视化后验预测。</p>
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+y_rep2 <- as.matrix(model2_fit, pars = "y_rep")pp_check2 <- bayesplot::ppc_dens_overlay(data_list2$y, y_rep[1:200, ]) +               ggplot2::labs(title = "Posterior predictive check for model2") +               papaja::theme_apa()options(repr.plot.width=10, repr.plot.height=6) pp_check2
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 提取后验样本post_samples2 <- extract(model2_fit)# 先将列表转换为矩阵temp_matrix2 <- do.call(rbind, post_samples2)# 转置矩阵posterior_samples2 <- t(temp_matrix2)column2_means <- apply(posterior_samples2, 2, mean, na.rm = TRUE)# 计算预测值df$pred_mean2 <- column2_means[1] + column2_means[2] * data_list2$X1 +                  column2_means[3] * data_list2$X2 + column2_means[4] * data_list2$Matching# 创建箱线图风格的后验预测图p2 <- real_boxp +   ggplot2::geom_point(aes(y = df$pred_mean2),              color = "red",              size = 3,              shape = 16,             position = position_dodge(width = 0.8)) +   ggplot2::labs(title = "Posterior predictive check for model2 (Box plot)") options(repr.plot.width=18, repr.plot.height=6)p1 + p2
+```
+
+从模型预测结果来看：  - 模型一中，不同匹配条件下的反应时预测相同；但在模型二中，不同匹配条件下的反应时预测不同，说明匹配条件对反应时存在影响。  - 但在模型二中，无论标签如何，模型预测的匹配效应相同，这是因为模型二没有考虑标签“Label”和匹配条件“Matching”的交互作用。
+
+<h2>模型三：带交互项的2 X 3 的多元线性回归</h2><p></p><p><strong>交互作用：</strong> 当模型存在两个或两个以上的自变量时，交互作用是指一个自变量$ X_1 $对因变量$ Y $的影响会随着自变量$ X_2 $不同水平的变化而有所差异。</p><p></p><p>当我们考虑交互效应时，模型不仅包含 “Label” 和 “Matching” 的独立主效应，还需要加入它们之间的交互作用。</p><p></p><p>加入交互项可以观察 “Label” 和 “Matching” 是否存在相互依赖的影响，即 “Matching” 对平均反应时间的影响，在 “Self、Friend 和 Stranger” 下是有有差异的。</p><p></p><p>通过引入交互项，我们能够捕捉变量之间的相互关系。</p>
+
+**多个理解变量下，不同编码和研究效应的关系**  如图所示，表中列出了 Treatment Coding 和 Sum Coding 两种常用的因子变量编码方式，并展示了它们在研究主效应和交互效应时的特点：  <div style="text-align: center;">      <img src="https://pic3.zhimg.com/80/v2-f95e51b7e6e26feab9ca91077d9c244e_1440w.webp"           alt="Image Description"           style="width: 80%; height: auto;">  </div>  > 参考资料：  > [线性（混合）模型中如何对因子变量事先生成虚拟变量 - 知乎](https://zhuanlan.zhihu.com/p/103547646)  <div style="padding-bottom: 30px;"></div>
+
+### 哑变量编码规则  增加了交互效应后的线性模型的编码规则应该是：  1. **主效应的编码规则：**     - **Label (3 levels):**       - $( X_{L1} = 1)$ 表示 "Friend" 条件；$( X_{L1} = 0 )$ 表示其他条件;       - $( X_{L2} = 1 )$ 表示 "Stranger" 条件；$( X_{L2} = 0 )$ 表示其他条件;       - $( Self)$ 为基线水平，不需要单独编码（隐含在 $( X_{L1} = 0, X_{L2} = 0)$ 中）。     - **Matching (2 levels):**       - $( X_{M1} = 1)$ 表示 "nonmatching" 条件；       - $( X_{M1} = 0 )$ 表示 "matching" 条件（基线水平）。  2. **交互项的编码规则：**     - **交互项 $( X_{L1} \cdot X_{M1} )$:**       - 当 $( X_{L1} = 1) 且 ( X_{M1} = 1)$ 时，交互项 $( X_{L1} \cdot X_{M1} = 1)$。       - 否则，$( X_{L1} \cdot X_{M1} = 0 )$。     - **交互项 $( X_{L2} \cdot X_{M1})$:**       - 当 $( X_{L2} = 1)$ 且 $( X_{M1} = 1)$ 时，交互项 $( X_{L2} \cdot X_{M1} = 1)$。       - 否则，$( X_{L2} \cdot X_{M1} = 0)$。  **Treatment编码矩阵**  | Label     | Matching    | 截距 (baseline) | $X_{L1}$ | $X_{L2}$ | $X_{M1}$ | $X_{L1} \cdot X_{M1}$  | $X_{L2} \cdot X_{M1}$ |  |-----------|-------------|-----------------|--------------|--------------|--------------|---------------------------|---------------------------|  | Self      | matching    | 1               | 0            | 0            | 0            | 0                         | 0                         |  | Self      | nonmatching | 1               | 0            | 0            | 1            | 0                         | 0                         |  | Friend    | matching    | 1               | 1            | 0            | 0            | 0                         | 0                         |  | Friend    | nonmatching | 1               | 1            | 0            | 1            | 1                         | 0                         |  | Stranger  | matching    | 1               | 0            | 1            | 0            | 0                         | 0                         |  | Stranger  | nonmatching | 1               | 0            | 1            | 1            | 0                         | 1                         |  <div style="padding-bottom: 80px;"></div>
+
+### 模型设定  在了解哑变量之后，我们就可以开始进行模型拟合和推断了。  有交互项的 2 X 3 的线性回归模型表达为：  $$  Y = \beta_0 + \beta_1 \cdot X_{L1} + \beta_2 \cdot X_{L2} + \beta_3 \cdot X_{M1} + \beta_4 \cdot (X_{L1} \cdot X_{M1}) + \beta_5 \cdot (X_{L2} \cdot X_{M1}) + \epsilon_i  $$  在这个模型中：  - $ X_{L1} \cdot X_{M1} $ 表示在“Label”条件中 “Friend” 水平和 “Matching” 条件中和“nonmatching” 水平的交互作用。  - $ X_{L2} \cdot X_{M1} $ 表示在“Label”条件中 “stranger” 水平和 “Matching” 条件中和“nonmatching”水平的交互作用。
+
+<p><strong>模型先验设置</strong></p><p>现在我们的线性模型中增加了交互效应，那么我们需要对$ \beta_4 $ 和 $ \beta_5 $设置先验分布，即：</p><ul><li><p>$ \beta_4 $ 和 $ \beta_5 $ ：<br>$$ \beta_4 \sim N(0, 1^2), \quad \beta_5 \sim N(0, 1^2) $$</p></li><li><p>$ \beta_0 $：<br>$$ \beta_0 \sim N(5, 2^2) $$</p></li><li><p>$ \beta_1 $ , $ \beta_2 $ 和$ \beta_3 $：<br>$$ \beta_1 \sim N(0, 1^2), \beta_2 \sim N(0, 1^2) , \beta_3 \sim N(0, 1^2) $$</p></li><li><p>$ \sigma $：<br>$$ \sigma \sim Exp(0.3) $$</p></li></ul><p></p>
+
+<p>先验设置：</p><ul><li><p></p></li></ul><blockquote><p>$ \sigma \sim \text{Exp}(0.3) $</p><p>$ \beta_0 \sim N\left(5, 2^2\right) $</p><p>$ \beta_1 \sim N\left(0, 1^2\right) $</p><p>$ \beta_2 \sim N\left(0, 1^2\right) $</p><p>$ \beta_3 \sim N\left(0, 1^2\right) $</p><p>$ \beta_4 \sim N\left(0, 1^2\right) $</p><p>$ \beta_5 \sim N\left(0, 1^2\right) $</p></blockquote><p></p><p>定义回归模型：</p><ul><li><p></p></li></ul><blockquote><p>$ Y_i \sim N\left(\mu_i, \sigma^2\right) $</p><p>$ \mu_i = \beta_0 + \beta_1 X_{L1} + \beta_2 X_{L2} + \beta_3 X_{M1} + \beta_4 (X_{L1} \cdot X_{M1}) + \beta_5 (X_{L2} \cdot X_{M1}) $</p></blockquote><p></p>
+
+<h3>模型拟合和推断</h3><p>我们可以通过 stan 构建该模型，并使用 MCMC 算法进行采样。</p>
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 准备数据Interaction_1 <- X1 * MatchingInteraction_2 <- X2 * Matching
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 定义Stan模型model_code3 <- "data {  int<lower=0> N;                 // 样本数量  vector[N] y;               // 响应变量  vector[N] X1;                   // 哑变量1（Friend）  vector[N] X2;                   // 哑变量2（Stranger）  vector[N] Matching;             // 哑变量（Matching条件）  vector[N] Interaction_1;        // Friend 和 Matching 的交互  vector[N] Interaction_2;        // Stranger 和 Matching 的交互}parameters {  real beta_0;                    // 截距  real beta_1;                    // Friend的主效应  real beta_2;                    // Stranger的主效应  real beta_3;                    // Matching的主效应  real beta_4;                    // Friend与Matching的交互效应  real beta_5;                    // Stranger与Matching的交互效应  real<lower=0> sigma;            // 误差项的标准差}model {  // 先验分布  beta_0 ~ normal(5, 2);  beta_1 ~ normal(0, 1);  beta_2 ~ normal(0, 1);  beta_3 ~ normal(0, 1);  beta_4 ~ normal(0, 1);  beta_5 ~ normal(0, 1);  sigma ~ exponential(0.3);    // 似然函数    y ~ normal(beta_0 + beta_1 * X1 + beta_2 * X2 + beta_3 * Matching +                        beta_4 * Interaction_1 + beta_5 * Interaction_2, sigma);}generated quantities { real y_rep[N]; for (n in 1:N) { y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n] +                        beta_4 * Interaction_1[n] + beta_5 * Interaction_2[n], sigma); }}"# 准备数据列表data_list3 <- list(  N = nrow(df),  y = df$RT_sec,  X1 = X1,  X2 = X2,  Matching = Matching,  Interaction_1 = Interaction_1,  Interaction_2 = Interaction_2)
+```
+
+**进行后验采样**  接下来我们进行mcmc采样  
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 采样model3_fit <- stan(model_code = model_code3,                    data = data_list3,                    iter = 3000,                    chains = 4,                    warmup = 1000,                    thin = 1,                    seed = 84735)
+```
+
+**MCMC诊断和后验推断**  我们可以使用print函数来查看诊断和后验推断的摘要。
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+neff_ratio3 <- as.data.frame(bayesplot::neff_ratio(model3_fit))head(neff_ratio3,7)model_summary3 <- summary(model3_fit)round(head(model_summary3$summary, 7),3)
+```
+
+使用 ROPE+HDI 对参数进行检验  - 可以看到，$beta_4$ 和 $beta_5$ 非常接近0，表明没有交互效应。 
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 定义 ROPE 区间，根据研究的需要指定实际等效范围rope_interval <- c(-0.05, 0.05)# 提取后验样本trace3 <- rstan::extract(model3_fit)trace3_beta4 <- as.data.frame(trace3$beta_4)trace3_beta5 <- as.data.frame(trace3$beta_5)# 计算HDIbeta4_hdi95 <- bayestestR::hdi(trace3_beta4)beta5_hdi95 <- bayestestR::hdi(trace3_beta5)# 计算ROPErope4 <- bayestestR::rope(trace3_beta4,range = c(-0.05, 0.05))rope5 <- bayestestR::rope(trace3_beta5,range = c(-0.05, 0.05))# 绘图beta4_plot <- plot(rope4, rope_color = "grey70") +   ggplot2::annotate("text", # 添加标签显示 Rope 值                    x = 0, y = 0.5,                    label = paste0("ROPE: ", round(rope4$ROPE_Percentage * 100, 1), "%"),                     color = "black", size = 6) +  ggplot2::annotate("text",  # 添加标签显示 HDI 区间                    x = mean(trace3$beta_4), y = 0.1,                    label = paste0("95% HDI:\n[", round(beta4_hdi95$CI_low, 3), ", ", round(beta4_hdi95$CI_high, 3), "]"),                    color = "black", size = 6) +  ggplot2::labs(title = expression(paste("Region of Practical Equivalence (ROPE) of ",beta[4]))) +  papaja::theme_apa() +   ggplot2::scale_y_continuous(expand = c(0, 0)) +  ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置beta5_plot <- plot(rope5, rope_color = "grey70") +   ggplot2::annotate("text", # 添加标签显示 Rope 值                    x = 0, y = 0.5,                    label = paste0("ROPE: ", round(rope5$ROPE_Percentage * 100, 1), "%"),                     color = "black", size = 6) +  ggplot2::annotate("text",  # 添加标签显示 HDI 区间                    x = mean(trace3$beta_5), y = 0.1,                    label = paste0("95% HDI:\n[", round(beta5_hdi95$CI_low, 3), ", ", round(beta5_hdi95$CI_high, 3), "]"),                    color = "black", size = 6) +  ggplot2::labs(title = expression(paste("Region of Practical Equivalence (ROPE) of ",beta[5]))) +  papaja::theme_apa() + ggplot2::scale_y_continuous(expand = c(0, 0)) +  ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置# 显示图形options(repr.plot.width=14, repr.plot.height=6) beta4_plot + beta5_plot
+```
+
+使用贝叶斯因子进行差异检验  - $beta_4$ 和 $beta_5$ 的 $BF$ 都接近0，表明有证据说明不存在交互作用。
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 定义先验模型stan_prior_code3  <- "data {  int<lower=0> N;                 // 样本数量  vector[N] y;               // 响应变量  vector[N] X1;                   // 哑变量1（Friend）  vector[N] X2;                   // 哑变量2（Stranger）  vector[N] Matching;             // 哑变量（Matching条件）  vector[N] Interaction_1;        // Friend 和 Matching 的交互  vector[N] Interaction_2;        // Stranger 和 Matching 的交互}parameters {  real beta_0;                    // 截距  real beta_1;                    // Friend的主效应  real beta_2;                    // Stranger的主效应  real beta_3;                    // Matching的主效应  real beta_4;                    // Friend与Matching的交互效应  real beta_5;                    // Stranger与Matching的交互效应  real<lower=0> sigma;            // 误差项的标准差}model {  // 先验分布  beta_0 ~ normal(5, 2);  beta_1 ~ normal(0, 1);  beta_2 ~ normal(0, 1);  beta_3 ~ normal(0, 1);  beta_4 ~ normal(0, 1);  beta_5 ~ normal(0, 1);  sigma ~ exponential(0.3);    // 似然函数}"# 从先验采样model3_pri <- stan(model_code = stan_prior_code3,                    data = data_list3,                    iter = 3000,                    warmup = 1000,                   chains = 4,                   seed = 84735)
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 提取先验样本prior_samples3 <- extract(model3_pri)# 提取后验样本post_samples3 <- extract(model3_fit)# 可以使用bayestestR包中的bayesfactor_parameters函数计算贝叶斯因子（Savage-Dickey）beta4_BF <- bayestestR::bayesfactor_parameters(post_samples3$beta_4, prior_samples3$beta_4, direction = "two-sided", null = 0)beta5_BF <- bayestestR::bayesfactor_parameters(post_samples3$beta_5, prior_samples3$beta_5, direction = "two-sided", null = 0)print(beta4_BF)print(beta5_BF)# 配合see包可以对贝叶斯因子可视化plot_BF4 <- plot(beta4_BF)+  see::scale_fill_material_d(palette = "beta_4") +  see::scale_color_material_d(palette = "beta_4") +  xlim(-0.3,0.3) +  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[4]))) +  papaja::theme_apa() +  ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置plot_BF5 <- plot(beta5_BF)+  see::scale_fill_material_d(palette = "beta_5") +  see::scale_color_material_d(palette = "beta_5") +  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[5]))) +  xlim(-0.3,0.3) +  papaja::theme_apa() +  ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置options(repr.plot.width=20, repr.plot.height=6) plot_BF4 + plot_BF5 
+```
+
+**后验预测**  最后，我们可以使用 y_rep 来生成后验预测。
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+y_rep3 <- as.matrix(model3_fit, pars = "y_rep")pp_check3 <- bayesplot::ppc_dens_overlay(data_list$y, y_rep[1:200, ]) +              ggplot2::labs(title = "Posterior predictive check for model3") +              papaja::theme_apa()options(repr.plot.width=10, repr.plot.height=6) pp_check3
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 提取后验样本post_samples3 <- extract(model3_fit)# 先将列表转换为矩阵temp_matrix3 <- do.call(rbind, post_samples3)# 转置矩阵posterior_samples3 <- t(temp_matrix3)column3_means <- apply(posterior_samples3, 2, mean, na.rm = TRUE)# 计算预测值df$pred_mean3 <- column3_means[1] + column3_means[2] * data_list3$X1 +                  column3_means[3] * data_list3$X2 + column3_means[4] * data_list3$Matching +                 column3_means[5] * data_list3$Interaction_1 + column3_means[6] * data_list3$Interaction_2# 创建箱线图风格的后验预测图p3 <- real_boxp +   ggplot2::geom_point(aes(y = df$pred_mean3),              color = "red",              size = 3,              shape = 16,             position = position_dodge(width = 0.8)) +   ggplot2::labs(title = "Posterior predictive check for model3 (Box plot)") options(repr.plot.width=18, repr.plot.height=6) p1 + p2 + p3
+```
+
+相较于模型2，模型3考虑了匹配条件与标签之间的交互作用，因此可以更准确地捕捉反应时间随标签和匹配条件变化的非线性关系。  - 具体表现为，在 “stranger” 条件下，匹配条件对反应时间几乎没有影响。模型3能够捕捉到这一特性，而模型2则不能。
+
+## 模型解读与结论  通过贝叶斯回归模型的后验分布，我们可以推断以下几个方面：  - **反应时间与标签的关系**：根据 $\beta_1$  和  $\beta_2$ 的估计值，我们可以判断不同标签条件下反应时间的差异（自我对比其他标签）。  - **匹配条件的影响**：通过 $\beta_1$，我们可以判断是否匹配条件会显著影响反应时间。  - **交互效应**：通过 $\beta_4$ 和 $\beta_5$ 的估计，我们可以了解匹配条件与标签之间的交互作用是否显著，尤其是在自我与他人标签的反应时间是否有显著差异。  思考题：贝叶斯回归模型与传统的线性回归模型得到的结论是否一致？  
+
+## 练习  在以下的练习中，我们需要采用上述的思路，在另一个问题情境下使用贝叶斯的线性回归来解决问题。
+
+### 背景介绍  > * 🤦‍♀️🤦‍♀️当你压力大时，或许也曾：疯狂购物、沉迷游戏；但有的时候，当你感觉到压力大时，或许也曾：卸载软件，聚精会神  > * 从直觉上我们能感受到似乎压力与自我控制之间存在某种联系  我们使用的数据来自Human Penguin Project (Hu et al., 2018, doi: 10.17605/OSF.IO/H52D3)，该项目使用了多种常见的心理测量量表，并在跨国人群中进行施测，其中包含了测量压力与自我控制的量表。  - 测量压力的量表共有14道题，每道题的标尺有5个水平，分值为1-5，总分的分布范围为14-70  - 测量自我控制的量表共有13道题，每道题的标尺有5个水平，分值为1-5，总分的分布范围为13-65  > * 数据来源: Hu, C.-P. et al. (2018). Raw data from the Human Penguin Project. Open Science Framework. https://doi.org/10.17605/OSF.IO/H52D3  > * 压力量表来源：Cohen, S., Kamarck, T. & Mermelstein, R. A global measure of perceived stress. J. Health. Soc. Behav. 24, 385–396 (1983).  > * 自我控制量表来源：Tangney, J. P., Baumeister, R. F. & Boone, A. L. High self-control predicts good adjustment, less pathology, better grades, and interpersonal success. J. Pers. 72, 271–324 (2004).
+
+**使用线性模型表示二者关系**  * 在这个例子中，我们将每个被试的自我控制水平设为$Y$，压力水平设为$X$。在收集完n个被试的数据后，我们可以得到：  $$  \left\lbrace (Y_1,X_1), (Y_2,X_2),...,(Y_n,X_n) \right\rbrace  $$  * 我们可以使用线性模型来描述$Y$与$X$的关系，常见地，我们会将二者的关系写为：  $$  Y_i = \beta_0 + \beta_1 X_{i1} + \epsilon \;\;\;\;\;\;\;\;\epsilon \sim N(0,\sigma^2)\\  $$  *($\beta_0$为截距，$\beta_1$为斜率，$\epsilon$为残差)*  
+
+<h4>模型4定义</h4><p>现在，我们可以为参数$ (\beta_0, \beta_1, \sigma) $设置先验：</p><ul><li><p></p></li></ul><blockquote><p>$ \sigma \sim \text{Exp}(0.6) $</p><p>$ \beta_{0} \sim N\left(50, 10^2 \right) $</p><p>$ \beta_1 \sim N\left(0, 10^2 \right) $</p></blockquote><p></p><p>定义回归模型：</p><ul><li><p></p></li></ul><blockquote><p>$ Y_i {\sim} N\left(\mu_i, \sigma^2\right) $</p><p>$ \mu_i = \beta_0 + \beta_1 X_i $</p></blockquote><p></p>
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+# 导入数据df_raw <- tryCatch({  read.csv('/home/mw/input/bayes3797/Data_Sum_HPP_Multi_Site_Share.csv')}, error = function(e) {  read.csv('/Users/liumingyu/Desktop/贝叶斯2025/data 2/Data_Sum_HPP_Multi_Site_Share.csv')})# 筛选站点为"Tsinghua"的数据df <- df_raw %>%  filter(Site == "Tsinghua") %>%  # 筛选条件  select(stress, scontrol, smoke)  # 选择需要的列# 1 表示吸烟，2表示不吸烟df <- df %>%  mutate(smoke = ifelse(smoke == 2, 0, 1),  # 将 'smoke' 列重新编码          smoke_recode = ifelse(smoke == 1, "yes", "no"))  # 添加新的 'smoke_recode' 列# 设置索引df <- df %>%  mutate(index = row_number()) %>%  # 创建索引列  column_to_rownames("index")        # 将 'index' 设置为行名# 查看处理后的数据框print(df)
+```
+
+#### 任务1：根据数据和模型定义 Rstan 模型
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+stan_model4 <- "data {  ...    }parameters {  ... beta_0;                    ... beta_1;                     ... sigma;          }model {  beta_0 ~ ...;           beta_1 ~ ...;          sigma ~ ...;         // 似然函数  ... ~ ...}"
+```
+
+#### 任务2：拟合模型并进行 MCMC 检查
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     对模型 model4 进行 MCMC 采样#---------------------------...
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     通过可视化+统计指标检验 MCMC 是否收敛，当你顺利运行了这段代码，可以举手示意助教/老师帮助你检查其模型建立的是否正确#     提示：可以使用 bayesplot::mcmc_trace 函数#---------------------------...
+```
+
+#### 任务3：使用 HDI 或者 BF 进行模型推断
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     参考前面的代码计算 HDI + ROPE 区间 或者贝叶斯因子计算#---------------------------...
+```
+
+#### 任务4：进行后验预测
+
+```{r}
+#| _id: E8926B763DD04A4DAA79386771C3C17A
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| scrolled: false
+#| trusted: true
+##---------------------------#     对模型进行后验预测#---------------------------
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     可视化后验预测结果#     提示：可以使用 y_rep #---------------------------...
+```
+
+### 模型5：增加预测变量  🤔 是否可以将吸烟情况和压力同时加入到目前的模型4中?  
+
+如果我们现在将吸烟情况加入到目前的模型中的话，我们的线性回归模型则会更新为：  $$  Y_i = \beta_0 + \beta_1 X_{i1} + \beta_2 X_{i2} + \epsilon \;\;\;\;\;\;\;\;\epsilon \sim N(0,\sigma^2)\\  $$  - $X_{i1}$ 是第$i$个被试的压力水平;  - $X_{i2}$ 是第$i$个被试的吸烟状态，$X_{i2} = 0$ 表示不吸烟，$X_{i2} =1$ 表示吸烟;  *($\beta_0$为截距，$\beta_1$为斜率，$\epsilon$为残差)*  
+
+**各参数(回归系数)的意义：**  在现在的例子中，自变量包括离散变量和连续变量。  在自变量中，$X_{i2}$为离散变量，`0` 表示不吸烟，`1`表示吸烟  * 当$X_{i2} = 0$时，$\mu_i = \beta_0 + \beta_1X_{i1} + \beta_2 \cdot 0 = \beta_0 + \beta_1X_{i1}$      * 表示不吸烟情况下，自我控制分数随压力分数变化的情况，二者的关系可以被简化为一条直线。  * 当$X_{i2} = 1$时，$\mu_i = \beta_0 + \beta_1X_{i1} + \beta_2 \cdot 1 = (\beta_0 + \beta_2) + \beta_1X_{i1}$      * 表示吸烟情况下，自我控制分数随压力分数变化的情况。  > 注意，在该模型中，我们假设在两种吸烟条件下，压力对自我控制的影响是相同的，即不存在吸烟对于压力的调节作用。
+
+现在，我们可以结合数据与先验，为参数$(\beta_0, \beta_1, \beta_2, \sigma)$生成后验模型  * 当后验分布过于复杂时，我们可以使用MCMC来近似后验分布      * 我们使用PyMC来完成采样过程  我们的先验设置：  * > $Y_i {\sim} N\left(\mu_i, \sigma^2\right)$  * > $\beta_{0}   \sim N\left(50, 10^2 \right)$  * > $\beta_1   \sim N\left(0, 10^2 \right)$  * > $\beta_2   \sim N\left(0, 10^2 \right)$  * > $\sigma   \sim \text{Exp}(0.6)$  定义回归模型：  * > $\mu_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i}$
+
+#### 任务1：根据数据和模型定义 Rstan 模型
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+stan_model5 <- "data {  ...    }parameters {  ... beta_0;                    ... beta_1;      ... beta_2;  ... sigma;          }model {  beta_0 ~ ...;           beta_1 ~ ...;  beta_2 ~ ...;  sigma ~ ...;         // 似然函数  ... ~ ...}"
+```
+
+#### 任务2：拟合模型并进行 MCMC 检查
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     对模型 model5 进行 MCMC 采样#     注意！！！以下代码可能需要运行1-2分钟左右#---------------------------...
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     通过可视化+统计指标检验 MCMC 是否收敛，，当你顺利运行了这段代码，可以举手示意助教/老师帮助你检查其模型建立的是否正确#     提示：可以使用 bayesplot::mcmc_trace 函数#---------------------------...
+```
+
+#### 任务3：使用 HDI 或者 BF 进行模型推断
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     参考前面的代码计算 HDI + ROPE 区间 或者贝叶斯因子计算#---------------------------...
+```
+
+#### 任务4：进行后验预测
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     对模型进行后验预测#---------------------------
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     可视化后验预测结果#     提示：可以使用#---------------------------...
+```
+
+### 多元线性回归：增加交互项   现在，我们可以假设，在不同的吸烟状况下，压力对自我控制的影响略有不同(体现在斜率上)  ![Image Name](https://cdn.kesci.com/upload/s49oqb24we.png?imageView2/0/w/960/h/960)
+
+那么我们可以加入交互项：$\mu = \beta_0 + \beta_1 X_{1} + \beta_2 X_{2} + \beta_3 X_{1}X_{2}$  $$  \begin{equation}  \begin{array}{lcrl}  \text{data:} & \hspace{.05in} & Y_i|\beta_0,\beta_1,\beta_2,\beta_3,\sigma & \stackrel{ind}{\sim} N(\mu_i, \; \sigma^2) \;\; \text{ with } \; \mu_i = \beta_0 + \beta_1X_{i1} + \beta_2X_{i2} + \beta_3X_{i1}X_{i2} \\  \text{priors:} & & \beta_{0c}  &  \sim N\left(50, 10^2 \right)  \\                       & & \beta_1  & \sim N\left(0, 10^2 \right) \\                       & & \beta_2  & \sim N\left(0, 10^2 \right) \\                       & & \beta_3  & \sim N\left(0, 10^2 \right) \\                       & & \sigma & \sim \text{Exp}(0.6)  .\\  \end{array}  \end{equation}  $$  
+
+先验设置如下：  * > $Y_i \sim N\left(\mu_i, \sigma^2\right)$  * > $\sigma \sim \text{Exp}(0.6)$  * > $\beta_0 \sim N\left(50, 10^2\right)$  * > $\beta_1 \sim N\left(0, 10^2\right)$  * > $\beta_2 \sim N\left(0, 10^2\right)$  * > $\beta_3 \sim N\left(0, 10^2\right)$  定义回归模型：  * > $\mu_i = \beta_0 + \beta_1 X_{i1} + \beta_2 X_{i2} + \beta_3 X_{i1}X_{i2}$
+
+**在这个例子中，各参数的意义：**  * 当$X_{i2} = 0$时，$\mu_i = \beta_0 + \beta_1X_{i1}$      * 表示不吸烟情况下，自我控制分数随压力分数变化的情况，二者的关系可以被简化为一条直线。  * 当$X_{i2} = 1$时，$\mu_i = \beta_0 + \beta_1X_{i1} + \beta_2X_{i2} + \beta_3X_{i1} = (\beta_0 +\beta_2) + (\beta_1 + \beta_3)X_{i1}$      * 表示吸烟情况下，自我控制分数随压力分数变化的情况      * 注意截距项和斜率项的变化      * 此时压力对自我控制的影响为$(\beta_1 + \beta_3)$，体现了吸烟对这一关系的影响  
+
+#### 任务1：根据数据和模型定义 Stan 模型
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+stan_model6 <- "data {  ...    }parameters {  ...           }model {  ...        // 似然函数  ... ~ ...}"
+```
+
+#### 任务2：拟合模型并进行 MCMC 检查
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     对模型 model6 进行 MCMC 采样#     注意！！！以下代码可能需要运行1-2分钟左右#---------------------------...
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     通过可视化+统计指标检验 MCMC 是否收敛，当你顺利运行了这段代码，可以举手示意助教/老师帮助你检查其模型建立的是否正确#     提示：可以使用 bayesplot::mcmc_trace 函数#---------------------------...
+```
+
+#### 任务3：使用 HDI 或者 BF 进行模型推断
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     参考前面的代码计算 HDI + ROPE 区间 或者贝叶斯因子计算#---------------------------...
+```
+
+#### 任务4：进行后验预测
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     对模型进行后验预测#---------------------------
+```
+
+```{r}
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| notebookId: 69157f3b10ed22fd1ddd436c
+#| trusted: true
+##---------------------------#     可视化后验预测结果#---------------------------...
+```
+
+## 总结  🤔虽然我们现在已经学习了使用不同的线性回归模型来拟合变量间的关系，但有些问题我们暂时忽略了：  1. 如何评估不同的模型？哪个模型最好？  2. 什么时候该使用什么模型？  ![Image Name](https://cdn.kesci.com/upload/image/rkz1dqyo2e.png?imageView2/0/w/960/h/960)
+
+接下来，我们需要对模型进行**评估**  * 我们可以从以下三个角度来思考这个问题：      1. 模型本身公正吗？(How fair is the model?)      2. 模型存在错误吗？(How wrong is the model?)      3. 后验预测模型有多准确？(How accurate are the posterior predictive models?)  
+
+## 模型公正吗(Is the model fair?)  模型公正性是一个上位概念，它描述了模型是否符合我们(社会、道德、伦理)的预期，而不仅是关注模型和样本数据的关系。  我们可以借助几个相关问题来理解和思考模型的公众性：  1. 数据的收集过程是怎样的？  2. 数据由谁收集，数据收集的目的是什么？  3. 数据收集的过程，以及分析的结果，将对个人和社会产生什么影响？  4. 分析过程中可能会包含哪些偏见      * p-hacking/HARKing
+
+**1. 数据的收集的过程公平吗？**  在本示例研究中，数据来源于基于自我匹配范式的实验数据，这些数据通过线下认知实验收集而得。  * 数据收集过程是公平的，被试填写了实验的知情同意书，并获得相应的报酬。  * 此外，数据收集过程是匿名化的，保护了被试的隐私。  极端的反例，如：  * 在数据收集过程中，仅选取大学生群体作为样本，而忽略其他重要的人群。  🤔基于这些数据的模型公正吗？  
+
+**2. 研究目的，以及数据收集的目的公平吗？**  在本示例研究中，研究目的来源自心理学家的好奇和假设。这是合理的，因为心理学研究是一种探索性的研究方法。  一些极端的反例：  * 如果研究项目来源于开发缓解压力药的厂商。那么，研究目的就可能被操纵，以支持药厂的销售。  * 例如，有目的的选择被试。  * 例如，有目的性的将实验目告诉被试，从而收集到符合预期的数据。
+
+**3. 模型分析的结果，将对个人和社会产生什么影响？**  在本示例研究中，研究结果(模型分析的结果)具有一定的理论意义和实际意义。  * 在理论层面， 自我匹配范式中的模型能够帮助揭示个体如何处理与“自我”相关的信息。  * 在实际意义层面，通过这些模型，可以更精确地识别个体在自我认知过程中的偏差。 
+
+**4. 分析过程中包含的偏见？**  一些反例：  * 假设在一次研究中使用多种问卷收集多种因变量，然后选择有相关性的变量进行报告?  * 在多因素实验设计中，通过增加变量来获得显著的交互作用，并尝试多种简单效应分析。
+
+在心理学研究中，模型公正性往往与***心理学研究的可重复性***相关。  1. 数据的收集过程是怎样的？  2. 数据由谁收集，数据收集的目的是什么？  3. 数据收集的过程，以及分析的结果，将对个人和社会产生什么影响？  4. 分析过程中可能会包含哪些偏见      * p-hacking/HARKing  <div style="text-align: center;">      <img src="https://pic2.zhimg.com/80/v2-778de6c621356bc2c23c3a09ff2b0be5_1440w.webp"           alt="Image Description"           style="width: 60%; height: auto;">  </div>  (来源：胡传鹏, ..., 彭凯平. (2016). 心理学研究中的可重复性问题:从危机到契机. 心理科学进展(9), 15.)
+
+虽然贝叶斯模型无法直接回答“模型是否公平”这个问题，但它能更好地整合前提假设和先验知识。通过模型比较的方式，贝叶斯方法可以帮助我们发现模型中的潜在错误，以及模型的预测能力。🔍  模型公正的三大思考角度：  1. 模型本身公平吗？ 🤔  2. 模型有错误吗？ ❌  3. 后验预测模型有多准确？ 🎯
+
+### 这个模型可能有多错误(How wrong is the model?)  >  **<center>“all models are wrong, but some are useful.   ————George Box”</center>**  * 尽管统计模型是对更复杂现实的简化表达，良好的统计模型仍然可以是有用的，并可以增进我们对世界复杂性的理解。  * 因此，在评估模型时，要问的下一个问题不是模型是否错误(is the model wrong?)，而是模型错误的程度(How wrong is the model?)  🤔思考贝叶斯线性回归模型的假设在多大程度上与现实相符？  **在贝叶斯中，模型评估主要会通过绝对指标和相对指标来进行评估，我们会在下一节课详细介绍。**  
+
+**概念区别：模型诊断(model diagnostic) vs. 模型验证(model validation)**  在贝叶斯的workflow中，  - MCMC评估是对MCMC进行检验，在Gelman et al (2020)中也被称为计算过程的验证(validate computation)，其核心在于确定MCMC算法采样得到的样本是否足以提供目标分布的精确近似。  - 模型评估则是指对模型是否公平性、有效性、可信性进行评估，既可以是对单个模型，也可以是对多个模型进行。  理想情况下，两种评估结果都是良好的。然而，情况并非总是如此。    - 我们可能有一个很好的模型框架，但是MCMC链的结果却不稳定，进而导致不准确的后验近似。    - 或者刚好相反，我们可以获得很好地后验近似，但模型本身却并不反映任何事实。  ![Image Name](https://cdn.kesci.com/upload/image/rkz1dqyo2e.png?imageView2/0/w/960/h/960)
+

@@ -1,0 +1,671 @@
+---
+title: '<center> Lecture 5:  Bayesian Inference: 如何获得后验分布  </center>'
+jupyter: ir
+---
+
+<center> <h2> Instructor: Dr. Hu Chuan-Peng </h2>  </center>
+
+
+第一次小作业：R语言数据处理的基础  - 请注意，您需要在每个闯关题中取得 90分或以上 的成绩，才能晋级到下一关。  - 希望大家都能积极参与，展现出色的表现！
+
+#### 分组安排  选课的同学自行组队👭👬（3-5人），班长负责提交名单，提交时间为下次周四上课前。
+
+## 回顾  ### 单一事件、离散变量和连续变量中的贝叶斯公式  在前面的课程中，我们使用了一些简单的情境来帮助大家建立贝叶斯推断的直觉。  通过单一事件、离散变量和连续变量的例子逐步讲解了贝叶斯推断的核心思想：  | 知识点            | 内容描述                                         | 先验                                                              |   似然                                                                             | 贝叶斯更新                 | 感兴趣的目标    |  | -------------- | -------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------- | --------- |  | **单个事件**       | 一个使用特定语言风格的心理学实验被成功重复出来的可能性                  | [OSC2015](https://doi.org/10.1126/science.aac4716)的结果           |   [Herzenstein et al 2024](https://doi.org/10.1177/09567976241254037 )年的研究结果     | 可视化的方式 + 简单计算         | 下次实验的可重复性 |  | **离散变量**       | 多次试验(如6次实验中)的成功率                            | 人为分配的三种成功率(0.2, 0.5, 0.8)和它们出现的可能性                              | 进行重复后的结果在**三种**成功率下出现的可能性                                                        | 简单的手动计算               | 多次实验的可重复性 |  | **连续变量**       | 无数次试验的正确率                                | 符合成功率/正确率(0~1)特点和先验经验的概率分布                                      | 进行重复后的结果在**所有**成功率/正确率下出现的可能性                                                    | 已被证明的统计学公式            | 实验本身的可重复性 |  
+
+## 回顾  ### 单一事件中体现出的贝叶斯公式   - 某个研究的可重复性与语言风格。  **一项研究使用了确切语言（事件 B 已经发生）的心理学研究**，其**可重复**的概率是多少。  - A 事件代表的是一项心理学研究是可重复的；  - B 事件代表的是一项心理学研究使用了确切语言。
+
+![Image Name](https://cdn.kesci.com/upload/sjp0bqwjgl.png?imageView2/0/w/900)  
+
+![Image Name](https://cdn.kesci.com/upload/sl522n7hfr.png?imageView2/0/w/900)
+
+用条件概率公式表示：  $$  P(A|B) = \frac{P(A \cap B)}{P(B)}  $$  其中， $P(A \cap B)$ 表示事件 A 和事件 B 同时发生的概率，即研究既是可重复的，又使用了确切语言，根据上图，这个值为 0.224。  $P(B)$ 表示研究使用确切语言的总概率，即可表示为：  $$  P(B) = P(A \cap B) + P(not A \cap B)  $$  即，可重复且使用确切语言的概率加上不可重复但使用确切语言的概率，具体为：  $$  P(B) = 0.224 + 0.27 = 0.494  $$  代入条件概率公式：  $$  P(A | B) = \frac{0.224}{0.494} \approx 0.454  $$  
+
+### 结论  - 条件概率告诉我们，随着我们获得新的信息（如事件 $B$ 的发生）， 我们会调整关于在这种情况下事件 $A$ 发生的概率($P(A|B)$。  $$  P(A|B) = \frac{P(A \cap B)}{P(B)}  $$    - 这个公式就是鼎鼎大名的**贝叶斯公式**    - 这正是贝叶斯定理的基础思想：我们通过结合先验信息和新观测数据，不断更新对事件发生概率的认识。
+
+### 随机变量随着信息的更新 --> 贝叶斯法则  - 贝叶斯公式描述的是，给定事件 $B$已经发生的情况下，事件 $A$ 的发生概率如何调整。  - 假如这里的$A$是特定模型下的一个参数(随机变量)，关于$A$的概率分布来自于我们的先验知识 $P(A)$ ；  - 假如这里的$B$是新获得的与$A$有关数据，根据模型与$A$可以计算似然 $P(B|A)$；  - 经过贝叶斯更新，可以得到更新的关于$A$的概率分布： $P(A|B)$。  上述过程中，我们从贝叶斯公式“升级”成了利用贝叶斯法则进行推断：  - 贝叶斯推断的核心思想：**在新数据的条件下，更新我们的信念**。  - 贝叶斯推断的特点：（不同的）先验与（不同的）数据之间平衡、序列性等
+
+所以：  1. **贝叶斯推断的本质**就是计数，符合人类的推理直觉。   2. 贝叶斯统计的主要作用在于将这种直觉形式化，通过数学工具帮助我们在更复杂的情境中解决问题。  因此，也引出一个问题：既然贝叶斯推断这么符合人的直觉，为什么我们以前在心理统计课上不教它呢？ 
+
+- 贝叶斯推断的核心在于如何得到**后验分布**。通过结合先验和似然，我们能够得到对未知参数的最新估计。  - 贝叶斯推断的难点在于：如何得到后验分布？
+
+#### Beta-Binomial是如何得到后验分布的？  先前例子：推断编号为 “82111” 被试的正确率，观测到的数据为253 次试验数据，其中有 152 次判断正确。  先验（Informative Prior）, $Beta(70,30)$  $$  \pi | (Y = 152) \sim \text{Beta}(70 + 152, \, 30 + 101)  $$  --> 后验分布可以通过**套公式来的计算**，非常简洁。  但问题在于：是不是所有情况下的贝叶斯分析都可以如此简洁？  Beta-Binomial 属于共轭分布簇。  
+
+## 共轭先验 (Conjugate Prior)  **共轭先验的定义与解释**  **共轭先验**：在贝叶斯推断中，在给定数据（似然函数）后，如果先验分布产生一个与之属于同一分布簇的后验分布，称该先验为该似然的**共轭先验**。  - 具体来说，给定一个概率分布簇和它的参数，如果这个参数的先验分布与后验分布属于同一个分布簇，那么这个**先验分布被称为该似然函数的共轭分布**。  **共轭先验的优点是：**  1. **计算简便**：共轭先验使得后验分布的数学形式保持简单，易于计算。  2. **解释性**：共轭先验有时可以提供直观的参数解释。  3. **封闭形式的解决方案**：使用共轭先验可以使得后验分布有封闭形式的解，这对于抽样和推断非常有用。  
+
+以正确率 $\pi$ 为例，我们考虑以下情况：  - $\pi$ 的先验分布的概率密度函数（PDF）为 $f(\pi)$。  - 给定 $\pi$ 下观测数据 $Y$ 的似然函数为 $L(\pi|Y)$。  如果后验分布的PDF $f(\pi|Y)$ 与先验分布属于同一模型家族，并且可以表示为：  $$  f(\pi|Y) \propto f(\pi) \cdot L(\pi|Y)  $$  那么，这个先验分布 $f(\pi)$ 就是似然函数 $L(\pi|Y)$ 的共轭先验。  
+
+#### Beta-Binomial conjugate family  在lec3 与 lec4 中，我们使用了$Beta$分布来反映我们对参数$\pi$的先验认识。  我们知道若先验可以用$Beta(\alpha,\beta)$描述，收集到的数据可以用$Bin(n, \pi)$描述，后验分布就可以用$Beta(\alpha+y, \beta+n-y)$描述。  
+
+**非共轭先验会带来什么**  让我们再回到随机点运动任务正确率的例子，考虑一个非共轭先验的状况  假如此时的先验分布$f(\pi)$不是$Beta$分布，而是以下形式：  $$  \begin{equation}  f(\pi)=e-e^\pi\; \text{ for } \pi \in [0,1]  \end{equation}  $$  ![](https://www.bayesrulesbook.com/bookdown_files/figure-html/non-conjugate-1.png)  > source: [Bayes Rules!#non-conjugate-1.png](https://www.bayesrulesbook.com)  
+
+> 假设，数据为 50 次反应中有 10 次正确，那么在共轭先验$Beta(45,55)$的情况下，后验分布可以简洁地写为$Beta(55=45+10,95=55+40)$。  > 但在非共轭先验的情况下，该后验分布的结果变得很繁琐。   > 并且在非共轭先验的情况下，我们很难从这个后验表达式中获得类似的直觉。   ##### <a id='a1'></a>[😂非共轭先验下，后验公式推导](#a1_) ：  此时似然函数仍是一个二项分布  $$  L(\pi | y=10) = \left(\!\begin{array}{c} 50 \\ 10 \end{array}\!\right) \pi^{10} (1-\pi)^{40} \; \; \text{ for } \pi \in [0,1]  $$  后验可以写成：  $$  f(\pi | y = 10) \propto f(\pi) L(\pi | y = 10) = (e-e^\pi) \cdot \binom{50}{10} \pi^{10} (1-\pi)^{40}  $$  加入归一化常数后：  $$  \begin{equation}  f(\pi|y=10)= \frac{(e-e^\pi)  \pi^{10} (1-\pi)^{40}}{\int_0^1(e-e^\pi)  \pi^{10} (1-\pi)^{40}d\pi}  \; \; \text{ for } \pi \in [0,1]  \end{equation}  $$
+
+### 其他共轭先验  除了 Beta-Binomial 和 Normal-Normal，贝叶斯推断中还有其他重要的共轭先验组合：  ![Image Name](https://cdn.kesci.com/upload/skt7ayyug7.jpg?imageView2/0/w/750/h/640)  > Source:https://blog.csdn.net/weixin_55252589/article/details/135380176  
+
+这些共轭家族的主要优势在于，极大简化了计算。  然而，在实际应用中，许多复杂的统计模型并没有简单的共轭先验。对于这些模型，计算后验分布中的分母（归一化常数）变得非常困难，甚至无法通过解析方式计算出来，如之前提到的 <a id='a1_'></a>[Beta-Binomial 在非共轭先验下的后验公式推导](#a1)。  因此，贝叶斯推断在很长一段时期内，被困在共轭分布的适用范围内，导致其相对频率主义统计而言毫无优势可言。  但是算力的普及改变了这一状况，基于数值的方法和近似的方法也能够在非共轭情况下获得后验分布，完成贝叶斯推断，这是现代贝叶斯统计获得广泛应用的**前提**。  > Note:在本课中，我们不对共轭先验进行进一步介绍，如果想深入了解上述内容，可访问我们去年 [lecture 5 的 jupyter notebook](https://gitee.com/hcp4715/PyBayesian/blob/master/Archive/2023/Notebooks/Lecture5.ipynb)以及本课件最后的附录。  
+
+在实际应用中，我们会遇到一些问题，比如：  - 对于连续变量，在计算边缘似然$f(y)$时需要积分，然而某些情况下(例如，先验不是似然的共轭分布)，此时积分难以或无法计算。  - 当参数或数据维度较高时，计算边缘似然$f(y)$的难度会变得非常困难。  **条件概率的计算**  最初，当我们只有一个或少数几个参数时，条件概率的计算相对简单。例如，给定数据$y$，参数$\theta_k$的条件概率可以表示为：  $$  f(\theta_k | y) = \frac{f(\theta_k)L(\theta_k | y)}{f(y)}  $$  - 这里，$f(\theta_k)$是参数$\theta_k$的先验概率分布，  - $L(\theta_k | y)$是似然函数，而$f(y)$是数据的边缘似然。  **连续变量的挑战**  当参数$\theta_k$是连续变量时，计算开始变得复杂。我们需要对$\theta_k$的所有可能值进行积分来计算边缘似然$f(y)$：  $$  f(y) = \int f(\theta_k)L(\theta_k | y) d\theta_k  $$  - 这个积分可能已经比较难以计算，特别是当似然函数$L(\theta_k | y)$的形式复杂时。  
+
+**多个连续变量的复杂性**  当模型包含多个连续参数$\theta_1, \theta_2, ..., \theta_k$时，计算边缘似然$f(y)$的分母变得更加复杂：  $$  f(y) = \int_{\theta_1}\int_{\theta_2} \cdots \int_{\theta_k} f(\theta)L(\theta | y) d\theta_k \cdots d\theta_2 d\theta_1  $$  挑战在于：  - **计算量增加**：随着参数数量的增加，多变量积分的计算量呈指数级增长。  - **解析解难以获得**：对于某些复杂的似然函数，可能不存在封闭形式的解析解，使得传统的积分方法无法直接应用。  - **数值积分的限制**：即使使用数值积分方法，也可能因为维度灾难（curse of dimensionality）而面临计算上的困难，导致精度下降或计算成本过高。  
+
+## 对后验的近似(Approximating the Posterior)  “算力的普及改变了这一状况，基于数值的方法和近似的方法也能够在非共轭情况下获得后验分布，完成贝叶斯推断，这是现代贝叶斯统计获得广泛应用的**前提**。”    
+
+在解决计算问题时，现代方法主要分为两大类：数值方法和近似方法。  - 数值方法通过精确的算法直接求解问题，包括迭代法、分解法等。  - 而近似方法则通过牺牲一定的精度来换取计算效率，包括蒙特卡洛模拟、变分法、插值与拟合技术等。  本课中我们将介绍两种**近似方法**：  1. 网格近似  2. 马尔可夫链蒙特卡洛（MCMC）
+
+### Grid approximation 网格近似  ![Image Name](https://www.bayesrulesbook.com/bookdown_files/figure-html/unnamed-chunk-177-1.png)  > * 想象有一张图像(图三)，但你不能完整地看到它。不过你可以从左到右每次取一个这个图像中的一个小格来观察它。  > * 只要格子越细，最后组合在一起就会与完整的图片更近似  在网格近似中，后验分布$f(\theta | y)$其实就是完整的图片。我们可以选择有限个$\theta$，并观察对应的$f(\theta | y)$，以此来近似完整的后验分布。  
+
+（以一个参数为例）网格近似可以分为以下四个步骤：  1. 选定一系列离散的$\theta$值  2. 计算每个$\theta$值对应的先验分布$f(\theta)$和似然函数$L(\theta|y)$  3. 对于所有的$\theta$值，计算$f(\theta)$与$L(\theta|y)$二者的乘积并相加，再进行归一化  4. 归一化后，根据$\theta$值的后验概率分布，随机抽取$N$个$\theta$值  我们以Beta-Binomial的例子来演示这四个步骤
+
+### A Beta-Binomial example  设定先验$\pi$ 服从  $$  \pi \sim \text{Beta}(\alpha = 70, \beta = 30)  $$  似然函数为：  $$  Y | \pi  \sim \text{Bin}(n, \pi)  $$  > * 假设$\pi$反映的是正确率，似然函数反映的则是在某个正确率下，总trial为100次时，正确次数的分布概率情况。  > $$  \pi    \sim \text{Beta}(70, 30)  > $$  > $$  Y|\pi  \sim \text{Bin}(100, \pi)  $$  > * 在观察到 $n$ 次事件中有 $Y = y$ 次目标事件后，$\pi$的后验分布可以用Beta模型来描述，反映了先验（通过$\alpha$和$\beta$）和数据（通过y和n）的影响：  > $$  > \pi | (Y = y) \sim \text{Beta}(\alpha + y, \beta + n - y)  $$  
+
+假设在试次总数为100次时，正确次数为90，我们通过共轭先验的公式，可以直接计算出$Beta$后验分布的两个参数：  - $Y + \alpha = 90 + 70\;\;, \;\;\;\;\;\;\;\; n - Y + \beta = 100 - 90 + 30$  - $\pi | (Y = 90) \sim \text{Beta}(160, 40)$  这个结果可以用来对我们使用网格近似的后验进行验证。
+
+**示例：网格近似估计后验分布**  现在我们暂时忘记后验的简便计算方法，使用网格近似来对后验分布进行估计。  **Step 1：** 首先，为了方便演示，我们将从0.5~1内的连续变量$\pi$中取出11个值：$\pi \in \{0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1\}$
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 安装和加载包options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))if (!requireNamespace('pacman', quietly = TRUE)) {    install.packages('pacman')}pacman::p_load("tidyverse","ggplot2","dplyr",'rstan',               "BayesFactor","bayestestR","papaja","bayesplot")options(warn = -1)  # 抑制警告
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 生成从 0.5 到 1 的 11 个值pi_grid <- seq(0.5, 1, length.out = 11)cat("从0.5~1内的连续变量π中取出11个值:", pi_grid, "\n")
+```
+
+**Step 2 & 3:**  在每一个$\pi$下，计算似然函数$Bin(100, \pi)$ (Y=90)并及先验分布 $Beta(70, 30)$相乘，然后求和并进行归一化
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 计算先验、似然和后验prior <- dbeta(x = pi_grid, shape1 = 70, shape2 = 30)# dbeta: the value of probability density function of beta distribution# given the paramenters of beta distribution.likelihood <- dbinom(x = 90, size = 100, prob = pi_grid) # dbinom: the value of the probability density function (pdf) of the binomial distribution # given a certain random variable x, number of trials (size) and # probability of success on each trial (prob)posterior <- prior * likelihood / sum(prior * likelihood)
+```
+
+```{r}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# 绘制后验分布茎状图（）plot_data <- data.frame(pi_grid = pi_grid, posterior = posterior)ggplot2::ggplot(plot_data, ggplot2::aes(x = pi_grid, y = posterior)) +  ggplot2::geom_segment(ggplot2::aes(xend = pi_grid, yend = 0), linewidth = 0.5) +  ggplot2::geom_point(size = 2) +  ggplot2::ylim(0, 1) + # 零点与x轴重叠  ggplot2::scale_y_continuous(limits = c(0, 1), expand = c(0, 0)) +  ggplot2::labs(x = "pi", title = "Posterior") +  papaja::theme_apa() +  theme(axis.title.y=element_blank())
+```
+
+**Step 4：**  得到后验结果($\pi$)的分布后，从这个分布中抽样10000次，对后验进行可视化。  *由于$\pi$的取值只在 $\{0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1\}$ 之中，从上图中可以看到，$\pi = 0.8$ 的后验概率显著高于其他点，所以大多数样本会集中在 $\pi = 0.8$ 附近。
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 设置随机种子set.seed(84735)# 从 posterior 分布中抽取 10000 个样本posterior_sample <- sample(  pi_grid,   size = 10000,  prob = posterior,  # R中使用prob参数指定概率  replace = TRUE)# 将抽取的样本存储在数据框中，列名为 "pi_sample"posterior_sample <- data.frame(pi_sample = posterior_sample)# 对 posterior_sample 中的样本进行计数，并转换为相对频率result <- as.data.frame(table(posterior_sample) / nrow(posterior_sample))colnames(result) <- c("pi_sample", "proportion")
+```
+
+```{r}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+str(posterior_sample)
+```
+
+**抽样结果图示**  抽样结果显示，$\pi$ 大多数集中在 0.80 附近，少部分在 0.75 和 0.85 附近。
+
+```{r}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+posterior_sample %>%    ggplot2::ggplot(., aes(x=pi_sample)) +     geom_histogram() +    papaja::theme_apa() 
+```
+
+**抽样结果图示**  可以将抽样得到的后验分布与理论上的 Beta 分布 $Beta(160, 40)$ 进行对比，以检验抽样的准确性。  
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+## 对通过公式得到的beta分布进行可视化，注意，这里也会涉及到生成随机概率密度的过程，## 但是我们是直接从后验分布中计算后验概率，没有上述的计算后验过程# 生成10000个点，范围在[0, 1]之间x_beta <- seq(0, 1, length.out = 10000)# 根据理论的后验分布Beta(160, 40)获得概率密度值y_beta <- dbeta(x_beta, 160, 40)# 转换为数据框用于ggplot2绘图beta_data <- data.frame(x = x_beta, y = y_beta)# 绘制共轭方法计算得到的后验beta(160,40)和网格方法抽样结果options(repr.plot.width=10, repr.plot.height=5) #自定义画布大小ggplot2::ggplot() +  # 绘制Beta分布曲线   ggplot2::geom_line(    data = beta_data,    ggplot2::aes(x = x, y = y, color = "posterior distribution (theoretical)"),    linewidth = 1) +  # 绘制网格搜索后验样本的直方图  ggplot2::geom_histogram(    data = posterior_sample,  # 使用之前创建的posterior_sample数据框    ggplot2::aes(x = pi_sample, y = ..density.., fill = "posterior distribution (grid, 11 points)"),    color = "black",    alpha = 0.5,    bins = 40) +  # 控制直方图的箱数  # 统一设置填充色和线条色的图例  ggplot2::scale_color_manual(values = "#4169E1") +  ggplot2::scale_fill_manual(values = "#E28903") +  ggplot2::labs(x = NULL, y = NULL, color = NULL, fill = NULL) +  scale_y_continuous(expand = c(0, 0)) +  papaja::theme_apa() +  # 设置图例位置  theme(legend.position = "right")
+```
+
+**增加网格数**  * 上述结果是过度简化的“后验分布”。刚刚提过，取的网格越多，对后验的估计会更准确。  * 那么，现在$\pi$不取11个值，而是在0~1之间取101个值$\pi \in \{0, 0.01, 0.02, \ldots, 0.99, 1\}$  * 同样的，我们执行上述四个步骤：
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 生成101个点，范围在[0, 1]之间pi_grid <- seq(0, 1, length.out = 101)# 生成Beta(70,30)先验分布prior <- dbeta(x = pi_grid, shape1 = 70, shape2 = 30)# 生成二项分布似然函数，参数为n=100，k=90likelihood <- dbinom(x = 90, size = 100, prob = pi_grid)# 计算后验概率unstd_posterior <- prior * likelihood# 归一化后验概率posterior <- unstd_posterior / sum(unstd_posterior)# 创建数据框用于绘图df <- data.frame(pi = pi_grid, posterior = posterior)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 画图ggplot2::ggplot(df, ggplot2::aes(x = pi, y = posterior)) +  ggplot2::geom_segment(ggplot2::aes(xend = pi, yend = 0), color = "#1f77b4") + # 添加茎线  ggplot2::geom_point(color = "#1f77b4", size = 2) +  # 添加顶部点  ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, 0.3)) +  ggplot2::theme(    panel.grid.minor = ggplot2::element_blank(),    axis.line.x = ggplot2::element_line(color = "black"),    axis.line.y = ggplot2::element_line(color = "black")  ) +  ggplot2::labs(x = "", y = "", title = "Grid Approximation (101 points)")+  papaja::theme_apa()
+```
+
+可以看到，在此次的抽样中，$\pi$的取值更加多样
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: true
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+set.seed(84735)# 从 posterior 分布中抽取 10000 个样本posterior_sample <- dplyr::tibble(  pi_sample = sample(    x = pi_grid,  # 待抽样的向量    size = 10000, # 样本量    prob = posterior,  # 每个元素被抽中的概率    replace = TRUE  # 有放回抽样  ))# 对样本进行计数并转换为相对频率result <- posterior_sample %>%  dplyr::count(pi_sample) %>%  # 计数  dplyr::mutate(relative_frequency = n / sum(n)) %>%  # 计算相对频率  dplyr::select(pi_sample, relative_frequency)  # 选择需要的列head(result, n = 20)
+```
+
+```{r}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+posterior_sample %>%    ggplot2::ggplot(., aes(x=pi_sample)) +     geom_histogram(bins = 50) +    papaja::theme_apa() 
+```
+
+**抽样结果图示**  对比一下抽样得到的后验分布图 和 实际的后验分布$Beta(110, 30)$  相比于上一次，这一次的结果更加接近真实的后验分布
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 生成10000个点，范围在[0, 1]之间x_beta <- seq(from = 0, to = 1, length.out = 10000)# 直接从理论后验Beta(160,40)中抽取概率密度y_beta <- stats::dbeta(x_beta, shape1 = 160, shape2 = 40)# 创建共轭分布的数据集conj_data <- data.frame(x = x_beta, y = y_beta, type = "posterior distribution (theoretical)")# 生成网格搜索后验样本（模拟数据）posterior_sample <- data.frame(pi_sample = stats::rbeta(n = 10000, shape1 = 155, shape2 = 38))# 绘图options(repr.plot.width=10, repr.plot.height=5) #自定义画布大小ggplot2::ggplot() +  # 绘制共轭分布的后验曲线  ggplot2::geom_line(    data = conj_data,    ggplot2::aes(x = x, y = y, color = type),    linewidth = 1  ) +  # 绘制网格搜索的后验直方图  ggplot2::geom_histogram(    data = posterior_sample,    ggplot2::aes(x = pi_sample, y = ..density.., fill = "Grid Approximation (101 points)"),    alpha = 0.7,  # 调整透明度    bins = 160,    # 调整分箱数量    color = "black"  # 直方图边框颜色  ) +  # 设置颜色  ggplot2::scale_color_manual(values = "#4169E1") +  ggplot2::scale_fill_manual(values = "#E28903") +  ggplot2::labs(x = NULL, y = NULL, color = NULL, fill = NULL) +  # 合并图例  ggplot2::guides(color = ggplot2::guide_legend(order = 1),fill = ggplot2::guide_legend(order = 2)) +  scale_y_continuous(expand = c(0, 0)) +  papaja::theme_apa() +  # 设置图例位置  theme(legend.position = "right")
+```
+
+### 练习  > 📃以**Normal-Normal模型**为例来练习网格近似  在 Normal-Normal 模型 中，观测数据和参数之间的关系是通过正态分布来表示的。  **模型设定：**  - 假设 $\mu$ 是参与者在随机点运动任务中的**平均反应时间**（单位：ms）, $\sigma$ 是参与者在随机点运动任务中的**标准差**（单位：ms）。  - 先验分布设为正态分布，我们假设参与者的平均反应时间约为 500 ms，标准差为 100 ms。    - 对于 $\mu$，其先验分布为 $\mu \sim N(500, 200)$。    - 对于 $\sigma$，其先验分布为 $\sigma \sim N(100, 50)$ \[这个先验是否合理?\]。  - 观测数据 $Y$ 表示参与者在实验中实际的反应时间。假设我们收集了被试完成 10 次实验的反应时间。    - 例如 [691., 582., 628., 729., 699., 472., 626., 538., 542., 583.] ms。  目标：我们的目标是通过**网格近似法**计算 $\mu$ 的后验分布。  $$  \begin{equation}  \begin{split}  Y_i|\mu & \stackrel{ind}{\sim} N(\mu, \sigma^2) \\  \mu & \sim N(\mu_0, \sigma_0^2) . \\  \sigma & \sim N(\mu_1, \sigma_1^2) . \\  \end{split}  \tag{1}  \end{equation}  $$  <div style="padding-bottom: 30px;"></div>
+
+首先，我们仅考虑只有一种参数的情况。 即假设我们已知 $\sigma$ 为 80， 而 $\mu$ 未知。  $\mu$ 的先验为正态分布，即 $N(500, 200)$。
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: skip}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+set.seed(0)  # 设置随机种子data <- stats::rnorm(n = 10, mean = 550, sd = 80)  # 生成正态分布数据
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: fragment}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 展示数据print(data)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+##---------------------------------------------------------------------------#                            设置网格范围和步长#                            1. 假设被试反应的反应时范围为 200 到 800 ms#                            2. 设定网格步长为20 (后续可以修改为30,50,100等)# ---------------------------------------------------------------------------# n_step <- ...  请补充... # mu_grid <- ...  请补充...
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 答案##---------------------------------------------------------------------------#                            设置网格范围和步长#                            1. 假设被试反应的反应时范围为 200 到 800 ms#                            2. 设定网格步长为20 (后续可以修改为30,50,100等)# ---------------------------------------------------------------------------# theta_grid <- base::seq(from = 200, to = 800, length.out = 20)n_step <- 200mu_grid <- base::seq(from = 200, to = 800, length.out = n_step)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+##---------------------------------------------------------------------------#                            计算先验概率#                            1. 设定先验概率服从正态分布#                            2. 先验均值为500, 标准差为100# ---------------------------------------------------------------------------# prior_mean <- ... # prior_std <- ... # prior_prob <- stats::dnorm(...)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 答案##---------------------------------------------------------------------------#                            计算先验概率#                            1. 设定先验概率服从正态分布#                            2. 先验均值为500, 标准差为100# ---------------------------------------------------------------------------prior_mean <- 500prior_std <- 100prior_prob <- stats::dnorm(mu_grid, mean = prior_mean, sd = prior_std)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+##---------------------------------------------------------------------------#                            计算似然函数# ---------------------------------------------------------------------------# likelihood <-
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 答案##---------------------------------------------------------------------------#                            计算似然函数# ---------------------------------------------------------------------------likelihood <- sapply(mu_grid, function(mu) {  # 计算每个数据点的正态密度并求乘积  prod(stats::dnorm(data, mean = mu, sd = 80))})
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+##---------------------------------------------------------------------------#                            计算后验# ---------------------------------------------------------------------------# posterior_prob <- ...# 归一化后验概率
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 答案##---------------------------------------------------------------------------#                            计算后验# ---------------------------------------------------------------------------posterior_prob <- prior_prob * likelihood# 归一化后验概率posterior_prob <- posterior_prob / sum(posterior_prob)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+##---------------------------------------------------------------------------#                            计算找到后验概率的最大值对应的参数# ---------------------------------------------------------------------------# max_posterior <- # cat("最大后验概率对应的参数值：", mu_grid[max_posterior], "\n")
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 答案##---------------------------------------------------------------------------#                            计算找到后验概率的最大值对应的参数# ---------------------------------------------------------------------------max_posterior <- which.max(posterior_prob)cat("最大后验概率对应的参数值：", mu_grid[max_posterior], "\n")
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 绘制结果（直接运行即可）options(repr.plot.width=10, repr.plot.height=5) #自定义画布大小ggplot2::ggplot() +  # 绘制先验分布  ggplot2::geom_line(    data = data.frame(mu = mu_grid, density = prior_prob / base::sum(prior_prob), type = "prior"),    # ggplot2::aes(x = mu, y = density),    ggplot2::aes(x = mu, y = density, fill = type),  # 在这里映射颜色    color = "orange",    linewidth = 0.7  ) +  # 绘制后验分布  ggplot2::geom_line(    data = data.frame(mu = mu_grid, density = posterior_prob, type = "posterior of grid method"),    ggplot2::aes(x = mu, y = density, color = type),    color = "blue",    linewidth = 0.7  ) +  # 绘制真实数据均值的垂直线  ggplot2::geom_vline(    xintercept = base::mean(data),    color = "red",    linewidth = 0.7  ) +  # 添加标题和坐标轴标签  ggplot2::ggtitle("Grid search posterior distribution") +  ggplot2::xlab(expression(mu)) +  ggplot2::ylab("Density") +  # 设置坐标轴范围  ggplot2::xlim(200, 800) +  ggplot2::ylim(0, max(posterior_prob) * 1.1) +  scale_y_continuous(expand = c(0, 0)) +  papaja::theme_apa() 
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+##---------------------------------------------------------------------------#                            通过共轭方法计算后验概率 (具体算法见补充材料)# ---------------------------------------------------------------------------x <- base::seq(from = 200, to = 800, length.out = 10000)prior_mean <- 500prior_variance <- 200^2  # 先验方差sigma2 <- 80^2           # 数据方差n <- base::length(data)  # 观测数据的数量# 计算后验均值和标准差posterior_mean <- (prior_mean / prior_variance + base::sum(data) / sigma2) /                  (1 / prior_variance + n / sigma2)posterior_std <- base::sqrt(1 / (1 / prior_variance + n / sigma2))# 计算共轭后验分布的概率密度posterior_conjugate <- stats::dnorm(x, mean = posterior_mean, sd = posterior_std)# 准备绘图数据plot_data <- data.frame(  mu = x,  density = posterior_conjugate,  type = "posterior of conjugated method")# 计算数据均值（真实数据参考线）data_mean <- base::mean(data)# 绘制结果ggplot2::ggplot() +  # 绘制共轭后验分布曲线  ggplot2::geom_line(    data = plot_data,    ggplot2::aes(x = mu, y = density, color = type),    linewidth = 0.7  ) +  # 绘制真实数据均值的垂直线  ggplot2::geom_vline(    xintercept = data_mean,    color = "red",    linewidth = 0.7  ) +  # 设置颜色方案  ggplot2::scale_color_manual(    values = c("posterior of conjugated method" = "blue", "true data" = "red"),    labels = c("posterior of conjugated method", "true data")  ) +  # 添加标题和坐标轴标签  ggplot2::ggtitle("Conjugated posterior distribution") +  ggplot2::xlab(expression(mu)) +  ggplot2::ylab("Density") +  # 设置坐标轴范围  ggplot2::xlim(200, 800) +  ggplot2::ylim(0, base::max(posterior_conjugate) * 1.1) +  # 图例设置  ggplot2::guides(color = ggplot2::guide_legend(title = NULL)) +  # 主题设置  scale_y_continuous(expand = c(0, 0)) +  papaja::theme_apa() +  # 设置图例位置  theme(legend.position = "right")
+```
+
+上面只考虑了估计 $\mu$ 参数，下面我们增加难度，增加考虑估计 $\sigma$ 参数。  我们假设 $\mu$ 和 $\sigma$ 的先验服从正态分布，即：    - 对于 $\mu$，其先验分布为 $\mu \sim N(500, 200)$    - 对于 $\sigma$，其先验分布为 $\sigma \sim N(100, 50)$
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+##---------------------------------------------------------------------------#                            设置网格范围和步长#                            1. 假设被试反应的反应时范围为 200 到 800 ms#                            2. 假设被试反应时的方差范围为 20 到 200# ---------------------------------------------------------------------------# n_step <- 20# mean_grid <- ...  请补充...# std_grid <- ...  请补充... # 生成网格数据# grid_data <- expand.grid(mean = ..., std = ...) 请补充...mean_mesh <- matrix(grid_data$mean, nrow = n_step, ncol = n_step)std_mesh <- matrix(grid_data$std, nrow = n_step, ncol = n_step)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 答案##---------------------------------------------------------------------------#                            设置网格范围和步长#                            1. 假设被试反应的反应时范围为 200 到 800 ms#                            2. 假设被试反应时的方差范围为 20 到 200# ---------------------------------------------------------------------------n_step <- 20mean_grid <- seq(200, 800, length.out = n_step)  std_grid <- seq(20, 200, length.out = n_step)  # 生成网格数据grid_data <- expand.grid(mean = mean_grid, std = std_grid)mean_mesh <- matrix(grid_data$mean, nrow = n_step, ncol = n_step)std_mesh <- matrix(grid_data$std, nrow = n_step, ncol = n_step)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+##---------------------------------------------------------------------------#                            计算先验概率#                            1. 设定先验概率服从正态分布#                            2. 先验均值为500，标准差为100#                            3. 先验均值的标准差为200，标准差的标准差为100# ---------------------------------------------------------------------------# prior_mean_mean <- ...# prior_mean_std <- ...        # prior_std_mean <- ...# prior_std_std <- ...# ...# 显示prior_grid的形状dim(prior_grid)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 答案##---------------------------------------------------------------------------#                            计算先验概率#                            1. 设定先验概率服从正态分布#                            2. 先验均值为500，标准差为100# ---------------------------------------------------------------------------# 设置先验概率的参数prior_mean_mean <- 500prior_mean_std <- 200       prior_std_mean <- 100prior_std_std <- 50mean_mesh <- seq(0, 1000, length.out = 20)  # 均值网格std_mesh <- seq(0, 200, length.out = 20)   # 标准差网格# 计算先验概率（正态分布密度）prior_mean <- dnorm(mean_mesh, mean = prior_mean_mean, sd = prior_mean_std)prior_std <- dnorm(std_mesh, mean = prior_std_mean, sd = prior_std_std)# 创建先验概率网格（外积）prior_grid <- outer(prior_mean, prior_std, FUN = "*")# 显示prior_grid的维度dim(prior_grid)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+##---------------------------------------------------------------------------#                            计算似然函数#                            1. 先计算一种参数条件下的似然值#                            2. 通过for循环计算所有参数条件下的似然值，并储存在likelihood_grid中# ---------------------------------------------------------------------------# 初始化似然网格likelihood_grid <- matrix(0, nrow = n_step, ncol = n_step)# 填充似然网格# 查看网格形状dim(likelihood_grid)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 答案##---------------------------------------------------------------------------#                            计算似然函数#                            1. 先计算一种参数条件下的似然值#                            2. 通过for循环计算所有参数条件下的似然值，并储存在likelihood_grid中# ---------------------------------------------------------------------------# 初始化似然网格likelihood_grid <- matrix(0, nrow = n_step, ncol = n_step)# 填充似然网格for (mean_index in 1:n_step) {  mean <- mean_grid[mean_index]  for (std_index in 1:n_step) {    std <- std_grid[std_index]    # 计算每个数据点的正态密度并求乘积    likelihood_i <- prod(stats::dnorm(data, mean = mean, sd = std))    likelihood_grid[mean_index, std_index] <- likelihood_i  }}# 查看网格维度dim(likelihood_grid)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+##---------------------------------------------------------------------------#                            计算grid的后验概率# ---------------------------------------------------------------------------# posterior_grid <- ...# 归一化# 显示 posterior_grid 的形状dim(posterior_grid)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 答案##---------------------------------------------------------------------------#                            计算grid的后验概率# ---------------------------------------------------------------------------posterior_grid <- prior_grid * likelihood_grid# 归一化posterior_grid <- posterior_grid / sum(posterior_grid)# 显示 posterior_grid 的形状dim(posterior_grid)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+##---------------------------------------------------------------------------#                            计算找到后验概率的最大值对应的参数# ---------------------------------------------------------------------------# max_idx <- ...# estimated_mean <- ...# estimated_std <- ...# 打印结果cat(sprintf("Estimated Mean: %f\n", estimated_mean))cat(sprintf("Estimated Standard Deviation: %f\n", estimated_std))
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 答案##---------------------------------------------------------------------------#                            计算找到后验概率的最大值对应的参数# ---------------------------------------------------------------------------# 找到posterior_grid中最大值的索引max_idx <- which(posterior_grid == max(posterior_grid), arr.ind = TRUE)# 提取估计的均值和标准差estimated_mean <- mean_grid[max_idx[1, 1]]estimated_std <- mean_grid[max_idx[1, 2]]# 打印结果cat(sprintf("Estimated Mean: %f\n", estimated_mean))cat(sprintf("Estimated Standard Deviation: %f\n", estimated_std))
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+library(tidyverse)# 绘制后验概率分布图# 创建数据框，包含三种不同类型的点及其坐标plot_data <- data.frame(  mean = c(prior_mean_mean, mean(data), estimated_mean),  std = c(prior_std_mean, sd(data), estimated_std),  type = factor(c("prior", "data", "max_posterior"),                 levels = c("prior", "data", "max_posterior")))# 绘制散点图ggplot2::ggplot(plot_data, aes(x = mean, y = std, color = type)) +  ggplot2::geom_point(size = 3) +  # 添加散点  ggplot2::scale_color_manual(values = c("orange", "black", "red")) +  # 设置颜色  ggplot2::xlab("Mean") +  # x轴标签  ggplot2::ylab("Standard Deviation") +  # y轴标签  ggplot2::ggtitle("Posterior Distribution") +  # 图表标题  ggplot2::xlim(400, 800) +  # x轴范围  ggplot2::ylim(20, 200) +  # y轴范围  papaja::theme_apa() +  # 设置图例位置  ggplot2::theme(legend.position = "right") +  ggplot2::guides(color = guide_legend(title = NULL))  # 移除图例标题
+```
+
+### 网格近似的局限性  😎或许你也注意到了，上述模型还是只有一到俩个参数的情况  当模型的参数越来越多时，网格近似就会遇到“维数灾难问题”  在这里我们只需要简单理解为：当模型参数越来越多时，网格近似需要的计算成本也越来越高。
+
+## Markov chains via PyMC  **“Markov chain Monte Carlo(MCMC)”**  在计算具有多个参数的后验分布时，有一种有效的方法叫做马尔科夫链蒙特卡洛(MCMC)，可以用于模拟和**近似**后验概率分布  - 前一个MC中的Markov 来源于一个俄国数学家的名字 Andrey Markov。    - 他研究并提出一种数学方法，被命名为马尔科夫链。用于描述状态空间中经过从一个状态到另一个状态的转换的随机过程。    - 该过程要求具备 **“无记忆性”**，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。    - 马尔可夫链在机器学习和深度学习中非常广泛，例如分层隐马尔可夫模型HMM (Hidden Markov Model)和卡尔曼滤波模型。  - 而后一个MC (Monte Carlo)则是一个赌场的名字。据说来自于 20 世纪 40 年代绝密核武器项目的，其中斯坦尼斯拉夫-乌拉姆、约翰-冯-诺伊曼和他们在洛斯阿拉莫斯国家实验室的合作者使用马尔可夫链来模拟和更好地理解中子旅行现象（Eckhardt，1987）。洛斯阿拉莫斯团队将他们的工作称为 "蒙特卡洛"，据说这一选择是受到法国里维埃拉富丽堂皇的蒙特卡洛赌场的启发。  <table>      <tr>          <td><img src="https://cdn.kesci.com/upload/s2ld84yupl.jpg?imageView2/0/w/320/h/320" alt="图片1"></td>          <td><img src="https://cdn.kesci.com/upload/s2ld8ix3d7.jpg?imageView2/0/w/320/h/320" alt="图片2"></td>      </tr>  </table>  
+
+**MCMC的采样特点**  1. 和网格法类似，MCMC并不会从后验分布$f(\theta|y)$中直接采样  2. 并且区分与网格法，MCMC的样本不是互相独立的 ———下一个样本值依赖于上一个样本值  > source: https://zhuanlan.zhihu.com/p/250146007  
+
+假设后验分布仍是关于$\theta$的分布，$\left\lbrace \theta^{(1)}, \theta^{(2)}, \ldots, \theta^{(N)} \right\rbrace$ 构成了一个长度为N的**马尔科夫链**  - ——> 其中，$\theta^{(2)}$ 的结果依赖于 $\theta^{(1)}$，$\theta^{(3)}$ 的结果依赖于 $\theta^{(2)}$.... $\theta^{(3)}$ 的结果依赖于 $\theta^{(i+1)}$ 的结果依赖于 $\theta^{(i)}$  - ——> 总的来说，$\theta^{(i+1)}$ 的结果依赖于 $\theta^{(i)}$和收集到的数据y  $$  f\left(\theta^{(i + 1)} \; | \; \theta^{(1)}, \theta^{(2)}, \ldots, \theta^{(i)}, y\right) = f\left(\theta^{(i + 1)} \; | \; \theta^{(i)}, y\right)  .  $$  > 注意：$\theta^{(i+1)}$ 依赖于 $\theta^{(i)}$，而 $\theta^{(i)}$ 又依赖于$\theta^{(i-1)}$  > 然而，$\theta^{(i+1)}$ 独立于 $\theta^{(i-1)}$，这是马尔科夫链 "**无记忆性**"的特点。
+
+**好消息是：**  我们无需从零开始编写这些复杂的算法。目前已经有不少高效的工具，它们可以帮助我们轻松实现复杂的MCMC采样的问题，从而帮助我们实现复杂的贝叶斯模型。  **概率编程语言：**  这些工具被统称为**概率编程语言（Probability Programming Languages）**，简称PPL。它们包括但不限于以下几种：  - [**Stan**](https://mc-stan.org/)  ![Image Name](https://cdn.kesci.com/upload/sl1bc1icca.png?imageView2/0/w/640/h/640)  - [**PyMC**](https://www.pymc.io/welcome.html)  ![Image Name](https://cdn.kesci.com/upload/sl1bdlkzgo.png?imageView2/0/w/640/h/640)  - [**JAGS**](https://sourceforge.net/projects/mcmc-jags/)  ![Image Name](https://cdn.kesci.com/upload/sl1c6xm3bz.png?imageView2/0/w/640/h/640)  - [**BUGS (Bayesian Inference Using Gibbs Sampling)**](http://www.bayesianscientific.org/resource/bugs-openbugs-winbugs/)  ![Image Name](https://cdn.kesci.com/upload/sl1bci6132.png?imageView2/0/w/640/h/640)  - [**julia turing**](https://turinglang.org/docs/tutorials/docs-00-getting-started/index.html)  ![Image Name](https://cdn.kesci.com/upload/sl1bg8c98q.png?imageView2/0/w/640/h/640)  
+
+**不同概率编程语言对比：**  以下代码均基于同一数据：假设进行了 n=10 次试验，成功 k=6 次，先验设定为 Beta (α=2, β=2)（弱信息先验）。  ![Image Name](https://cdn.kesci.com/upload/1758942482812_4.png?imageView2/0/w/960/h/960)  ![Image Name](https://cdn.kesci.com/upload/1758942536502_1.png?imageView2/0/w/960/h/960)  ![Image Name](https://cdn.kesci.com/upload/1758942559911_2.png?imageView2/0/w/960/h/960)  ![Image Name](https://cdn.kesci.com/upload/1758942598592_3.png?imageView2/0/w/960/h/960)  ![Image Name](https://cdn.kesci.com/upload/1758942612051_4.png?imageView2/0/w/960/h/960)  
+
+| 编程语言   | 核心语法特点                     | 先验定义                  | 似然定义                   | 后验推断方法       | 后验均值 |  |------------|----------------------------------|---------------------------|----------------------------|--------------------|------------------|  | Stan       | 分块定义（data/parameters/model）| theta ~ beta(2, 2)        | k ~ binomial(n, theta)     | NUTS（默认）       | ~0.57            |  | PyMC       | 上下文管理器（with Model ()）    | pm.Beta('theta', 2, 2)    | pm.Binomial('y', n, theta, observed=k) | NUTS（默认） | ~0.57            |  | JAGS       | BUGS 兼容语法                    | theta ~ dbeta(2, 2)       | k ~ dbin(theta, n)         | Gibbs 采样         | ~0.57            |  | BUGS       | 图形界面 + 声明式语法            | theta ~ dbeta(2, 2)       | k ~ dbin(theta, n)         | Gibbs 采样         | ~0.57            |  | Julia Turing| 宏定义（@model）                 | theta ~ Beta(2, 2)        | k ~ Binomial(n, theta)     | NUTS（默认）       | ~0.57            |
+
+**课程预告：**  - 在接下来的课程中，我们将深入探讨 **马尔可夫链蒙特卡洛(MCMC)** 方法的具体原理。MCMC是一种强大的统计模拟技术，用于估计贝叶斯模型中的参数。       - 我们将重点介绍如何使用 **Stan** 这一概率编程语言来进行MCMC模拟的基本过程。通过Stan，我们可以更加高效地进行贝叶斯统计分析，无需担心底层算法的实现细节。
+
+## What is Stan?  ![Image Name](https://cdn.kesci.com/upload/sl1bc1icca.png?imageView2/0/w/640/h/640)  Stan 是由Stan Development Team精心打造的一款基于 C++ 的强大软件，支持多语言接口，如 R、Python 和 Julia 等。它采用了高效的采样算法，如哈密尔顿蒙特卡洛（HMC）和无转向采样器（NUTS），这些算法使其在处理复杂模型时表现出色，比如层次模型和时间序列模型。Stan 的语法设计严谨，强调模型的可扩展性，使其成为构建复杂统计模型的理想选择。  R 中的 Stan 是通过rstan或cmdstanr包在 R 环境中实现的**概率编程语音(probabilistic program language, PPL)** 的工具，依托 Stan 核心的 C++ 计算框架，支持用户以声明式语法定义贝叶斯模型，并借助高效的马尔可夫链蒙特卡洛（MCMC）算法完成后验推断，无缝衔接 R 的数据分析与可视化生态。  特点：  - 生态融合性强：与 R 数据处理工具（tidyverse等）和可视化包（bayesplot）深度集成，支持数据格式无缝转换与一键可视化。   - 推断算法高效可靠：默认使用 NUTS 算法，自适应优化采样过程，支持并行计算与收敛性诊断，适合复杂模型。  - 模型语法严谨可扩展：采用分块语法明确变量类型，支持自定义函数与外部计算集成，适配各类模型需求。  - 社区支持完善：背靠 Stan 官方社区，提供丰富教程、案例与工具包（如shinystan），方便学习与应用。  
+
+下面展示了如何使用 rstan，通过简单的代码实现之前对于 Beta-Binomial 模型的后验推断。后面的课程学习中我们会不断地使用这个工具😜。
+
+```{r}
+#| collapsed: false
+#| jupyter: {outputs_hidden: false}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: skip}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 生成模拟数据n_trials <- 100n_successes <- 90
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 使用Stan语法建构模型stan_model_code <- "data {  int<lower=0> n_trials;       // 试验次数  int<lower=0, upper=n_trials> n_successes;  // 成功次数}parameters {  real<lower=0, upper=1> p;    // 成功概率参数}model {  // 设置先验  p ~ beta(70, 30);    // 设置似然  n_successes ~ binomial(n_trials, p);}"
+```
+
+```{r}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+# 准备数据stan_data <- list(  n_trials = n_trials,  n_successes = n_successes)# 拟合模型fit <- stan(  model_code = stan_model_code,      # 定义的模型或模型文件路径  data = stan_data,                  # 输入数据  chains = 4,                        # 马尔可夫链数量  iter = 2000,                      # 总迭代次数（每个链）  warmup = 1000,                     # 热身迭代次数（不保存）  cores = 2                          # 使用的CPU核心数)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 显示采样结果print(fit)
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 绘制后验分布idata <- rstan::extract(fit)posterior_df <- data.frame(p = idata$p)#后验分布图ggplot2::ggplot(posterior_df, aes(x = p)) +  ggplot2::geom_density(fill = "orange", alpha = 0.5) +  ggplot2::labs(title = "Posterior", x = " ", y = " ") +  ggplot2::scale_y_continuous(expand = c(0, 0)) +  papaja::theme_apa()
+```
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 设置参数alpha_prior <- 70beta_prior <- 30# 计算后验Beta分布参数alpha_posterior <- alpha_prior + n_successesbeta_posterior <- beta_prior + (n_trials - n_successes)# 生成x轴数据x <- seq(0.5, 1, length.out = 100)# 创建先验和后验分布的数据框prior_data <- data.frame(  x = x,  density = stats::dbeta(x, alpha_prior, beta_prior),  type = paste0("Prior Beta(", alpha_prior, ",", beta_prior, ")"))posterior_conj_data <- data.frame(  x = x,  density = stats::dbeta(x, alpha_posterior, beta_posterior),  type = paste0("Posterior Beta(", alpha_posterior, ",", beta_posterior, ") from conjugated prior"))# 合并数据plot_data <- rbind(prior_data, posterior_conj_data)# 创建基础绘图p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = x, y = density, color = type, linetype = type)) +  ggplot2::geom_line(size = 1) +  ggplot2::scale_color_manual(values = c("green", "red")) +  ggplot2::scale_linetype_manual(values = c("solid", "dashed")) +  ggplot2::labs(title = "Posterior results", x = NULL, y = NULL) +  ggplot2::scale_y_continuous(expand = c(0, 1)) +  papaja::theme_apa() +  ggplot2::theme(legend.position = "right") # +  # ggplot2::guides(color = guide_legend(title = NULL))  # 移除图例标题# 从模型中提取后验样本并添加到图中posterior_samples <- posterior_df  # 假设该数据框已在其他地方定义# 添加stan模型的后验分布p <- p + ggplot2::stat_density(  data = posterior_samples,   ggplot2::aes(x = p, y = ..density..),  color = "blue",   geom = "line",   size = 1,   inherit.aes = FALSE)# 计算HDI并添加到图中hdi <- bayestestR::hdi(posterior_samples$p, ci = 0.94)mean_p <- mean(posterior_samples$p)hdi_low <- hdi[[1]]  # 下限值hdi_high <- hdi[[2]]  # 上限值# 添加HDI区间p <- p +   ggplot2::annotate("segment", x = hdi_low, xend = hdi_high,            y = 0, yend = 0, color = "black", size = 2) +  ggplot2::annotate("text", x = mean(c(hdi_low, hdi_high)), y = 0.5, label = "94% HDI",            color = "black", size = 3.5) +  ggplot2::annotate("text", x = hdi_low, y = -0.3, label = round(hdi_low, 2),            color = "black", size = 3.5) +  ggplot2::annotate("text", x = hdi_high, y = -0.3, label = round(hdi_high, 2),            color = "black", size = 3.5) +  ggplot2::annotate("text", x = mean_p, y = max(stats::dbeta(x, alpha_posterior, beta_posterior)) + 1,            label = paste0("mean=", round(mean_p, 2)),            color = "blue", size = 4)print(p)
+```
+
+### 小结  - 从贝叶斯公式到贝叶斯推断  - 贝叶斯推断的核心与难点：获得后验分布  - 传统方法依赖共轭先验，限制了贝叶斯推断的使用  - 近似的方法是现代贝叶斯推断获得广泛应用的基础(网格近似、MCMC)。
+
+### 💐补充材料  #### Normal-Normal conjugate family  除了 Beta-Binomial 外，最常见的共轭分布是：Normal-Normal。  **以随机点运动任务（Random Dot Motion Task）为例**  假设我们打算开始进行一项随机点运动任务实验，尚未开始招募被试。为了对被试在不同条件下的表现进行推断，我们参考了先前的文献Vafaei Shooshtari et al. (2019)，他们的研究表明，当**随机点的一致性为5%时，个体的平均正确率约为 70%**。  为了更新我们对被试在随机点一致性为5%时的平均正确率的信念，我们计划通过贝叶斯推断收集10000名被试的实验数据，并使用Normal-Normal 贝叶斯模型来估计更新后的正确率。    > Shooshtari, S. V., Sadrabadi, J. E., Azizi, Z., & Ebrahimpour, R. (2019). Confidence representation of perceptual decision by EEG and eye data in a random dot motion task. Neuroscience, 406, 510–527. https://doi.org/10.1016/j.neuroscience.2019.03.031  
+
+**正态模型的应用**  在这个实验中，我们假设被试的正确率服从正态分布，即：  $$  Y \sim N(\mu, \sigma^2).  $$  其中：  - $Y_i$ 是第 $i$ 个被试在随机点一致性为5%时的正确率，  - $\mu$ 是我们要估计的平均正确率，  - $\sigma$ 是已知的正确率标准差。  根据 Vafaei Shooshtari et al. (2019) 的研究结果，我们对 $\mu$（平均正确率）的初始信念假设为正态分布，即先验分布为：  $$  \mu \sim N(\theta, \tau^2)  $$  注：  - $\theta = 0.70$，表示我们根据文献得出的先验均值（70%），  - $\tau^2$ 是先验的方差，表示我们对这个均值的初始不确定性。  
+
+**似然函数**  根据正态分布假设，样本数据的似然函数可以写为：  $$  L(\mu | \vec{y}) \propto \prod_{i=1}^{n} \exp\left[{-\frac{(y_i - \mu)^2}{2\sigma^2}}\right]  $$  其中，$y_i$ 是每个被试的观测正确率，$\sigma^2$ 是已知的正确率方差。  
+
+**正态-正态共轭关系**  由于我们选择了正态分布作为 $\mu$ 的先验，并且似然函数也是正态分布，因此，利用**正态-正态共轭**，后验分布仍然是正态分布。后验分布的形式为：  $$  \mu|\vec{y} \sim N\left(\frac{\theta\sigma^2 + \bar{y}n\tau^2}{n\tau^2 + \sigma^2}, \frac{\tau^2\sigma^2}{n\tau^2 + \sigma^2}\right)  $$  其中：  - $\bar{y}$ 是样本的均值（观测到的平均正确率），  - $\sigma^2$ 是已知的正确率方差，  - $\tau^2$ 是先验的方差。  
+
+**后验分布分析**  - **后验均值**：后验均值是先验均值 $\theta$ 和样本均值 $\bar{y}$ 的加权平均：    $$    \text{posterior mean} = \theta\frac{\sigma^2}{n\tau^2 + \sigma^2} + \bar{y}\frac{n\tau^2}{n\tau^2 + \sigma^2}    $$  - **后验方差**：后验方差受先验的方差 $\tau^2$ 和样本数据的方差 $\sigma^2$ 的共同影响：    $$    \text{posterior variance} = \frac{\tau^2\sigma^2}{n\tau^2 + \sigma^2}    $$  随着样本量 $n$ 的增加，后验均值逐渐依赖于观测数据，而对先验的依赖减小。同时，后验方差随着样本量的增加而减小，意味着我们对 $\mu$ 的估计将变得更加精确。  
+
+```{r}
+#| collapsed: false
+#| jupyter: {}
+#| notebookId: 68d7f5f0641ee0c1d9bb01cc
+#| scrolled: false
+#| slideshow: {slide_type: slide}
+#| tags: []
+#| trusted: true
+#| vscode: {languageId: r}
+# 定义正确率范围x <- seq(0, 1, length.out = 10000)  # 正确率在0到1之间# 定义先验分布 (基于文献，正确率均值为70%)prior_mean <- 0.70prior_std <- 0.05prior_y <- dnorm(x, mean = prior_mean, sd = prior_std)prior_y <- prior_y / sum(prior_y)  # 归一化# 生成似然分布 (基于新实验数据，正确率均值为75%)likelihood_mean <- 0.75likelihood_std <- 0.05likelihood_values <- dnorm(x, mean = likelihood_mean, sd = likelihood_std)likelihood_values <- likelihood_values / sum(likelihood_values)  # 归一化# 计算后验分布posterior_mean <- (prior_mean * likelihood_std^2 + likelihood_mean * prior_std^2) /   (prior_std^2 + likelihood_std^2)posterior_std <- sqrt((prior_std^2 * likelihood_std^2) / (prior_std^2 + likelihood_std^2))posterior <- dnorm(x, mean = posterior_mean, sd = posterior_std)posterior <- posterior / sum(posterior)  # 归一化# 创建数据框用于绘图plot_data <- data.frame(  x = rep(x, 3),  density = c(prior_y, likelihood_values, posterior),  distribution = factor(rep(c("prior", "likelihood", "posterior"), each = length(x)),                        levels = c("prior", "likelihood", "posterior")))# 绘制图形ggplot(plot_data, aes(x = x, y = density, color = distribution, fill = distribution)) +  geom_line(size = 1) +  geom_area(alpha = 0.5, position = "identity") +  scale_color_manual(values = c("#f0e442", "#0071b2", "#009e74")) +  scale_fill_manual(values = c("#f0e442", "#0071b2", "#009e74")) +  labs(x = expression(mu ~ "for accuracy (correct response rate)"),y = "density") +  scale_y_continuous(expand = c(0, 0)) +  papaja::theme_apa() +  # 设置图例位置  theme(legend.position = "right")
+```
+
+##### 补充：Gamma-Poisson conjugate family  Gamma-Poisson共轭家族是一组统计模型，其中Poisson分布用于描述计数数据，而Gamma分布作为其参数的先验分布。  - Poisson分布是一种离散概率分布，用于描述在固定时间间隔或空间区域内发生某一事件的次数。  - Gamma分布是一种连续概率分布，用于描述等待时间直到第$k$个事件发生的时间长度，或者作为正态分布方差的共轭先验。
+
+**例子：随机点运动任务中的被试招募**：  假设一位心理学研究者每天都需要每天招募新的被试参与随机点运动任务实验。  他认为平均下来，每天可以招募到 12 个被试，这个数字大约在 5 到 20 之间浮动。  我们假设研究者**平均每天招募到的被试数量**为$\lambda$  > 请注意一些新的希腊字母：λ = lambda  **🤔我们该使用哪种分布来描述下面这个例子？**  
+
+需要注意的是，通常我们会：  1. 为$\lambda$选择一个合适的先验  2. 接着收集数据，并且选择一个合适的数据模型  3. 结合先验与数据，更新我们对$\lambda$的信念  
+
+在这一节中，为了方便探讨共轭先验，我们先从似然函数出发，然后再选取先验，最后讨论后验和共轭先验的关系。  - 我们需要先假定似然函数$L(\lambda|y)$是已知的  - 再去选取一个合适的先验分布$p(\lambda)$  - 最后使得后验分布与先验分布具有相同的数学形式。
+
+**Poisson分布**  **泊松分布(Poisson distribution)** 适用于描述在一定时间间隔内事件发生的次数。  **Poisson分布**的概率质量函数(pmf)可以表示为：  $$  f(y) =  \frac{\lambda^{y}e^{-\lambda}}{y!}  $$  * Poisson分布只有一个参数$\lambda$，表示事情发生平均发生率(event rate)或事件发生的期望次数。  * $y$是数据，指在一定时间间隔中事件发生的次数。  * $f(y)$表示在某单位时间内，某事件$y$发生的平均次数的概率。  * 例如，假设研究者平均每天可以招募 12 个被试（$\lambda = 12$），那么在一天内招募到 5 个被试的概率 $f(5)$ 招募到 10 名被试的概率 $f(10)$，或招募到 15 名被试的概率 $f(15)$ 都可以通过 Poisson 分布进行计算。  
+
+**Poisson分布图示**  下图展示了不同$\lambda$下，事件发生y次的可能性分布  ![Image Name](https://cdn.kesci.com/upload/skt7lxrj64.png?imageView2/0/w/900)
+
+**Potential priors**  **🤔思考：**  我们有如下形式的Poisson 似然函数：  $$  L(\lambda | \vec{y}) = \frac{\lambda^{\sum y_i}e^{-n\lambda}}{\prod_{i=1}^n y_i!} \propto \lambda^{k}e^{-r\lambda}  $$  从公式中可以看到，似然函数具有类似于 $\lambda^{k} e^{-r\lambda}$ 的结构。  那么，哪种先验分布与这种似然函数相匹配，从而作为 Poisson 分布的**共轭先验**？  1. Gamma模型：$f(\lambda) \propto \lambda^{s - 1} e^{-r \lambda}$  2. Weibull模型：$f(\lambda) \propto \lambda^{s - 1} e^{(-r \lambda)^s}$  3. "F"模型：$f(\lambda) \propto \lambda^{\frac{s}{2} - 1}\left( 1 + \lambda\right)^{-s}$  从形式上看，Gamma 分布与 Poisson 似然函数最匹配，  在 Poisson 分布中，Gamma 分布是 $\lambda$ 的共轭先验，计算后会得到简便的后验分布。
+
+**共轭性**  Gamma分布是一种连续概率分布，用于描述等待时间直到第$k$个事件发生的时间长度，或者作为正态分布方差的共轭先验。其概率密度函数（PDF）由以下公式给出：  $$  f(\lambda | \alpha, \beta) = \frac{\beta^\alpha \lambda^{\alpha-1} e^{-\beta\lambda}}{\Gamma(\alpha)}  $$  其中，$\lambda$ 是分布的随机变量，$\alpha$ 和 $\beta$ 是Gamma分布的形状参数和速率（或尺度）参数，$\Gamma(\alpha)$ 是Gamma函数。  当使用Gamma分布作为Poisson分布参数$\lambda$的先验分布时，得到的后验分布也属于Gamma分布。这种关系称为共轭性。具体来说，如果先验分布是Gamma分布，即：  $$  \lambda \sim \text{Gamma}(\alpha, \beta)  $$  并且我们观测到Poisson数据$Y = y$，那么后验分布也是Gamma分布，其参数更新为：  $$  \lambda | Y = y \sim \text{Gamma}(\alpha + y, \beta + 1)  $$  这种共轭关系使得Gamma分布成为Poisson分布参数的自然选择，因为它保持了数学上的简洁性，使得后验分布的推导和分析变得容易。
+
+### Critiques of conjugate family models  共轭族的优势在于方便理解和计算，这种便利性也带来了**缺点**：  1. 共轭先验模型可能并不能适应你的先验信念。     - 例如，正态模型总是围绕均值 $μ$ 对称。因此，如果你的先验认识不是对称的，那么正态先验模型可能就不适合作为先验。  2. 共轭族模型并不允许有一个完全平坦的先验(uniform prior)。     - 虽然我们可以通过设置 $\alpha$ = $\beta$ = 1 来使得 Beta 先验变得更加平坦，但无论是 Normal 还是 Gamma 先验（或任何具有无限支持的适当模型）都**无法调整为完全平坦**。     - 我们能做的最好的办法就是调整先验，使其具有非常高的方差，这样它们就几乎是平的了。
+
+## 附录  本课的Python代码与R代码为单独的代码脚本，见：https://gitee.com/hcp4715/PyBayesian
+

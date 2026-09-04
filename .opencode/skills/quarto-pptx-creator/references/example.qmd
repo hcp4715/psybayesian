@@ -1,0 +1,67 @@
+---
+title: "Understanding Quarto"
+subtitle: "A Tech Blogger's Guide"
+format:
+  revealjs:
+    width: 1600
+    height: 900
+---
+
+## What is Quarto?
+
+- Open-source scientific publishing system.
+- Built on Pandoc.
+- Supports Python, R, Julia, and OJS.
+
+# [Theory] How it works
+
+## The Lifecycle
+
+1. **Source**: Write `.qmd` (Markdown + Code).
+2. **Engine**: Jupyter or Knitr executes code.
+3. **Pandoc**: Converts to final format (HTML, PDF, PPTX).
+
+---
+
+## Why use it for PPTX?
+
+- Reproducible slides.
+- Easy to update data/plots.
+- Professional 16:9 layout out-of-the-box.
+
+# [Practice] Your First Slide
+
+## Step 1: Install Quarto
+
+```bash
+# MacOS
+brew install --cask quarto
+```
+
+---
+
+## Step 2: Create a .qmd
+
+Create `slides.qmd` with this YAML:
+
+```yaml
+---
+title: "My Slides"
+format: revealjs
+---
+```
+
+---
+
+## Step 3: Render to PPTX
+
+Run this command in your terminal:
+
+```bash
+quarto render slides.qmd --to pptx
+```
+
+# Conclusion
+
+- Quarto bridges the gap between analysis and presentation.
+- Ideal for tech bloggers who want to share code-driven insights.

@@ -1,0 +1,502 @@
+---
+jupyter: ir
+---
+
+<p><strong>回顾📖👀</strong></p><p>在前面几节课，我们已经学习了从简单线性回归、多元线性回归再到Logistic回归的所有内容。我们通过手工编码Stan模型("hard"模式)，一步一步了解了每种回归模型从公式到代码的全过程。</p><p></p><p>上节节课介绍了 <code>brms</code> 这一R包，能够快速地建构出贝叶斯回归模型。这里我们再回顾一下上述几种贝叶斯回归建模如何使<code>brms</code>，助力大家在完成大作业时能够轻松省事不费心😋～</p><p></p><pre><code>```r  # 加载包  library(brms)    # 贝叶斯回归建模  library(tidyverse) # 数据处理与可视化  library(bayestestR) # 贝叶斯结果解读  library(ggplot2)  # 可视化  ```</code></pre><ul><li><p>第九课：简单线性回归，自变量为二分变量</p></li></ul><pre><code class="language-r"># Stan model  lm_model &lt;- "data {    int&lt;lower=1&gt; N;         // number of observations    vector[N] Label;        // predictor    vector[N] RT;           // outcome  }  parameters {    real beta0;    real beta1;    real&lt;lower=0&gt; sigma;  }  model {    // Priors    beta0 ~ normal(5, 2);      // beta0 ~ N(5, 2^2)    beta1 ~ normal(0, 1);      // beta1 ~ N(0, 1^2)    sigma ~ exponential(0.3);  // sigma ~ Exp(rate = 0.3)   // Likelihood    RT ~ normal(beta0 + beta1 .* Label, sigma);  }  generated quantities {    vector[N] y_rep;    vector[N] log_lik;    for (n in 1:N) {      y_rep[n] = normal_rng(beta0 + beta1 * Label[n], sigma);      log_lik[n] = normal_lpdf(RT[n] | beta0 + beta1 * Label[n], sigma);    }  }  "  lm_data &lt;- list(      N = nrow(df),      Label = df$  &lt;br&gt;Label,&lt;br&gt;    RT = df&lt;br&gt;  $RT_sec  )</code></pre><p></p>
+
+<p>第九课：简单线性回归</p><ul><li><p>brms公式<code>RT_sec ~ Label</code></p></li></ul><pre><code class="language-r">model_lm_simple &lt;- brm(formula = RT_sec ~ Label,    # 公式：因变量~自变量                  data = df).                         # 数据</code></pre><p>第十课：多元线性回归</p><ul><li><p>brms公式: <code>RT_sec ~ Matching * Label</code></p></li></ul><pre><code class="language-r">model_lm_multi &lt;- brm(formula = RT_sec ~ Matching + Label + Matching:Label,                        # formula = RT_sec ~ Matching * Label, #另一个更简洁的写法                        data = df2)</code></pre><p>第十二课中的Logistic回归</p><ul><li><p>brms公式: <code>correct ~ percentCoherence</code></p></li></ul><pre><code class="language-r">model_logistic &lt;- brm(formula = correct ~ percentCoherence,   # 自动处理为 C(percentCoherence)                         data = df_clean,                         family = bernoulli(link = "logit"))    # 伯努利分布+logit链接（logistic回归）</code></pre><p></p>
+
+<h1><strong>大作业</strong></h1><h2>大作业要求</h2><ul><li><p>真实的数据分析，数据来源：</p><ul><li><p>Science: <a target="_blank" rel="noopener noreferrer nofollow" href="https://www.science.org/">https://www.science.org/</a></p></li><li><p>Science Advances: <a target="_blank" rel="noopener noreferrer nofollow" href="https://www.science.org/journal/sciadv">https://www.science.org/journal/sciadv</a></p></li><li><p>Nature: <a target="_blank" rel="noopener noreferrer nofollow" href="https://www.nature.com/">https://www.nature.com/</a></p></li><li><p>Nature human behaviour：<a target="_blank" rel="noopener noreferrer nofollow" href="https://www.nature.com/nathumbehav/">https://www.nature.com/nathumbehav/</a></p></li><li><p>Nature communications: <a target="_blank" rel="noopener noreferrer nofollow" href="https://www.nature.com/ncomms/">https://www.nature.com/ncomms/</a></p></li><li><p>Psychological Science: <a target="_blank" rel="noopener noreferrer nofollow" href="https://journals.sagepub.com/home/pss">https://journals.sagepub.com/home/pss</a></p></li><li><p>Cognition: <a target="_blank" rel="noopener noreferrer nofollow" href="https://www.sciencedirect.com/journal/cognition">https://www.sciencedirect.com/journal/cognition</a></p></li><li><p>Collabra: Psychology: <a target="_blank" rel="noopener noreferrer nofollow" href="https://online.ucpress.edu/collabra">https://online.ucpress.edu/collabra</a></p></li></ul></li></ul><p></p><ul><li><p>合作完成 (每个小组3-5人, 可自行组队或随机分配)</p></li></ul><p></p><h2>大作业提交内容</h2><ul><li><p>代码 (对公开数据进行完整分析的代码，使用贝叶斯统计方法，具有可重复性，有注释和文档说明)</p><ul><li><p>如果原文章使用非贝叶斯方法，可以考虑先重复原文档的分析，再进行贝叶斯分析。</p></li></ul></li><li><p>与文字报告 (包括标题，摘要，研究背景或研究问题，研究方法，分析结果，结论六个主要部分)</p></li><li><p>进行汇报 (使用 PPT 汇报对研究问题和代码的分析过程进行汇报)</p></li></ul><p></p><h2>大作业评分标准</h2><ul><li><p>分工合理、数据分析流程完整、汇报展示清晰美观</p></li></ul><p></p>
+
+<h1 style="text-align: center;">Lecture13 : Bayesian Item Response Modeling</h1><h2 style="text-align: center;">Instructor: Dr. Hu Chuan-Peng</h2><p style="text-align: center;"></p>
+
+<h2>Intro</h2><p>在上节课，我们利用贝叶斯方法，通过Logistic Regression实现了对于<strong>非连续性因变量</strong>的GLM建模。</p><p></p><p>问题的情境：在RDM任务的二分决策判断，被试判断正确的能力如何？</p><p></p><p>解决问题的关键：将正确判断的能力变成Bernoulli分布中的参数，然后对自变量预测被试的能力。</p><p></p><p>换句话说：被试在每个条件下的选择结果，是其内在判断能力的表现。<code>correct ~ 1 + percentCoherence</code></p><p></p><p>如果抛开实验条件的影响（假如只有一个实验条件），上面的公式变成了<code>correct ~ 1</code> 。</p><p></p><p>--&gt; 被试的正确率受到其在该条件下能力的影响。</p><p></p><p>这种能力与行为结果的关系，是否有一点熟悉？</p><p></p><p></p>
+
+<h2>心理测量模型</h2><p> </p><p>我们认为结果是内在“<strong>潜在特质”</strong>的外在表现时，回归可以理解为一个测量模型。</p><p></p><p>推广开来，所有内在的“特质”（如 “智力”“攻击性”“抑郁水平”），是否都通过某种方式与外在的形为建立联系？是否都可以通过线性模型来表示？是，也不是。</p><p></p><p>看看通过通过贝叶斯回归框架来实现的一个。</p>
+
+<p><strong>Example</strong></p><p>以<strong>简版自控力量表（Brief Self-Control Survey）为例。</strong>该量表共包含了 13 道题目，每道题目采用 5 点李克特量表的方式记分（1 = 完全不符合，5 = 完全符合），总分的高低能够反应自我控制能力的水平。</p>
+
+```{r}
+#| trusted: true
+#| collapsed: false
+#| jupyter: {}
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| scrolled: false
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| hide_input: false
+# 安装和加载包options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))if (!requireNamespace('pacman', quietly = TRUE)) {    install.packages('pacman')}pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja", "patchwork","bayesplot",               "rstan",'logspline', "easystats","brms","knitr") options(warn = -1)  # 抑制警告set.seed(12345)
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+df <- tryCatch({  read.csv('/home/mw/input/Eisenberg20193801/brief_self_control_survey.csv')}, error = function(e) {  read.csv('data/brief_self_control_survey.csv')})# 查看数据基本结构（关键：确认被试ID、项目列、作答分数列）cat("数据维度：", dim(df), "\n")  # 输出数据行数（被试数×项目数）和列数head(df, 3)  # 查看前3行数据
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+colnames(df)
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+nrow(df)
+```
+
+<p><strong>模型设定及公式解读</strong></p><p></p><p>在这个例子里面，我们进行如下假设：</p><ul><li><p>因变量$y$是可以被观测到的1～5分有序响应response，</p></li><li><p>自变量是我们未观察到的潜变量$x$，反映的是被试真正的自控能力</p></li><li><p>除了自变量外，因变量还受到如下因素的影响：</p><ul><li><p>参数$\beta$ ---- 每个题项难度偏移$\beta_{j}$</p></li><li><p>全局阈值$k$两个部分。</p></li></ul></li></ul><p></p><p>用GLM形式则可将模型表示为：</p><p>对于每一个观测$n = 1, ..., N$：</p><p>$$ y_n \sim \text{OrderedLogistic}(\eta_n, \kappa), \quad \eta_n = \beta_0 + X_n + \beta_{j(n)}$$</p><p>其中：</p><ul><li><p>$y_n \in \{1, 2, 3, 4, 5\}$ 是观测到的有序响应。</p></li><li><p>$X_{n}$ 是第 $n$个观测的自变量（被试潜在能力）。</p></li><li><p>$\beta_{0}$ 是全局截距。</p></li><li><p>$\beta_{j(n)}$ 是第$ j(n)$ 个题项的难度偏移参数。</p></li><li><p>$\kappa = (\kappa_{1}, \kappa_{2}, \kappa_{3}, \kappa_{4)}$ 是全局有序阈值。</p></li></ul><p></p>
+
+<p>举个🌰：</p><p>假设：</p><ul><li><p>被试 A 的自控力 $\theta = 0.5$</p></li><li><p>题项“我擅长抵制诱惑”的难度为 $\beta = -0.2$</p></li><li><p>全局阈值估计为:$\kappa = [-1.5, -0.3, 0.4, 1.2]$</p></li></ul><p></p><p>那么线性预测为：</p><p>$\eta = \theta - \beta = 0.5 - (-0.2) = 0.7$</p><p></p><p>计算累积概率：</p><ul><li><p>$P(y \leq 1) = \text{logit}^{-1}(-1.5 - 0.7) \approx 0.10$</p></li><li><p>$P(y \leq 2) = \text{logit}^{-1}(-0.3 - 0.7) \approx 0.27$</p></li><li><p>$P(y \leq 3) = \text{logit}^{-1}(0.4 - 0.7) \approx 0.43$</p></li><li><p>$P(y \leq 4) = \text{logit}^{-1}(1.2 - 0.7) \approx 0.62$</p></li><li><p>$P(y \leq 5) = 1$</p></li></ul><p></p><p>于是：</p><ul><li><p>$P(y=1) = 0.10$</p></li><li><p>$P(y=2) = 0.27 - 0.10 = 0.17$</p></li><li><p>$ P(y=3) = 0.43 - 0.27 = 0.16$</p></li><li><p>$P(y=4) = 0.62 - 0.43 = 0.19$</p></li><li><p>$P(y=5) = 1 - 0.62 = 0.38$</p></li></ul><p>→ 这个被试最可能选 <strong>5</strong>。</p>
+
+<p>相信聪明的你已经明白了各个参数的表达含义😉。接下来，我们假设它们服从的先验分布满足：</p><ul><li><p><strong>$\beta_0$</strong>:</p></li></ul><p>$$\beta_0 \sim \mathcal{N}(0, 1^2)$$</p><ul><li><p><strong>$X_{i}$ (</strong>被试能力):</p></li></ul><p>$$X_i \sim \mathcal{N}(0, \sigma_X^2), \quad \sigma_X \sim \text{Half-Normal}(0, 1)$$</p><ul><li><p><strong>$β_{j}$</strong>(题项难度):</p></li></ul><p>$$\beta_j \sim \mathcal{N}(0, \sigma_\beta^2), \quad \sigma_\beta \sim \text{Half-Normal}(0, 1)$$</p><ul><li><p><strong>$κ$</strong>(阈值):</p></li></ul><p>$$\kappa_k \sim \mathcal{N}(0, 2^2), \quad \kappa_1 &lt; \kappa_2 &lt; \kappa_3 &lt; \kappa_4$$</p><p></p>
+
+<p>由此，我们可以尝试基于已经学习过的基于stan构建GLM的方法来构建这样一个模型(不用运行）：</p>
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+stan_model_code <- "data {  int<lower=1> N;               // 总观测数  int<lower=1> I;               // 被试数  int<lower=1> J;               // 题项数  int<lower=1, upper=I> person[N]; // 每个观测对应的被试索引  int<lower=1, upper=J> item[N];   // 每个观测对应的题项索引  int<lower=1, upper=5> y[N];      // 有序响应 (1~5)}parameters {  vector[I] X;                  // 自变量: X_i = theta_i (被试能力)  vector[J] beta;               // 参数: beta_j (题项难度偏移)  ordered[4] kappa;             // 参数: 全局阈值  real<lower=0> sigma_X;        // X 的标准差  real<lower=0> sigma_beta;     // beta 的标准差}model {  // 先验分布  sigma_X ~ normal(0, 1) T[0,];  sigma_beta ~ normal(0, 1) T[0,];    X ~ normal(0, sigma_X);  beta ~ normal(0, sigma_beta);  kappa ~ normal(0, 2);  // 似然  for (n in 1:N) {    real eta = X[person[n]] + beta[item[n]]; // 线性预测器 η_n = X_i + β_j    y[n] ~ ordered_logistic(eta, kappa);  }}"
+```
+
+<p style="text-align: left;">看起来有些复杂🤔。事实上，但可以<strong>通过brms的广义线性回归模型框架进行建模，</strong>实现将GLM的核心<strong>“线性预测 + 链接函数”从统计模型向测量模型的</strong>应用扩展。</p>
+
+<p><strong>上述的过程本质上是将人们在某个题目上得分作为被试潜在特质与题目难度等的回归结果</strong></p><p></p><p><strong>在心理测量学中，它有一个自己的名字——项目反应理论(IRT)</strong></p><p></p><p>项目反应理论（Item Response Theory, IRT）是一类用于建模个体在测验题目上的反应与潜在心理特质（latent trait） 之间关系的统计模型（Lord, 2012），其假设：</p><ul><li><p>每个被试有一个连续的潜在能力（如自控力）；</p></li><li><p>每个题目有独立于样本的参数（如难度、区分度）；</p></li><li><p>观测反应的概率由能力与题目参数的函数决定。</p></li></ul><p></p><blockquote><p>贝叶斯建模的框架不仅可以用于统计模型，也可以用测量模型！</p></blockquote><p></p>
+
+<p>本节课将进一步学习如何将贝叶斯框架应用于项目反应理论建模。</p><p></p><h2>目标：</h2><ul><li><p>理解贝叶斯项目反应理论（Bayesian IRT）的基本思想</p></li><li><p>掌握 贝叶斯框架下的brms在心理测量中的参数解读</p></li><li><p>能使用真实问卷数据（以简版自我控制量表为例），尝试基于 brms的贝叶斯框架下IRT建模</p></li><li><p>附加：巩固后验诊断、可视化、模型比较等贝叶斯工作流</p></li></ul><p></p><blockquote><p>Bürkner, P.-C. (2020). <em>Bayesian Item Response Modeling in R with brms and Stan</em> (No. arXiv:1905.09501). arXiv. <a target="_blank" rel="noopener noreferrer nofollow" href="https://doi.org/10.48550/arXiv.1905.09501">https://doi.org/10.48550/arXiv.1905.09501</a></p></blockquote><p></p>
+
+<h2>Modeling：贝叶斯框架下的IRT模型</h2><p></p>
+
+<p>由于自控力量表为 <strong>5 点有序响应</strong>，我们采用IRT中的累积链接模型（Cumulative Link Model），即 <strong>Graded Response Model（GRM）作为模型理论框架</strong>。</p><p></p><p><strong>有序模型（Graded Response Model，GRM）</strong></p><p>GRM 假设：</p><ul><li><p>存在一个连续潜在特质 θ；</p></li><li><p>每个题目有 $C-1=4$ 个阈值（thresholds），将 θ 划分为 5 个区间；</p></li><li><p>观测响应 $y \geq c$ 的概率为 $\text{logit}^{-1}(\theta - \tau_c)$。</p></li></ul><p></p><p>在 <code>brms</code> 中，只需指定：</p><p></p><pre><code>```r  family = brmsfamily("cumulative",link = "logit")  ```</code></pre><p></p>
+
+<p>尽管自控力量表为序数数据，理解二分 IRT 模型有助于掌握核心思想。</p><p><strong>1PL 模型（（One - parameter Logistic Model, or Rasch Model）</strong></p><ul><li><p>所有题目具有<strong>相同区分度（</strong>通常设为 1）；</p></li><li><p>题目差异仅体现在<strong>难度（difficulty）或容易度（easiness）</strong>，通常采用后者；</p></li><li><p>被试潜在特质（θ）与题目容易度（β）线性组合，通过 logit 链接函数转化为正确概率。</p></li></ul><p>在 <code>brms</code> 中，1PL 模型可简洁表示为：</p><p></p><p style="text-align: center;">$bf(resp$ ~ $1 + (1 | subject) + (1 | item))$</p><p></p><p>其中：</p><ul><li><p><code>(1 | subject)</code>：被试随机截距 → <strong>能力 θ</strong></p></li><li><p><code>(1 | item)</code>：题目随机截距 → <strong>容易度 β</strong></p></li></ul><p></p>
+
+<p>因此，整个模型GRM 1PL 本质上是<strong>1PL 模型在序数响应下的形式</strong>。其对应参数可以表示为：</p><p></p><p><strong>GRM 1PL</strong></p><ul><li><p>每个题目有 $C-1 = 4$ 个阈值（thresholds）：$\tau_{i1}, \tau_{i2}, ..., \tau_{i4}$</p></li><li><p>所有题目<strong>共享相同区分度 $\alpha$</strong>（通常设为 1）</p></li><li><p>潜在特质 $\theta_p$（被试能力）与题目阈值共同决定选择某类别的概率：</p></li></ul><p>$$P(y_{pi} \geq k) = \text{logit}^{-1} \big( \alpha (\theta_p - \tau_{ik}) \big)$$</p><p></p><p>接下来，我们基于brms实现在贝叶斯框架下构建关于这个self-control量表的IRT模型：</p>
+
+<h3>Step1: Prepare the data</h3><p></p>
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 数据清洗：保留核心列+转换为因子# 随机选择100人，减小计算量set.seed(12345)new_sample <- sample(df$worker_id,100)# 选择这100人的数据并为IRT准备clean_df <- df %>%  dplyr::filter(worker_id %in% new_sample) %>%  dplyr::mutate(    subject = factor(worker_id),   # 被试ID（对应worker_id）    item = factor(question_num),   # 项目编号（对应question_num）    resp = as.integer(response)    # 作答分数（对应response，确保为整数）  ) %>%  dplyr::select(subject, item, resp) %>%  # 保留IRT模型必需列  dplyr::filter(!is.na(resp))       # 删除缺失值  # 查看clean_df关键信息（确认数据结构符合IRT要求）cat("数据维度：", dim(clean_df), "\n")cat("被试数量：", n_distinct(clean_df$subject), "\n")cat("项目数量：", n_distinct(clean_df$item), "\n")cat("作答分数分布：\n")table(clean_df$resp)  # 确认是有序多分类（如1-5分）head(clean_df,3) # 查看前三列
+```
+
+<h3>Step2: Build the model</h3><p></p>
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 1. 模型公式（cumulative家族对应GRM，无区分度参数）irt_formula <- bf(  resp ~ 1 + (1 | item) + (1 | subject),  # 仅含项目易度和被试特质  family = brmsfamily("cumulative", link = "logit")  # logit链接适配有序数据)# 2. 设定先验（弱信息先验，避免干扰数据）irt_prior <- c(  # 被试潜在特质（自我控制水平）标准差：半正态先验（弱信息）  prior("normal(0, 1)", class = "sd", group = "subject"),  # 项目易度标准差：半正态先验（控制项目难度差异范围）  prior("normal(0, 1)", class = "sd", group = "item"),  # 全局阈值参数：正态先验（确保阈值有序且范围合理）  prior("normal(0, 2)", class = "Intercept"))#get_prior(  #formula = irt_formula,  #data = clean_df,  #family = brmsfamily("cumulative", "logit")#)# 3. 拟合模型（MCMC采样，确保收敛性）irt_fit <- brm(  formula = irt_formula,  prior = irt_prior,  data = clean_df,  chains = 4,          # 4条链验证收敛  iter = 2000,         # 总迭代（1000次预热+1000次推断）  warmup = 1000,  cores = 4,           # 并行加速  seed = 1234,         # 结果可重复  control = list(adapt_delta = 0.95)  # 避免采样发散)# 模型一次运行时间较久，建议大家保存模型，避免意外跳出或刷新中断后耗去过长时间🥲。saveRDS(irt_fit, "fit_1pl_grm_clean.rds")
+```
+
+<p>或者另一种写法：</p>
+
+<pre><code class="language-r"># 1. 模型公式（cumulative家族对应GRM，无区分度参数）  irt_formula &lt;- bf(  resp ~ beta + theta,  beta ~ 1 + (1 | item), # 项目难度（固定截距 + 随机项目效应）  theta ~ 0 + (1 | subject), # 被试能力（无固定截距，均值为0）  nl = TRUE,  family = brmsfamily("cumulative", "logit")  )  # 2. 设定先验（弱信息先验，避免干扰数据）  irt_prior &lt;- c(  # 被试潜在特质（自我控制水平）标准差：半正态先验（弱信息）  prior(normal(0, 1), class = "sd", nlpar = "theta"),  # 项目易度标准差：半正态先验（控制项目难度差异范围）  prior(normal(0, 1), class = "sd", nlpar = "beta"),  # 全局阈值参数：正态先验（确保阈值有序且范围合理）  prior(normal(0, 2), class = "Intercept")  )  get_prior(  formula = irt_formula,  data = clean_df,  family = brmsfamily("cumulative", "logit")  )  # 3. 拟合模型（MCMC采样，确保收敛性）  irt_fit &lt;- brm(  formula = irt_formula,  prior = irt_prior,  data = clean_df,  chains = 4, # 4条链验证收敛  iter = 2000, # 总迭代（1000次预热+1000次推断）  warmup = 1000,  cores = 4, # 并行加速  seed = 1234, # 结果可重复  control = list(adapt_delta = 0.95) # 避免采样发散  )  # 模型一次运行时间较久，建议大家保存模型，避免意外跳出或刷新中断后耗去过长时间🥲。  saveRDS(irt_fit, "fit_1pl_grm_clean.rds")</code></pre><p></p>
+
+<h3>Step3: check the model</h3><p></p>
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+summary(irt_fit)
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 1. 加载已保存的模型#irt_fit <- readRDS("fit_1pl_grm_clean.rds")# 2. 提取模型参数thresholds <- fixef(irt_fit)[, "Estimate"]  # 各分数等级的阈值# 3. 定义能力参数θ范围theta_range <- seq(-4, 4, length.out = 200)# 4. 计算累积概率（修复版本）n_categories <- length(thresholds) + 1  # 响应类别数# 计算累积概率矩阵（每列对应一个阈值）cum_prob <- sapply(thresholds, function(tau) {  1 / (1 + exp(-(theta_range - tau)))})# 构建完整的累积概率矩阵# 每行是一个θ值，每列是P(Y ≥ k)category_prob_matrix <- cbind(  1,                          # P(Y ≥ 1) = 1（所有人）  cum_prob,                   # P(Y ≥ 2), P(Y ≥ 3), ...  0                           # P(Y ≥ K+1) = 0（无人）)# 计算每个类别的概率：P(Y = k) = P(Y ≥ k) - P(Y ≥ k+1)prob_matrix <- t(apply(category_prob_matrix, 1, function(row) {  -diff(row)  # 注意要取负数，因为概率是递减的}))# 转换为长格式数据框prob_df <- data.frame(  theta = rep(theta_range, n_categories),  category = rep(1:n_categories, each = length(theta_range)),  probability = as.vector(prob_matrix))# 检查数据维度（调试用）cat("theta_range长度:", length(theta_range), "\n")cat("类别数:", n_categories, "\n")cat("prob_df维度:", dim(prob_df), "\n")cat("概率范围:", range(prob_df$probability), "\n")# 5. 绘制ICC曲线p1 <- ggplot(prob_df, aes(x = theta, y = probability, color = factor(category))) +  geom_line(linewidth = 1.2) +    # 坐标轴设置  scale_x_continuous(    name = expression(theta),    limits = c(-4, 4),    breaks = seq(-4, 4, 1)  ) +  scale_y_continuous(    name = expression(P(theta * "," * k)),    limits = c(0, 1),    breaks = seq(0, 1, 0.2)  ) +    # APA主题  theme_apa() +  theme(    legend.position = "right",    legend.title = element_text(size = 12),    legend.text = element_text(size = 10)  ) +    # 图例标签  labs(    title = "Item Characteristic Curve (ICC)",    color = "Response\nCategory"  ) +    # 颜色调整  scale_color_viridis_d(option = "plasma", end = 0.9)print(p1)#ggsave("icc_curve_grm_apa.png", width = 8, height = 6, dpi = 300)
+```
+
+<p><strong>IRT模型评估</strong></p><ul><li><p><strong>区分度(Discrimination)</strong></p><ul><li><p>曲线的陡峭程度</p></li></ul></li></ul><p></p><ul><li><p><strong>单调性(Monotonicity)</strong></p><ul><li><p>高分类别的曲线是否随θ单调递增,低分类别反之</p></li></ul></li></ul><p></p><ul><li><p><strong>类别功能性(Category Functioning)</strong></p><ul><li><p>每条曲线是否都有明显的峰值区域</p></li></ul></li></ul><p></p>
+
+<p>轻松吧😎！现在我们已经成功利用基于brms的贝叶斯方法站在心理测量领域对IRT模型实现了建模。</p><p>但，仅仅对模型的构建是远远不够的。要想更靠近“摸不着的大象”，进一步理解模型内部的含义，要求我们对这个构建好的IRT模型进行参数解读。</p>
+
+<h2>Exploring: 基于brms的贝叶斯IRT模型解读</h2><p></p>
+
+<p>让我们回到贝叶斯推断的基本公式：</p><p>$$posterior\propto likelihood \cdot prior$$</p><p></p><p style="text-align: left;">其中，似然$likelihood$是贝叶斯框架的核心，它代表着<strong>先验prior决定的参数</strong>在当前<strong>观测数据$y$所服从的概率分布</strong>下发生的可能性。</p><p></p><p>在将其应用于<strong>统计模型中的广义线性回归</strong>时，我们需要<strong>连接函数(link function)</strong>$ g(\cdot) $，使得参数可以被表示为自变量$ X $的线性组合。</p><p></p><p>而对于测量模型，通常以另一种方式表述<strong>三大核心参数：family, formula, prior涵盖了上述需求：</strong></p><ul><li><p>$family$定义了似然$likelihood$中的响应分布，即数据$y$服从的概率分布；同时指定了将线性预测值映射到参数合理取值范围的连接函数$g(\cdot)$。</p></li><li><p>$formula$决定了我们想要预测分布背后的参数如何通过先验对应的参数构建。</p></li><li><p>$prior$代表着参数的先验分布。</p></li></ul><p></p><p>在贝叶斯IRT模型构建中：</p><p></p><ul><li><p><strong>family</strong>：设定响应变量的分布族及其连接函数</p></li><li><p><strong>formula</strong>：描述模型结构（线性/非线性、分层结构、协变量等）</p></li><li><p><strong>prior</strong>：设定贝叶斯先验分布</p></li></ul><p></p>
+
+<p>下面，让我们具体来看这三个参数在如何参与贝叶斯IRT模型构成以及对应的表现形式：</p>
+
+<h3><strong>family: 响应分布与链接函数</strong></h3><p></p><ul><li><p>核心思想：指定观测数据的<strong>概率分布</strong>（如 Bernoulli、cumulative、exgaussian）及如何将线性预测值映射到分布参数的<strong>链接函数</strong>（如 logit、identity、log）。</p></li></ul><p style="text-align: center;"><code>family = brmsfamily(family = "&lt;family&gt;" , link = "&lt;link&gt;"</code></p><pre><code>```r  family = brmsfamily("bernoulli", link = "logit")          # 二分数据  family = brmsfamily("cumulative", link = "logit")         # 有序多级数据（如 Likert 量表）  family = brmsfamily("exgaussian", link_sigma = "log", link_beta = "log")  # 反应时  ```</code></pre><p></p>
+
+<h3><strong>formula：模型公式</strong></h3><p></p><ul><li><p><strong>单变量模型：</strong>基础线性公式（如 1PL/Rasch 模型）</p><ul><li><p>e.g.,<code>score ~ 1 + gender</code>，分析性别对量表得分的影响</p></li></ul></li><li><p><strong>多层模型：</strong>多参数分布建模（如 2PL、GRM）</p><ul><li><p>e.g.,<code>score ~ 1 + gender + (1 | subject)</code>，考虑每个被试的个体差异（适合于有多个得分的情况）</p></li></ul></li><li><p><strong>非线性模型：</strong>非线性公式（如 2PL、3PL）</p><ul><li><p>e.g.,<code>score ~ inv_logit(alpha * (theta + xi))</code>，对应 IRT 模型中的逻辑转换</p></li></ul></li></ul><p></p>
+
+<p><strong>(a) 基础线性公式</strong></p><ul><li><p>数据需为<strong>长格式</strong>（每行一个被试-项目对）</p></li><li><p>基本结构：</p></li></ul><p style="text-align: center;"><br> <code>y ~ 1 + (1 | item) + (1 | person)</code><br></p><p></p><ul><li><p><code>1</code>：全局截距（当 item 和 person 参数都采用部分池化时必需）</p></li><li><p><code>(1 | item)</code>：每个项目的难度（或易度）参数，服从共同先验（部分池化）</p></li><li><p><code>(1 | person)</code>：每个被试的能力参数，服从共同先验</p></li></ul><p></p><blockquote><p>若不对 item 池化，写为 <code>y ~ 0 + item + (1 | person)</code></p></blockquote><p></p><hr><p></p>
+
+<p><strong>(b) 引入协变量</strong></p><p>在 IRT 模型中引入协变量，可用于解释被试能力（person parameters）或题目特征（item parameters）的变异来源，例如被试的性别、年龄，或题目的类型、难度维度等。</p><p></p><ul><li><p>项目或被试协变量直接加入公式：</p></li></ul><p></p><p style="text-align: center;"><code>y ~ 1 + covariate+ (1 | item) + (1 | person)</code> </p><ul><li><p>covariate 可以是被试协变量（如性别）、题目协变量（如题型），或被试 × 题目交互协变量（如某人答某题时的反应时）。</p></li><li><p>数据需为长格式（long format），因此 brms 无需区分协变量是属于 person 还是 item —— 公式语法自动处理。</p></li></ul><p></p><ul><li><p>允许协变量效应实现跨层级交互：</p><ul><li><p>协变量效应在不同题目间变化（item-specific slope）：</p></li></ul></li></ul><p style="text-align: center;"><code>y ~ 1 + covariate + (1 + covariate | item) + (1 | person)</code></p><p style="text-align: left;"></p><ul><li><p></p><ul><li><p>协变量效应在不同被试间变化（ person-specific slope）:</p></li></ul></li></ul><p style="text-align: center;"><code>y ~ 1 + covariate + (1 | item) + (1 + covariate | person)</code></p><ul><li><p>交互作用：</p><ul><li><p>两个协变量的交互可通过 : 指定；* 是简写，等价于主效应 + 交互：</p></li></ul></li></ul><pre><code>```r  y ~ x1 * x2 + (1 | item) + (1 | person)  # 等价于  y ~ x1 + x2 + x1:x2 + (1 | item) + (1 | person)  ```</code></pre><p></p>
+
+<p><strong>(c) 分布参数建模（distributional modeling）</strong></p><p>若协变量不仅影响均值（如能力或难度），还可能影响<strong>区分度、方差、阈值等其他分布参数</strong>，可通过 <code>bf()</code> 分别建模。</p><ul><li><p>利用 <code>bf()</code> 同时建模多个分布参数（如 <code>mu</code>, <code>disc</code>, <code>sigma</code>）：</p></li></ul><p style="text-align: left;"></p><pre><code class="language-r">formula ~ bf(     y ~ 1 + (1 |i| item) + (1 |p| person),     pars2 ~ $1 + (1 |i| item) + (1 |p| person),     pars3 ~ $1 + (1 |i| item) + (1 |p| person),     ...  )</code></pre><p style="text-align: left;"></p><pre><code>```r  bf(  resp ~ 1 + (1 |i| item) + (1 |p| person),  disc ~ 1 + (1 |i| item) # 允许区分度 vary by item  ```</code></pre><ul><li><p>使用 <code>|i|</code> 和 <code>|p|</code> 语法表示item/person 内不同参数之间相关。</p></li></ul><p></p>
+
+<p><strong>(d) 非线性公式</strong></p><ul><li><p>标准的 R 公式语法无法用于表达任意复杂度的非线性预测变量。因此，我们需要<strong>指定一个主要的非线性公式</strong><code>nl = TRUE</code>，以及一些额外的线性公式，用以描述非线性参数如何由个体和项目参数预测。</p></li><li><p>假设响应变量 y 通过一个非线性函数 fun 与某个协变量 x 相关联，且该函数 fun 的形式由两个参数 nlpar1 和 nlpar2 决定，而两个参数需要在模型拟合过程中进行估计。</p></li></ul><p></p><ul><li><p>在brms中可以表达为：</p></li></ul><pre><code class="language-r">formula ~ bf(     y ~ 1 + (1 |i| item) + (1 |p| person),     pars2 ~ $1 + (1 |i| item) + (1 |p| person),     pars3 ~ $1 + (1 |i| item) + (1 |p| person),     nl = TRUE  )</code></pre><p></p><ul><li><p>如 $α_i(θ_p + ξ_i) $），需用 <code>nl = TRUE</code>：</p></li></ul><pre><code>```r  bf(  r2 ~ inv_logit(eta),  eta ~ 1 + (1 |i| item) + (1 | person),  nl = TRUE  )  ```</code></pre><p></p>
+
+<h3>prior：先验设定</h3><p>先验设定可以通过使用 <strong>set_prior() </strong>函数指定先验，直接应用于 IRT 模型。</p><ul><li><p>示例：</p></li></ul><pre><code>```r  prior &lt;- c(    set_prior("normal(0, 3)", class = "sd", group = "person"),    set_prior("lkj(2)", class = "cor", group = "item")  )  ```</code></pre><p><code>brms</code> 并不直接操作 Stan程序内部用于表示模型参数的实际变量名，因为它们不能直接反映我们定义的变量名(如person, item)，而只是精确对应了模型的数据结构和采样需求。</p><p></p><p>所以，brms是将模型参数<strong>按功能分组</strong>，并称每一组称为一个 <strong>“class”。</strong></p><p></p><p><strong>例如：</strong></p><p></p><table style="min-width: 349px;"><colgroup><col style="width: 299px;"><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1" colwidth="299"><p style="text-align: center;">brms表达</p></th><th colspan="1" rowspan="1"><p style="text-align: center;">对应Stan逻辑</p></th><th colspan="1" rowspan="1"><p style="text-align: center;">说明</p></th></tr><tr><td colspan="1" rowspan="1" colwidth="299"><p style="text-align: center;">set_prior("constant(1)", class = "sd", group = "person")</p></td><td colspan="1" rowspan="1"><p style="text-align: center;">real&lt;lower=0&gt; sd_person = 1;</p></td><td colspan="1" rowspan="1"><p style="text-align: center;">固定超参，不是对 theta 向量设先验</p></td></tr><tr><td colspan="1" rowspan="1" colwidth="299"><p style="text-align: center;">(1 | person)</p></td><td colspan="1" rowspan="1"><p style="text-align: center;">person ~ normal(0,1);</p><p style="text-align: center;"> theta = sd_person * person;</p></td><td colspan="1" rowspan="1"><p style="text-align: center;">非中心参数化（基于MCMC）</p></td></tr></tbody></table><ul><li><p>常用参数有：</p><ul><li><p>class = "sd"：随机效应标准差</p></li><li><p>class = "cor"：随机效应相关矩阵（推荐 LKJ 先验）</p></li><li><p>class = "b"：固定效应（如非池化 item 参数）</p></li><li><p>dpar = "disc"：特定分布参数（如区分度）</p></li><li><p>nlpar = "logalpha"：非线性参数</p></li></ul></li></ul><p></p><ul><li><p>固定参数（用于模型识别）：</p></li></ul><pre><code>```r  set_prior("constant(1)", class = "sd", group = "person")  # 2PL 常用  ```</code></pre><p></p>
+
+<p><strong>set prior : 直接编写Stan与使用brms框架比较</strong></p><p></p><table style="min-width: 75px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><th colspan="1" rowspan="1"><p style="text-align: center;">特征</p></th><th colspan="1" rowspan="1"><p style="text-align: center;">直接编写Stan</p></th><th colspan="1" rowspan="1"><p style="text-align: center;">使用brms框架</p></th></tr><tr><td colspan="1" rowspan="1"><p style="text-align: center;"><strong>建模方式</strong></p></td><td colspan="1" rowspan="1"><p style="text-align: center;">手动定义每一个参数（如 theta, beta, sigma）及其先验</p></td><td colspan="1" rowspan="1"><p style="text-align: center;">通过高层公式（如 y ~ 1 + (1 | item) + (1 | person)）描述模型结构，brms 自动生成 Stan 代码</p></td></tr><tr><td colspan="1" rowspan="1"><p style="text-align: center;"><strong>先验指定</strong></p></td><td colspan="1" rowspan="1"><p style="text-align: center;">逐参数或逐向量：为每个自定义参数显式写先验（如 theta ~ normal(0, sigma_theta)）</p></td><td colspan="1" rowspan="1"><p style="text-align: center;">按参数类别（class）批量指定：使用 class = "sd"、"cor"、"b" 等对一类参数统一设先验</p></td></tr><tr><td colspan="1" rowspan="1"><p style="text-align: center;"><strong>易用性 vs 灵活性</strong></p></td><td colspan="1" rowspan="1"><p style="text-align: center;">灵活但繁琐，易出错</p></td><td colspan="1" rowspan="1"><p style="text-align: center;">简洁高效，适合快速原型，牺牲部分底层控制</p></td></tr></tbody></table><p>brms的设计适用于快速迭代IRT模型，通过牺牲底层控制，能够提高建模的效率。并且，在用于构建贝叶斯IRT模型时，因其核心在于将IRT模型转化为GLM，所以先验设定需要与公式语法保持一致。同时，为例服务于心理测量领域的可读性，经过class分组后的参数会比Stan更语义化（如class = “sd" vs. sd_id_Intercept）。</p>
+
+<h2>Conclusion</h2><p>brms将 IRT 模型视为广义（或非线性）多层回归模型，利用family, formula,以及prior三个核心参数通过层级先验、非线性公式语法和丰富的响应分布族，实现了对多种 IRT 模型类型在基于贝叶斯框架下的的统一表达与估计👍。</p><p></p><p>由此可见，对于贝叶斯框架在心理学中的应用是十分灵活的，它不仅可以用于解决统计问题，还可以用于解决今天我们所遇到的测量问题，此外也能被用于作为认知过程的建模，等等... 其核心在于提供给了我们对于不确定性解释的一种视角，即基于数据实现对于各种情景下的可能性估计，这有助于我们以不断推演、更新的方式去进一步靠近有关心理乃至世界运作机制的“ground truth”。</p>
+
+<p>在学习了如何基于brms实现贝叶斯IRT模型构建以及如何对其参数进行解释后，我们将进行coding的练习实操部分😋！</p>
+
+<h2><strong>Coding：贝叶斯IRT建模实战</strong></h2><p>大家是否还记得在Lecture10我们曾经用到的压力测量量表？</p><p>（共有14道题，每道题的标尺有5个水平，分值为1-5，总分的分布范围为14-70）</p><p>接下来，我们将尝试自己利用该量表数据来构建一个基于brms的1PL模型！</p><p><em>（加油！你是最棒的～🫶🏻）</em></p>
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+df_raw <- tryCatch({  read.csv('/home/mw/input/Data_HPP_Multi13781378/Data_Raw_HPP_Multi_Site_Share.csv')}, error = function(e) {  read.csv('data/Data_Raw_HPP_Multi_Site_Share.csv')})# 筛选站点为"Tsinghua"的数据df <- df_raw %>%  filter(Site == "Tsinghua") df
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 检查 stress1–stress14 是否存在stress_cols <- paste0("stress", 1:14)missing <- setdiff(stress_cols, names(df))if (length(missing) > 0) stop("缺失题目列: ", paste(missing, collapse = ", "))# 提取题目 + 创建 IDdf_pss <- df %>%  select(all_of(stress_cols)) %>%  mutate(person_id = row_number()) %>%  select(person_id, all_of(stress_cols))# 反向计分（假设量表为 1–5）reverse_items <- c(4, 5, 10, 11, 13, 14)df_pss <- df_pss %>%  mutate(across(all_of(paste0("stress", reverse_items)), ~ 6 - .x))# 提取题目 + 创建 IDset.seed(12345)df_pss_long <- df %>%  select(all_of(stress_cols)) %>%  mutate(subject = row_number()) %>%  dplyr::mutate(subject = paste("s", subject, sep = "")) %>%  # 随机选择100个人的数据作为测试  slice_sample(n=100) %>%  select(subject, all_of(stress_cols)) %>%  # 转为长格式  tidyr::pivot_longer(      cols=starts_with("stress"),      names_to = "item",      values_to = "resp"  )  head(df_pss_long)
+```
+
+<h3>回顾： 1PL模型</h3><ul><li><p>所有题目具有<strong>相同区分度（</strong>通常设为 1）；</p></li><li><p>题目差异仅体现在<strong>难度（difficulty）或容易度（easiness）</strong>，通常采用后者；</p></li><li><p>被试潜在特质（θ）与题目容易度（β）线性组合，通过 logit 链接函数转化为正确概率。</p></li></ul><p>在 <code>brms</code> 中，1PL 模型可简洁表示为：</p><p></p><p style="text-align: center;">$bf(resp$ ~ $1 + (1 | item) + (1 | subject))$</p><p></p>
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 1. 模型公式（bernoulli("logit")家族对应1PL，无区分度参数）irt_formula_1pl <- bf(  resp ~ 1 + (1 | item) + (1 | subject),   #family = (bernoulli("logit"))  family = brmsfamily("cumulative", link = "logit")  # logit链接适配有序数据)# 2. 设定先验（弱信息先验，避免干扰数据）# 可以先用brms内置的先验#irt_prior_1pl <- c(#  # 被试潜在特质标准差#  prior("normal(0, 2)", class = "...", group = "..."),#  # 项目易度标准差#  prior("normal(0, 2)", class = "...", group = "..."),#  # 全局阈值参数：正态先验（确保阈值有序且范围合理）#  prior("normal(0, 5)", class = "Intercept")#)
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 3. 拟合模型（MCMC采样，确保收敛性）irt_fit_1pl <- brm(  formula = irt_formula_1pl,  # prior = ...,  data = df_pss_long,  chains = 4,          # 4条链验证收敛  iter = 2000,         # 总迭代（1000次预热+1000次推断）  warmup = 1000,  cores = 4,           # 并行加速  seed = 1234,         # 结果可重复  control = list(adapt_delta = 0.95)  # 避免采样发散)
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 可以查看brms使用的priors是什么get_prior(  formula = irt_formula_1pl,  data = df_pss_long,  family = (bernoulli("logit")))
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+summary(irt_fit_1pl)
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 1PL 收敛可视化（迹图+密度图）param_1pl <- c("sd_item__Intercept", "sd_subject__Intercept")p1_trace <- bayesplot::mcmc_trace(irt_fit_1pl, pars = param_1pl, facet_args = list(ncol = 1)) +  ggtitle("Trace Plots of 1PL Core Parameters") +  theme(plot.title = element_text(hjust = 0.5, size = 12))+  papaja::theme_apa()p1_dens <- bayesplot::mcmc_dens(irt_fit_1pl, pars = param_1pl, facet_args = list(ncol = 2)) +  ggtitle("Posterior Density Plots of 1PL Core Parameters") +  theme(plot.title = element_text(hjust = 0.5, size = 12))+  papaja::theme_apa()grid.arrange(p1_trace, p1_dens, ncol = 1, heights = c(2, 1))
+```
+
+<h2>Appendix</h2><p></p>
+
+<h3>附录1：IRT模型的<strong>常见分类</strong></h3><p>IRT 模型有多种类别，涵盖不同响应格式，主要包括：</p><p></p><ul><li><p><strong>二分模型</strong>：如 1PL（Rasch 模型）、2PL、3PL Logistic模型，用于正确/错误或同意/不同意等二元反应。</p></li><li><p><strong>多分类模型</strong>：</p><ul><li><p><strong>无序</strong>：使用分类分布（categorical distribution）；</p></li><li><p><strong>有序</strong>：如GRM和PCM，分别基于累积链接和相邻类别链接。</p></li></ul></li><li><p><strong>连续反应模型</strong></p></li><li><p><strong>...</strong></p></li></ul><img src="https://cdn.kesci.com/upload/1764575540873_1.png"><p></p>
+
+<h3>附录2: 后验诊断、模型比较及可视化</h3><img src="https://cdn.kesci.com/upload/1764490914284_1.jpg"><p></p>
+
+<h3>2PL GRM模型构建</h3><p></p>
+
+<p><strong>2PL 模型（带区分度）</strong></p><p>2PL 模型允许<strong>题目具有不同区分度（discrimination），</strong>反映题目对潜在特质的敏感程度。区分度越高，题目在能力阈值附近的斜率越陡。</p><p>在 <code>brms</code> 中，无需使用复杂的非线性公式<code>nl = TRUE</code>，而采用更简洁的<strong>分布参数建模（distributional modeling）</strong>：</p><p></p><p>$$</p><p>bf(</p><p>resp ~ 1 + (1 |i| item) + (1 | subject),</p><p>disc ~ 1 + (1 |i| item)</p><p>)</p><p>$$</p><p></p><p>其中：</p><ul><li><p><code>disc</code> 是 <code>brms</code> 内置的区分度参数；</p></li><li><p><code>(1 |i| item)</code> 表示 item 层级的截距在 <code>resp</code> 和 <code>disc</code> 公式间相关;</p></li><li><p>区分度自动在正数域（通过 log 链接），避免无效值。</p></li></ul><p></p>
+
+<p><strong>GRM 2PL（题目特异性区分度）</strong></p><p>由此类推，GRM 2PL则可理解为是2PL 模型在序数数据下的推广。与GRM 1PL区别在于：</p><ul><li><p>每个题目<strong>有自己的 区分度 $\alpha_i$</strong></p></li><li><p>公式变为：</p></li></ul><p>$$P(y_{pi} \geq k) = \text{logit}^{-1} \big( \alpha_i (\theta_p - \tau_{ik}) \big)$$</p><p></p>
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 1. 设定先验（新增区分度参数的先验）prior_2pl <- c(  # 被试特质标准差：固定为1（解决模型识别问题，IRT核心设定）  prior("constant(1)", class = "sd", group = "subject"),  # 项目易度标准差：与1PL一致，保证可比性  prior("normal(0, 1)", class = "sd", group = "item"),  # 项目区分度（disc参数）标准差：对数正态先验（确保αᵢ>0，弱信息）  prior("normal(0, 0.5)", class = "sd", group = "item", dpar = "disc"),  # 全局阈值参数：与1PL一致，保证可比性  prior("normal(0, 2)", class = "Intercept"))# 2. 模型公式（新增disc参数预测项目区分度）formula_2pl <- bf(  resp ~ 1 + (1 |i| item) + (1 | subject),  # |i|关联项目易度与区分度  disc ~ 1 + (1 |i| item),                  # 独立估计每个项目的区分度  family = brmsfamily("cumulative", link = "logit"))# 3. 拟合模型（参数与1PL一致，保证对比公平性）fit_2pl <- brm(  formula = formula_2pl,  data = clean_df,  prior = prior_2pl,  chains = 4,  iter = 2000,  warmup = 1000,  cores = 4,  seed = 1234,  control = list(adapt_delta = 0.95))# again: 模型一次运行时间较久，建议大家保存模型，避免意外跳出或刷新中断后耗去过长时间🥲。#saveRDS(fit_2pl, "fit_2pl_grm_clean.rds")
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+#fit_2pl
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 统一可视化风格为APA格式（papaja包的theme_apa()）theme_set(papaja::theme_apa())# 加载模型#fit_1pl <- readRDS("/home/mw/project/irt_fit_grm_clean.rds")#fit_2pl <- readRDS("/home/mw/project/fit_2pl_grm_clean.rds")# 核心参数提取（用于模型评估可视化）param_1pl <- c("sd_item__Intercept", "sd_subject__Intercept")param_2pl <- c("sd_item__Intercept", "sd_subject__Intercept", "sd_item__disc_Intercept")# 核心数据提取（用于后续对比）clean_data <- irt_fit$data  # 两种模型使用同一数据，保证对比公平性n_subj <- n_distinct(clean_data$subject)n_item <- n_distinct(clean_data$item)cat(sprintf("分析数据：被试数=%d，项目数=%d，作答记录数=%d\n",             n_subj, n_item, nrow(clean_data)))
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 1. 1PL GRM收敛可视化（迹图+密度图）p1_trace <- bayesplot::mcmc_trace(..., pars = ..., facet_args = list(ncol = 1)) +  ggtitle("Trace Plots of 1PL GRM Core Parameters") +  theme(plot.title = element_text(hjust = 0.5, size = 12))  # APA标题居中p1_dens <- bayesplot::mcmc_dens(irt_fit, pars = param_1pl, facet_args = list(ncol = 2)) +  ggtitle("Posterior Density Plots of 1PL GRM Core Parameters") +  theme(plot.title = element_text(hjust = 0.5, size = 12))grid.arrange(p1_trace, p1_dens, ncol = 1, heights = c(2, 1))
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 2. 2PL GRM收敛可视化p2_trace <- bayesplot::mcmc_trace(..., pars = ..., facet_args = list(ncol = 1)) +  ggtitle("Trace Plots of 2PL GRM Core Parameters") +  theme(plot.title = element_text(hjust = 0.5, size = 12))p2_dens <- bayesplot::mcmc_dens(fit_2pl, pars = param_2pl, facet_args = list(ncol = 3)) +  ggtitle("Posterior Density Plots of 2PL GRM Core Parameters") +  theme(plot.title = element_text(hjust = 0.5, size = 12))grid.arrange(p2_trace, p2_dens, ncol = 1, heights = c(2, 1))
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 计算LOO指标（leave-one-out交叉验证，避免过拟合）loo::loo(irt_fit,fit_2pl)
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 生成后验预测样本ppd_1pl <- brms::posterior_predict(..., draws = 1000)ppd_2pl <- brms::posterior_predict(..., draws = 1000)# 1. Density图重叠（实际数据vs预测数据）p_ppc_dens_1pl <- ppc_dens_overlay(y = clean_data$resp, yrep = ppd_1pl[1:50, ]) +  labs(x = "Response Score", y = "Density", title = "1PL GRM Posterior Predictive Density Overlap") +  theme(plot.title = element_text(hjust = 0.5, size = 12))p_ppc_dens_2pl <- ppc_dens_overlay(y = clean_data$resp, yrep = ppd_2pl[1:50, ]) +  labs(x = "Response Score", y = "Density", title = "2PL GRM Posterior Predictive Density Overlap") +  theme(plot.title = element_text(hjust = 0.5, size = 12))# 2. 均值统计量对比（实际均值vs预测均值分布）p_ppc_mean_1pl <- ppc_stat(y = clean_data$resp, yrep = ppd_1pl, stat = "mean") +  labs(x = "Mean Response Score", y = "Density", title = "1PL GRM Posterior Predictive Mean Comparison") +  theme(plot.title = element_text(hjust = 0.5, size = 12))p_ppc_mean_2pl <- ppc_stat(y = clean_data$resp, yrep = ppd_2pl, stat = "mean") +  labs(x = "Mean Response Score", y = "Density", title = "2PL GRM Posterior Predictive Mean Comparison") +  theme(plot.title = element_text(hjust = 0.5, size = 12))# 组合PPC图grid.arrange(p_ppc_dens_1pl, p_ppc_dens_2pl, p_ppc_mean_1pl, p_ppc_mean_2pl,              ncol = 1, nrow = 4)
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 提取被试随机效应（后验摘要）subj_ranef_1pl <- ranef(irt_fit, summary = TRUE)$subjectsubj_ranef_2pl <- ranef(fit_2pl, summary = TRUE)$subject# 转换为数据框，并添加行名作为 subject IDsubj_df_1pl <- as.data.frame(subj_ranef_1pl) %>%  rownames_to_column("subject") %>%  rename(    Estimate = Estimate.Intercept,    Lower = Q2.5.Intercept,    Upper = Q97.5.Intercept  ) %>%  # 按 Estimate 排序  arrange(Estimate) %>%  # 添加排序后的编号（Person Number）  mutate(Person_Number = row_number())subj_df_2pl <- as.data.frame(subj_ranef_2pl) %>%  rownames_to_column("subject") %>%  rename(    Estimate = Estimate.Intercept,    Lower = Q2.5.Intercept,    Upper = Q97.5.Intercept  ) %>%  # 按 Estimate 排序  arrange(Estimate) %>%  # 添加排序后的编号（Person Number）  mutate(Person_Number = row_number())
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 绘制 1pl 森林图（排序后）p_person_1pl <- ggplot(subj_df_1pl, aes(x = Estimate, y = Person_Number)) +  # 绘制 95% CI 区间  geom_errorbar(aes(xmin = Lower, xmax = Upper), width = 0.2, color = "gray50", size = 0.8) +  # 绘制后验均值点  geom_point(color = "black", size = 2) +  # 标题和坐标轴标签  labs(    x = "Estimate",    y = "Person Number (Sorted)",    title = "Posterior means and 95% credible intervals of person parameters (sorted) as estimated by model fit_1pl."  ) +  papaja::theme_apa()  # 确保 X 轴范围合理  scale_x_continuous(limits = c(-5, 5))    p_person_1pl
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 绘制 2pl 森林图（排序后p_person_2pl <- ggplot(subj_df_2pl, aes(x = Estimate, y = Person_Number)) +  # 绘制 95% CI 区间  geom_errorbar(aes(xmin = Lower, xmax = Upper), width = 0.2, color = "gray50", size = 0.8) +  # 绘制后验均值点  geom_point(color = "black", size = 2) +  # 标题和坐标轴标签  labs(    x = "Estimate",    y = "Person Number (Sorted)",    title = "Posterior means and 95% credible intervals of person parameters (sorted) as estimated by model fit_2pl."  ) +  papaja::theme_apa()  # 确保 X 轴范围合理  scale_x_continuous(limits = c(-5, 5))  p_person_2pl
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 1PL: 提取项目易度（随机效应）ranef_1pl <- ranef(irt_fit, summary = TRUE)$item# 转换为数据框df <- as.data.frame(ranef_1pl)# 根据实际列名重命名item_1pl <- df %>%  rownames_to_column("item") %>%  rename(    Easiness_Mean = Estimate.Intercept,    Easiness_Lower = Q2.5.Intercept,    Easiness_Upper = Q97.5.Intercept  ) %>%  mutate(    Model = "1PL GRM",    Discrimination_Mean = 1  ) %>%  select(Model, item, Easiness_Mean, Easiness_Lower, Easiness_Upper, Discrimination_Mean)  item_1pl
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 2PL: 提取项目易度和区分度ranef_2pl <- ranef(fit_2pl, summary = TRUE)# 易度（主公式）easiness_df <- as.data.frame(ranef_2pl$item) %>%  rownames_to_column("item") %>%  rename(    Easiness_Mean = Estimate.Intercept,    Easiness_Lower = Q2.5.Intercept,    Easiness_Upper = Q97.5.Intercept  )# 区分度（disc 公式）disc_df <- as.data.frame(ranef_2pl$item) %>%  rownames_to_column("item") %>%  rename(    Discrimination_Mean = Estimate.disc_Intercept,    Discrimination_Lower = Q2.5.disc_Intercept,    Discrimination_Upper = Q97.5.disc_Intercept  )# 合并item_2pl <- full_join(easiness_df, disc_df, by = "item") %>%  mutate(Model = "2PL GRM") %>%  select(Model, item, Easiness_Mean, Easiness_Lower, Easiness_Upper, Discrimination_Mean,Discrimination_Lower, Discrimination_Upper)item_2pl
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+item_comp <- bind_rows(item_1pl, item_2pl) %>%  arrange(item, Model)kable(head(item_comp, 12),      caption = "Table 3: Item Parameter Comparison (Easiness: Negative=Hard, Positive=Easy; Discrimination: >0.5=Effective)",      align = "c")
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 1. 项目区分度对比（仅2PL有区分度，1PL固定为1）disc_data <- item_2pl %>%  mutate(Discrimination_1PL = 1) %>%  # Add 1PL reference line  arrange(desc(Discrimination_Mean)) %>%  mutate(item = factor(item, levels = item))  # Sort by discriminationp_disc <- ggplot(disc_data, aes(x = item)) +  geom_point(aes(y = Discrimination_Mean, color = "2PL GRM"), size = 3) +  geom_hline(aes(yintercept = Discrimination_1PL, color = "1PL GRM"), linetype = "dashed", size = 1) +  geom_errorbar(aes(ymin = Discrimination_Lower, ymax = Discrimination_Upper), width = 0.2) +  labs(x = "Item ID", y = "Item Discrimination", color = "Model",       title = "Item Discrimination Comparison (1PL vs. 2PL GRM)") +  scale_color_manual(values = c("1PL GRM" = "gray", "2PL GRM" = "black")) +  theme(plot.title = element_text(hjust = 0.5, size = 12),        legend.position = "bottom") +  coord_flip()  # Horizontal layout for readability# 2. 项目易度对比（两种模型同一项目易度差异）easiness_data <- full_join(  item_1pl %>% select(item, Easiness_1PL = Easiness_Mean),  item_2pl %>% select(item, Easiness_2PL = Easiness_Mean),  by = "item") %>%  mutate(Easiness_Difference = Easiness_2PL - Easiness_1PL) %>%  arrange(desc(Easiness_Difference)) %>%  mutate(item = factor(item, levels = item))p_easiness <- ggplot(easiness_data, aes(x = item)) +  geom_point(aes(y = Easiness_1PL, color = "1PL GRM"), size = 2.5) +  geom_point(aes(y = Easiness_2PL, color = "2PL GRM"), size = 2.5) +  labs(x = "Item ID", y = "Item Easiness", color = "Model",       title = "Item Easiness Comparison (1PL vs. 2PL GRM)") +  scale_color_manual(values = c("1PL GRM" = "gray", "2PL GRM" = "black")) +  theme(plot.title = element_text(hjust = 0.5, size = 12),        legend.position = "bottom") +  coord_flip()grid.arrange(p_disc, p_easiness, ncol = 1)
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+extract_subj_trait <- function(fit, model_name) {  subj_trait <- tryCatch(    ranef(fit, summary = TRUE)$subject,    error = function(e) {      message("Subject random effects not available for ", model_name)      return(NULL)    }  )    if (is.null(subj_trait)) {    return(NULL)  }    # 转换为数据框  df <- as.data.frame(subj_trait)    # 自动识别列名  est_col <- grep("^Estimate", colnames(df), value = TRUE)[1]    if (is.na(est_col)) {    message("No Estimate column found for ", model_name)    return(NULL)  }    df %>%    rownames_to_column("subject") %>%    rename(!!sym(paste0("Trait_", gsub(" ", "_", model_name))) := !!est_col) %>%    select(subject, everything())}
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: true
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+#被试特质（self-control) 提取subj_1pl <- extract_subj_trait(irt_fit, "1PL GRM")subj_2pl <- extract_subj_trait(fit_2pl, "2PL GRM")# 合并subj_comp <- full_join(subj_1pl, subj_2pl, by = "subject") %>% drop_na()subj_comp
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 相关性计算pearson_corr <- cor(subj_comp$Trait_1PL_GRM, subj_comp$Trait_2PL_GRM)spearman_corr <- cor(subj_comp$Trait_1PL_GRM, subj_comp$Trait_2PL_GRM, method = "spearman")print(paste("Pearson r =", round(pearson_corr, 3)))print(paste("Spearman ρ =", round(spearman_corr, 3)))
+```
+
+```{r}
+#| notebookId: 69314bc9acf9f6be535fa68b
+#| jupyter: {}
+#| collapsed: false
+#| scrolled: false
+#| tags: []
+#| slideshow: {slide_type: slide}
+#| trusted: true
+#| hide_input: false
+# 特质估计一致性p_subj_corr <- ggplot(subj_comp, aes(x = Trait_1PL_GRM, y = Trait_2PL_GRM)) +  geom_point(alpha = 0.6, size = 2) +  geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed", size = 1) +  labs(x = "1PL GRM: Subject Self-Control Level",       y = "2PL GRM: Subject Self-Control Level",       title = sprintf("Subject Trait Estimate Consistency (r = %.3f, ρ = %.3f)",                       pearson_corr, spearman_corr)) +  theme(plot.title = element_text(hjust = 0.5, size = 12)) +  xlim(min(subj_comp$Trait_1PL_GRM, subj_comp$Trait_2PL_GRM) - 0.5,       max(subj_comp$Trait_1PL_GRM, subj_comp$Trait_2PL_GRM) + 0.5) +  ylim(min(subj_comp$Trait_1PL_GRM, subj_comp$Trait_2PL_GRM) - 0.5,       max(subj_comp$Trait_1PL_GRM, subj_comp$Trait_2PL_GRM) + 0.5)p_subj_corr
+```
+
