@@ -22,7 +22,7 @@
 
 This is a repo for teaching Bayesian analysis.
 
-Author: Prof. Dr. HU Chuan-Peng, Mingyu Liu, Siyu Chen, Siyu Wu, Zhenxin Cai et al.
+Author: Prof. Dr. HU Chuan-Peng; teaching assistants of 2026: Jixian Wang, Yijie Huang, Siyu Chen (王继贤、黄逸杰、陈思羽), of 2025: Mingyu Liu, Siyu Wu, Zhenxin Cai (刘茗钰、邬思宇、蔡振辛) et al.
 
 Affiliation: School of Psychology, Nanjing Normal University, Nanjing, China
 
@@ -57,28 +57,42 @@ Email: hcp4715@hotmail.com
 
 ```bash
 PyBayesian/
-├── .github/                     # 存放GitHub相关配置，如workflows（用于自动化任务）  
+├── .github/                     # 存放GitHub相关配置，如workflows（用于自动化任务）
 │
-├── data/                        # 数据文件  
-│   ├── flanker_1.csv            # Flanker任务数据  
-│   └── SMS_Well_being.csv       # SMS心理幸福感数据  
+├── data/                        # 数据文件
+│   ├── flanker_1.csv            # Flanker任务数据
+│   ├── SMS_Well_being.csv       # SMS心理幸福感数据
+│   └── ...                      # 各讲课件用到的其他数据
 │
-├── figs/                        # 存在使用的图片
-├── .gitignore                   # Git忽略文件  
-├── dockerfile                   # Docker配置文件  
-├── Lecture{id}.ipynb            # 2024年第{id}讲课件  
-├── LICENSE                      # 许可证文件   
-├── README.md                    # 本仓库说明文件  
-└── Syllabus_CN.md               # 课程大纲 (中文)
+├── figs/                        # 存放课件使用的图片（figs/lec{id}/ 按章节分目录）
+├── 闯关题/                      # 课堂练习（闯关题）
+├── 教学大纲及相关内容/          # 课程大纲（docx/pdf）等教学文档
+├── .gitignore                   # Git忽略文件
+├── dockerfile                   # Docker配置文件
+├── Lecture{id}.qmd / .html      # 课件源码与渲染结果（Quarto revealjs，浏览器放映）
+├── Lecture{id}.R / Lecture{id}.py   # 课件配套的 R/Python 代码
+├── Lecture{id}.ipynb            # Jupyter Notebook 版本课件
+├── LICENSE                      # 许可证文件
+└── README.md                    # 本仓库说明文件
 ```
 
 # 环境配置和使用
 
 本项目有三种环境使用方式：
 
-- 和鲸云服务器平台，专门为选课同学使用，无需额外配置环境
+- 自行本地环境配置（即在自己电脑上安装R语言），见 [本地环境配置](#本地环境配置)
+- 和鲸云服务器中的Bayesian镜像，无需额外配置环境
 - dockerhub 镜像，所有用户可拉取镜像使用，见 [dockerhub镜像使用](#dockerhub镜像使用)
-- 自行本地环境配置，见 [本地环境配置](#本地环境配置)
+
+### 本地 R 配置
+
+安装 [R](https://www.r-project.org/)、[RStudio](https://posit.co/download/rstudio-desktop/) 或者 [Positron](https://positron.posit.co/)。
+
+安装贝叶斯推断常用的 R 包（如 brms、rstan、bayesplot、tidybayes、bayestestR、loo 等）：
+
+```r
+pacman::p_load( "brms", "rstan", "bayesplot", "tidybayes", "bayestestR", "loo")
+```
 
 ## dockerhub镜像使用
 
@@ -100,50 +114,16 @@ docker run -it --rm -v path/to/pybayesian:/home/jovyan -p 8888:8888 hcp4715/pyba
 - 之后在浏览器中输入返回的 url，即可打开 jupyter notebook。在根目录下可以找到pybayesian仓库中的所有notebooks。
 
 
-## 本地环境配置
-
-有两种环境配置方式，即Docker配置和本地 python 配置。
-
-### 本地 docoker 部署配置
-
-首先确保你已经安装了 docker。
-
-请克隆我们的仓库或者下载 dockerfile。
-
-之后执行以下部署命令：
-
-```bash
-docker build -t {username}/{imagename}:2024
-```
-
-请将 `{username}` 和 `{imagename}` 替换为你自己的用户名和任意镜像名称。
-
-之后运行：
-
-```bash
-docker run -it --rm -v path/to/pybayesian:/home/jovyan -p 8888:8888 {username}/{imagename}
-```
-- 注意：请将 `path/to/pybayesian` 替换为你本地的 pybayesian 仓库路径。
-- 具体见[dockerhub镜像使用](#dockerhub镜像使用)
-
-#### 如何在VS Code打开的jupyter notebook中使用docker container的kernel：
+### 如何在VS Code打开的jupyter notebook中使用docker container的kernel：
 
 https://medium.com/@FredAsDev/connect-vs-code-jupyter-notebook-to-a-jupyter-container-a63293f29325
 
 1. 运行docker container：
    `docker run -it --rm -v ${PWD}:/home/jovyan/ -p 8888:8888 hcp4715/pybayesian:latest` Note: 根据系统不同，有可能需要使用 `${pwd}` 来指定的当前目录。
 2. 在VS Code中安装jupyter扩展
-3. 打开 jupyter notebook,在右上角的选择kernal中选择；
+3. 打开 jupyter notebook,在右上角的选择kernel中选择；
 4. 在正上方的下拉选项中，选择“existing jupyter server”
 5. Copy URL with port and add at the end /tree. Like this http://127.0.0.1:8888/tree
-6. Press Enter go back to the log, and copy the token value. Paste it when it asks for the password (0cca3493bcfddba8451ecfe0f9e2ccf30cae85026154b397) and hit enter:
+6. Press Enter go back to the terminal log: each time the container starts it generates a new token. Copy the token value (the part after `?token=` in the printed URL) and paste it when VS Code asks for the password, then hit enter:
 7. Confirm if it is correct: 127.0.0.1
 8. Select Python Kernel:
-
-### 本地 python 配置
-
-如果你已经安装了 python 3.10-3.11，你可以使用以下命令安装依赖：
-
-```bash
-pip install -r requirements.txt
-```
