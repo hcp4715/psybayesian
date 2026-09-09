@@ -357,5 +357,5 @@ bayesian_analysis_plot <- function(    alpha, beta, y, n,    plot_prior      = T
 
 （* 注：以下涉及的公式包含上一节bonus中的内容）  由于后验分布属于beta分布，因此它的平均值可以写成：  $$  E(\pi | Y=y)  = \frac{\alpha + y}{\alpha + \beta + n}  .  $$  我们可以将$\frac{\alpha + y}{\alpha + \beta + n}$拆成以下两部分  $$  E(\pi | Y=y)  = \frac{\alpha}{\alpha + \beta + n} + \frac{y}{\alpha + \beta + n}  \\  = \frac{\alpha}{\alpha + \beta + n}\cdot\frac{\alpha + \beta}{\alpha + \beta} + \frac{y}{\alpha + \beta + n}\cdot\frac{n}{n}  \\  = \frac{\alpha + \beta}{\alpha + \beta + n}\cdot\frac{\alpha}{\alpha + \beta} + \frac{n}{\alpha + \beta + n}\cdot\frac{y}{n}  \\  = \frac{\alpha + \beta}{\alpha + \beta + n}\cdot E(\pi) + \frac{n}{\alpha + \beta + n}\cdot\frac{y}{n}  .  \\  $$  $$  y: success \space trial,\; n: total \space trials \\  y/n表示观察到的数据比例  $$  且，  $$  \frac{\alpha + \beta}{\alpha + \beta + n} + \frac{n}{\alpha + \beta + n} = 1.  $$  可以看到，后验均值可以被分解为  <center>  权重*先验均值 + 权重*数据  </center>  那么，当数据越多，即$n$越大时，先验的权重就会更小，接近0；而数据的权重就会越大  因此，后验正是权衡了来自先验和似然的信息
 
-附录：  本课的Python代码与R代码为单独的代码脚本，见：https://gitee.com/hcp4715/PyBayesian
+附录：  本课的Python代码与R代码为单独的代码脚本，见：https://github.com/hcp4715/psybayesian
 

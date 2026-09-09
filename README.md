@@ -2,7 +2,7 @@
 
 本仓库是南京师范大学心理学院胡传鹏教授在2025年秋季学期中《高级心理统计》中的课件及相关内容.
 
-本仓库内容由胡传鹏、刘茗钰、陈思羽、邬思宇、蔡振辛、等人共同完成，基于本课程[2023年学期课件](https://gitee.com/hcp4715/PyBayesian/tree/2023%E7%A7%8B%E5%AD%A3%E5%AD%A6%E6%9C%9F)和[2024年学期课件](https://gitee.com/hcp4715/PyBayesian/releases/tag/2024%E5%B9%B4%E7%A7%8B%E5%AD%A3%E5%AD%A6%E6%9C%9F%E5%AD%98%E6%A1%A3)。
+本仓库内容由胡传鹏、刘茗钰、陈思羽、邬思宇、蔡振辛、等人共同完成，基于本课程[2023年学期课件](https://github.com/hcp4715/psybayesian/tree/2023%E7%A7%8B%E5%AD%A3%E5%AD%A6%E6%9C%9F)和[2024年学期课件](https://github.com/hcp4715/psybayesian/releases/tag/2024%E5%B9%B4%E7%A7%8B%E5%AD%A3%E5%AD%A6%E6%9C%9F%E5%AD%98%E6%A1%A3)。
 
 我们鼓励重复使用本仓库中的内容，但需遵守本仓库的版本协议。使用前请联系胡传鹏教授，邮箱：hcp4715@hotmail.com
 

@@ -25,9 +25,9 @@ jupyter: ir
 
 助教和老师会尽快回复的 🚀。  
 
-当然，你也可以选择在gitee上进行提问。  
-点击链接访问gitee：  
-[https://gitee.com/hcp4715/PyBayesian](https://gitee.com/hcp4715/PyBayesian)  
+当然，你也可以选择在GitHub上进行提问。  
+点击链接访问GitHub：  
+[https://github.com/hcp4715/psybayesian](https://github.com/hcp4715/psybayesian)  
 
 
 ![Image Name](https://cdn.kesci.com/upload/1757570810462_1.png?imageView2/0/w/960/h/960)  

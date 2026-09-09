@@ -1486,8 +1486,8 @@ summary(group_pred_model)
 ![Image Name](https://cdn.kesci.com/upload/image/rkz1ehen1l.png?imageView2/0/w/720/h/960)  
 
 
-本学期贝叶斯课程中使用了许多心理学研究中的示例。如果你们有兴趣查看其他示例研究，可以浏览去年的课件，我们已经将其上传到 Gitee 上，链接如下：  
-https://gitee.com/hcp4715/PyBayesian/tree/master/Archive/2023/Notebooks  
+本学期贝叶斯课程中使用了许多心理学研究中的示例。如果你们有兴趣查看其他示例研究，可以浏览去年的课件，我们已经将其上传到 GitHub 上，链接如下：  
+https://github.com/hcp4715/psybayesian/tree/master/Archive/2023/Notebooks  
 
 <div style="padding-bottom: 30px;"></div>  
 

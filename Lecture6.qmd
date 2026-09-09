@@ -393,5 +393,5 @@ pacman::p_load(patchwork,tidyverse,rstan)
 
 最后，推荐 MCMC 讲解最好的视频(没有之一)：【蒙特卡洛（Monte Carlo, MCMC）方法的原理和应用】 https://www.bilibili.com/video/BV17D4y1o7J2/?share_source=copy_web&vd_source=4b5b4646c3f53f1b80954c381226c913  如果还是不懂 MCMC 原理，那放弃也行.....  不了解 MCMC 原理，并不影响对于它的使用。
 
-## 附录  本课的Python代码与R代码为单独的代码脚本，见：https://gitee.com/hcp4715/PyBayesian
+## 附录  本课的Python代码与R代码为单独的代码脚本，见：https://github.com/hcp4715/psybayesian
 

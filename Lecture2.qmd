@@ -93,7 +93,7 @@ pacman::p_load("tidyverse", "papaja", "gridExtra")
 ## 遇到问题去哪里问？
 
 - 📱 课程微信群：老师与助教会尽快回复
-- 💻 Gitee 课程仓库的 Issues 区：<https://gitee.com/hcp4715/PyBayesian/issues>
+- 💻 GitHub 课程仓库的 Issues 区：<https://github.com/hcp4715/psybayesian/issues>
 
 > 把报错信息、运行环境（操作系统 + R 版本）一起贴出来，问题解决得更快。
 
