@@ -11,7 +11,7 @@ format:
     transition: slide
     width: 1600
     height: 900
-    css: lecture1.css
+    css: lecture.css
     code-overflow: scroll
     code-copy: true
 execute:

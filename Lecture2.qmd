@@ -1,2006 +1,757 @@
 ---
-jupyter: ir
+title: “高级心理统计 · 第2讲”
+subtitle: “《贝叶斯统计及其在Python中的实现》 · Bayesian Statistics with Python”
+author: “胡传鹏 (Dr. Hu Chuan-Peng)”
+institute: “南京师范大学心理学院 · School of Psychology, Nanjing Normal University”
+format:
+  revealjs:
+    theme: default
+    auto-stretch: false
+    slide-number: true
+    show-slide-number: all
+    transition: slide
+    width: 1600
+    height: 900
+    css: lecture.css
+    code-overflow: scroll
+    code-copy: true
+    code-fold: true
+execute:
+  echo: true
+  message: false
+  warning: false
 ---
 
- # <center>Lecture 2: Bayes' Rule  </center>  
- 
- ## <center> Instructor: Dr. Hu Chuan-Peng  </center>
+## Outlines
 
-## Part 1: 【和鲸平台】整合教学+练习
+- **1. 工具准备** — R 与 RStudio / Positron
+- **2. 计数、概率与贝叶斯定理** — Probability as counting & Bayes' theorem
+- **3. 随机变量的贝叶斯模型** — Bayesian model with random variables
+- **4. 频率学派与贝叶斯学派的对比** — Frequentist vs. Bayesian
 
-本学期的贝叶斯课程将通过和鲸平台进行授课与代码练习，请大家提前注册好和鲸平台的账号。  
+## 学习目标 (Learning objectives)
 
-关于和鲸平台的运行环境设置说明如下：  
+学完本讲，你应该能够：
 
+- 用**先验 (prior)、似然 (likelihood)、证据 (evidence)、后验 (posterior)** 的语言描述一次“信念更新”
+- 用“**计数 (counting)**”直观理解贝叶斯公式，并演示**顺序更新**：后验可以成为下一步的先验
+- 借助 **posterior simulation** 用模拟逼近后验，而不必手算分母
+- 说清频率学派与贝叶斯学派在世界观与方法上的核心差异
 
+## Part 1: 工具准备 (R 与 RStudio/Positron)
 
-![Image Name](https://cdn.kesci.com/upload/1757570640505_1.png?imageView2/0/w/640/h/640)  
+本课程所有计算演示与作业都将基于 **R** 真实运行。
 
+- 你需要两样东西：
+  1. **R 语言环境**（必需）
+  2. **一个集成开发环境 (IDE)**：RStudio Desktop 或 Positron，二者任选其一
 
-![Image Name](https://cdn.kesci.com/upload/1757570690953_2.png?imageView2/0/w/640/h/640)  
+## Step 1: 安装 R
 
+- 打开 **清华 CRAN 镜像**（中国大陆下载最快）：
+  <https://mirrors.tuna.tsinghua.edu.cn/CRAN/>
+- 点击 `bin/` 进入对应平台：
+  - **Windows**：`windows/` → 下载 `R-4.x.x-win.exe` 并安装
+  - **macOS**：`macosx/` → Apple Silicon 芯片选 `arm64` 版本，Intel 芯片选 `x86_64` 版本
+- 安装完成后验证：打开 R.app（macOS）或 RGui（Windows），输入：
 
+```r
+version
+```
 
-更重要的是：任何问题都可以微信群里发帖提问。  
+能输出版本信息即安装成功。
 
-助教和老师会尽快回复的 🚀。  
+## Step 2: 安装 IDE
 
-当然，你也可以选择在gitee上进行提问。  
-点击链接访问gitee：  
-[https://gitee.com/hcp4715/PyBayesian](https://gitee.com/hcp4715/PyBayesian)  
+### RStudio Desktop（经典、稳定）
 
+- 官方免费下载：<https://posit.co/download/rstudio-desktop/>
+- 安装后首次打开即会自动关联已安装的 R
 
-![Image Name](https://cdn.kesci.com/upload/1757570810462_1.png?imageView2/0/w/960/h/960)  
+### Positron（新一代，可选，对终端和Python支持更好）
 
+- 由 Posit 推出的开源 IDE（基于 VS Code 内核），同时支持 R 与 Python：
+  <https://positron.posit.co/>
+- 适合希望 R/Python“一个界面通吃”的同学；熟悉 VS Code 的同学上手更快
 
+> 两者功能对本课程等价，选一个即可，不必都装。
 
- ## Part 2: 单一事件的贝叶斯模型
-
-### 基本概念回顾  
-
-**试验**  
-**事件**  
-**总体**  
-**概率**  
-**加法原则**  
-**乘法原则**  
-
-https://www.bilibili.com/video/BV1B7411v73M/?p=14  
-https://www.bilibili.com/video/BV1B7411v73M/?p=15  
-
-### **“从一个心理学研究的*事件*开始”**  
-
-读文献时，大家是否有一个疑问：我看到的这个文章靠谱吗？  
-
-![Image Name](https://cdn.kesci.com/upload/sjpbvjqzx2.jpg?imageView2/0/w/640/h/640)  
-
-2015年，**开放科学合作组织（Open Science Collaboration）** 在《Science》杂志上发表文章，发现只有**36%～47%** 的认知/社会心理学研究成果能被成功重复。  
-
-![Image Name](https://cdn.kesci.com/upload/sjos6fmkbs.png?imageView2/0/w/960/h/960)  
-
-
-> Open Science Collaboration (2015), Estimating the reproducibility of psychological science. *Science*, 349, aac4716. DOI:10.1126/science.aac4716
-
-以这个论文为代表的系列讨论，引发了关于心理学“可重复性危机”的讨论[(胡传鹏等, 2018)](https://journal.psych.ac.cn/xlkxjz/CN/10.3724/SP.J.1042.2016.01504)。  
-
-知道这个事实之后，对我们看到的下一篇文章时的信念是否产生了影响？  
-
-假设我们认同*Science*这个文章的结论，初步认为大约**40%** 的心理学实验是可重复的。我们以这个数据作为我们对文章的初步“信念”。  
-
-新的关于心理学研究可重复性的研究是否会进一步改变我们的信念？
-
-用公式化的表述：  
-
-**事件**：某个心理学研究的结论结果可重复出来。其概率可以写为: $P(Exp_{可重复})$ [$P(可重复)$ = 0.4]  
-**全部结果**: ...可重复；不可重复。
-
-2024年，一项针对299项预注册的重复实验数据的研究发现，可重复研究通常以自信、透明和确切的语言撰写，而不可重复的研究则往往表现出模糊性，并使用“边缘型”的说服技巧。  
-
-这个新研究是否会**改变**我们对心理学科学论文结论可重复性的信念？  
-
-假定我们现在从上述299个文章中抽取出一篇论文，我们会如何评估它的可重复性？  
-
-![Image Name](https://cdn.kesci.com/upload/sjoly6dhft.png?imageView2/0/w/960/h/960)  
-
-
-> Herzenstein, M., Rosario, S., Oblander, S., & Netzer, O. (2024). The language of (non)replicable social science. Psychological Science, 9567976241254037. https://doi.org/10.1177/09567976241254037  
-
-基于我们对心理学研究可重复性的原有信念（即认为大约40%的研究可以重复）和新证据（可重复性研究更多使用**确切语言**撰写），当我们随机抽取一项研究并获知其语言风格后，会对其可重复性持何种信念呢？  
-
-假如我们仅根据*Science 2015*的研究结果，我们可能会认为这项研究大约有40%可能性被重复出来？但是这意味着Herzenstein 等(2024)新研究的信息没有被用上。  
-
-根据Herzenstein 等(2024)的研究结果，可重复的研究中，有56%的文章使用确切的语言风格；在不可重复的研究中，使用确切语言的比例为为45%。  
-
-根据这些信息，且将这两项研究的结果当作我们推断的基础，我们可推断出以下几个关键信息：  
-- 心理学研究可重复的概率为40%  
-- 心理学研究不可重复的概率为60%  
-- 可重复的研究中，使用确切语言的概率为56%  
-- 不可重复的研究中，使用确切语言的概率为45%  
-
-
-![Image Name](https://cdn.kesci.com/upload/sjoxpj2ivv.png?imageView2/0/w/640/h/640)
-
-根据上述信息，现在我们可以进行以下的简单的运算：  
-
-- 研究可重复且使用确切语言的概率 $P = 0.40 \times 0.56 = 0.224$  
-- 研究可重复但不使用确切语言的概率 $P= 0.40 * (1-0.56) = 0.176$  
-- 研究不可重复但使用确切语言的概率 $P= 0.60 * 0.45 = 0.27$  
-- 研究不可重复且不使用确切语言的概率 $P= 0.60 * (1-0.45) = 0.33$  
-
-
-![Image Name](https://cdn.kesci.com/upload/sjp0bqwjgl.png?imageView2/0/w/960/h/960)  
-
-
-假如我们抽取出一个文章使用了确切的语言风格，我们认为它可重复的可能性是多少呢？  
-
-$P(可重复|使用确切语言) = 0.224/(0.224 + 0.27) = 0.453$  
-
-在这个简单的例子当中，我们进行了一次“贝叶斯的证据更新”。  
-
-接下来我们再来重新审视一下这个事例。  
-
-我们选取Herzenstein 等(2024)年的部分真实数据进行探索，包括研究的编号 (title)，文章是否可被重复 (replicated), 文章结果描述的确切性 (certain)和文章表述的积极性 (posemo)。
+## Step 3: 首次配置与数据准备
 
 ```{r}
-#| _id: 5E2EC868AAD6488CA5E5DFADCF965A1A
-#| collapsed: true
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 安装和加载包
+# 1) 设置清华镜像（中国大陆下载 R 包更快）
 options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
-if (!requireNamespace('pacman', quietly = TRUE)) {
-    install.packages('pacman')
-}
-pacman::p_load("tidyverse", "papaja")
-options(warn = -1)  # 抑制警告
+
+# 2) 安装本课程需要的 R 包（已安装则自动跳过）
+if (!requireNamespace('pacman', quietly = TRUE)) install.packages('pacman')
+pacman::p_load("tidyverse", "papaja", "gridExtra")
 ```
 
-```{r}
-#| collapsed: false
-#| jupyter: {}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-#导入数据
-df <- tryCatch({
-  read.csv('/home/mw/input/bayes3797/replicated_language_cleaned.csv') #平台路径
-}, error = function(e) {
-  read.csv('/Users/liumingyu/Desktop/1/PyBayesian/data/replicated_language_cleaned.csv') #本地路径
-})
-
-#整理数据（删除特定列）
-df <- df %>% select(-study_name)
-```
-
-```{r}
-#| _id: 7220F66CE63E4264AD38AC5B6A7C50A3
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-head(df)
-```
-
-### 先验 (prior) 和 数据 (data)  
-
-重新回顾这里关心的*事件*：从299项心理学研究中随机选出来的一项研究的可重复性如何？  
-
-在评估这个事件之前，我们知道Science于2015年发表了一个大规模重复实验，发现40%的心理学研究是可以被重复出来。  
-
-对于即将评估的299项研究，它们有不同的语言风格：
-
-```{r}
-#| _id: 69527C9D804D4A6B931487113C2E71BF
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 数据预处理
-# 计算 'certain' 列的中位数
-median_certain <- median(df$certain)
-
-# 创建新列，编码规则：大于中位数为 1，小于等于中位数为 2
-df <- df %>%
-  dplyr::mutate(language_style = ifelse(certain > median_certain, 1, 0))
-    
-# 输出结果
-head(df)
-```
-
-```{r}
-#| _id: EE563704B3464650B00D8CDEB623D3E9
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 计算不同水平的数量和百分比
-level_counts <- table(df$replicated)  # 计算数量
-level_percentages <- round(prop.table(level_counts) * 100, 2)  # 计算百分比并保留两位小数
-# 创建一个新的数据框合并结果
-result_df1 <- as.data.frame(t(rbind(level_counts,level_percentages)))
-colnames(result_df1) <- c("数量", "百分比")
-
-# 显示结果（0代表不可重复，1代表可重复）
-print(result_df1)
-```
+- 本讲数据文件：`data/replicated_language_cleaned.csv`
+- 请保持课程的文件夹结构，代码中的**相对路径**（`data/...`）才能正常工作
 
-研究能否被重复出来，与他们的语言风格有关系：  
+## 遇到问题去哪里问？
 
-有 56%（71/126）的能被重复的研究使用了确切的语言风格；  
+- 📱 课程微信群：老师与助教会尽快回复
+- 💻 Gitee 课程仓库的 Issues 区：<https://gitee.com/hcp4715/PyBayesian/issues>
 
-约45%（78/173）的不能被重复研究使用了确切的语言风格。
+> 把报错信息、运行环境（操作系统 + R 版本）一起贴出来，问题解决得更快。
 
-```{r}
-#| _id: 3216FB04D2094FABBE7FBDE352C58000
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 计算不同水平的数量
-result_df2 <- df %>%
-  dplyr::group_by(replicated, language_style) %>%  # 按 'replicated' 和 'language_style' 分组
-  dplyr::summarise(N = n(), .groups = 'drop') %>%  # 计算每组的数量并取消分组
-  tidyr::pivot_wider(names_from = language_style, values_from = N, values_fill = list(N = 0))  # 转换为宽格式
+## Part 2: 计数、概率与贝叶斯定理 (Counting, Probability & Bayes' theorem)
 
-# 显示结果
-result_df2
-```
+来看一个“推测游戏”（例子改编自 McElreath, *Statistical Rethinking*）：
 
-### 先验 (prior) 和 数据 (data)  
+- 袋子里有 4 颗小球，只有蓝、白两种颜色，**各有多少颗是未知的**；
+- 可能的颜色组合只有 5 种推测 (conjectures)：
+  **白白白白 · 蓝白白白 · 蓝蓝白白 · 蓝蓝蓝白 · 蓝蓝蓝蓝**；
+- 我们的任务：不断抽样，推断**哪一种推测最可能**。
 
-#### 先验  
+## 数据 (Data)：有放回抽取 3 次 → “蓝、白、蓝”
 
-在我们这个事件中，我们评估某项研究可重复性之前，我们关于研究可重复性的信念，在贝叶斯统计中被称为先验（prior）。  
+- 有放回地依次抽取 3 颗小球，得到结果：**蓝、白、蓝**；
+- 这个结果就是我们的**数据 (data)**；
+- 与通常的概率题不同：这里袋中蓝色小球的占比 $\theta$ 是**未知的**，我们要做的，是从数据出发**反推** $\theta$ 更可能是什么。
 
-假设我们的信念被2015年Science的文章所影响，相信约40%的心理学实验是可重复的。这就是我们开始了解这项研究前的信念。  
+![](figs/lec2/sup_rhq5eluxp1.png){width=52%}
 
-- 先验（prior）：指没有观察到具体数据之前，根据已有知识、经验或主观判断对某个事件发生概率的初步估计。  
+## 计数 ①：全部可能的路径 — $4^3 = 64$ 条
 
-本例中，40%的估计代表了我们基于已有文献和领域经验的先验信念——即在没有观察具体文章之前，推测它有40%的研究能够成功重复。  
+- 假如袋中真是“蓝白白白”（1 蓝 3 白）：每次从 4 颗小球中等可能地抽 1 颗，抽 3 次共有 $4^3 = 64$ 条可能路径；
+- 图中从内到外每个圆弧代表一次抽取。
 
-#### 先验 vs 数据  
+![](figs/lec2/sup_rhq5irv465.png){width=62%}
 
-在了解到被评估的研究来自Herzenstein 等（2024）之后，我们又获得了新的信息，这个新信息我们将其称为数据（data）。  
+## 计数 ②：删除与数据不一致的路径
 
-此时，我们会有两个信息：  
+- 我们观察到的是“蓝白蓝”：**第 1、3 次必须是蓝，第 2 次必须是白**；
+- 把所有不符合这一模式的路径删掉后，64 条中只剩下 **3 条**。
 
-- 先验信息 (prior)：约 40% 的研究是可重复。  
-- 数据 (data) ：有 56%能被重复的研究使用了确切的语言风格；约45%不能被重复研究使用了确切的语言风格。  
+![](figs/lec2/sup_rhq5mj9g4e.png){width=60%}
 
-我们会如何推断某项来自Herzenstein 等(2024)的研究？ $P(可重复|确切语言风格)$
+（在“蓝白白白”下：第 1 次蓝有 1 种 × 第 2 次白有 3 种 × 第 3 次蓝有 1 种 = **3 种方式**）
 
-在先验和数据之间找到平衡？  
+## 计数 ③：对 5 种推测逐一计数
 
-这正是贝叶斯的思路：基于数据对先验进行更新。  
+同样的计数方法，对 5 种推测各做一遍：在每种推测下，能产生“蓝白蓝”这一数据的方式有多少种？
 
-$$  
-Posterior = \frac {data * \, prior}{Average \, probability \, of \, data}  
-$$  
+![](figs/lec2/sup_rhq5v48hnv.png){width=72%}
 
-![Image Name](https://cdn.kesci.com/upload/sjkvl0f6gx.png?imageView2/0/w/960/h/960)  
+## 计数 ④：各推测的“方式数” (ways)
 
-#### 先验概率(Prior probability)  
-我们现在使用更加正式一点的语言来对上述的信息进行描述：  
+![](figs/lec2/sup_rhq5w22f0x.png){width=40%}
 
-假如一项心理学研究**能**被其他研究者独立地重复出来，我们认为一个特定的事件发生了。  
+::: {style="font-size:0.82em"}
+- 例如“蓝白白白”：1（蓝）× 3（白）× 1（蓝）= **3 种方式**；
+- 全部 5 种推测的方式数为：**0 / 3 / 8 / 9 / 0** —— 数据最支持“蓝蓝蓝白”，而“全白”与“全蓝”被完全排除。
+:::
 
-我们将这个事件使用$B$来表示。  
+## 更新：第 4 次又抽到蓝色（数据 = “蓝白蓝蓝”）
 
-假如一项心理学研究**不能**被其他研究者独立地重复出来，我们认为一个特定的事件**没有**发生了，使用符号$B^{c}$(B的补集complement)。  
+- 假设再抽一次，又得到一颗**蓝色**小球 → 以“蓝白蓝”为已知信息，继续追加计数；
+- 例：“蓝蓝白白”：产生“蓝白蓝”有 8 种方式，第 4 次抽到蓝再乘 2 → **8 × 2 = 16 种**；
+- 各推测更新为：**0 / 3 / 16 / 27 / 0** —— 数据越积越多，对“高蓝比例”的推测越来越有利。
 
-根据Science于2015年的文章，我们可以得以下公式：  
+![](figs/lec2/sup_rhq60vh4kd.png){width=68%}
 
-$$  
-P(B) = 0.40 \\  
+## 从计数到概率：归一化 (normalizing)
 
-P(B^{c}) = 0.60  
-$$  
+统计中更常用**概率**而不是原始计数——办法是让所有推测的概率加起来等于 1：
 
-<style>  
-table {  
-    width: 100%;  
-    table-layout: auto;  
-}  
-</style>  
+- 每一种推测的 plausibility = 该推测的计数 ÷ 所有推测计数之和；
+- 例：看到“蓝白蓝”后，“蓝白白白”（$\theta = 0.25$）的 plausibility = 3 ÷ 20 = **0.15**。
 
-| 事件       | **$B$**   | **$B^{c}$** | **Total** |  
-|------------|-----------|-------------|-----------|  
-| **probability** | **0.4** | **0.6**     | **1**     |  
+![](figs/lec2/sup_rhq6qm3ucu.png){width=42%}
 
+## 推测的先验概率：$P(\theta)$ (Prior)
 
-换一句话说，在我们对需要被评估的研究进行评估前，我们关于事件$B$的先验信念是$P(B)$，这也被称为先验模型(prior model)  
+- 记蓝色小球占比为 $\theta$：$\theta \in \{0,\ 0.25,\ 0.5,\ 0.75,\ 1\}$（对应 5 种推测）；
+- 看到数据之前，我们默认 5 种推测**等可能**：每个 $\theta$ 的先验概率 $P(\theta) = 1/5 = 0.2$；
+- **先验 (prior)**：观察数据之前，对每个假设为真的初始信念。
 
-作为一个有效的概率模型(valid probability model)，它必须：  
+![](figs/lec2/sup_rhq738pxrx.jpg){width=46%}
 
-（1）考虑所有可能的事件（所有文章都必须是可重复或不可重复的，没有其他可能性）；  
+## 用“计数”理解贝叶斯四个关键术语
 
-（2）它为每个事件分配先验概率；  
+| 计数视角 | 术语 | 记号 |
+|---|---|---|
+| ways：假设 $\theta$ 能产生数据 $D$ 的方式数 | **似然 (likelihood)** | $P(D \mid \theta)$ |
+| 数据之前对 $\theta$ 的信念 | **先验 (prior)** | $P(\theta)$，本例 = 0.2 |
+| 所有 (似然 × 先验) 的总和 | **证据 (evidence)**，即归一化常数 | $P(D)$ |
+| 数据之后更新过的信念 | **后验 (posterior)** | $P(\theta \mid D)$ |
 
-（3）这些概率加起来为1。
-
-### 数据模型（条件概率与似然性）  
-
-借鉴先验模型的构建方式，我们同样可以采用模型（即公式）对关于目标研究的新信息进行正式地描述。  
-- 我们用符号 $A$ 表示研究中使用了确切的语言风格。  
-
-我们要将如下一句话的信息进行形式化：  
-
-**有 56%能被重复的研究使用了确切的语言风格；约45%不能被重复研究使用了确切的语言风格。**  
-
-**有 56%能被重复的研究使用了确切的语言风格，44%能被重复的研究没有使用确切的语言风格；约45%不能被重复研究使用了确切的语言风格；55%的不能被重复的研究没有使用确切的语言风格。**  
-
-将数据形式化，通过条件概率来量化文章展现出语言确切的可能性。具体如下：  
-
-$$  
-P(A|B) \approx 56\%  
-$$  
-- 当研究是可重复的，使用确切语言的概率大约 56%。  
-
-$$  
-P(A|B^{c}) \approx 45\%  
-$$  
-- 在研究不可重复的情况下，使用确切语言的概率大约为 45%。  
-
-
-
-![Image Name](https://cdn.kesci.com/upload/sjq96jfv8f.png?imageView2/0/w/960/h/960)  
-
-#### 条件概率  
-
-条件概率：给定某个条件下发生另一件事情的概率。  
-注意：条件概率的定义是有顺序的，$P(A|B)$ 与 $P(B|A)$ 并不相等。  
-
-例如：  
-- $P(A|B)$ 表示在研究可重复的情况下，使用确切语言的概率；  
-- $P(B|A)$ 表示的是在研究使用确切语言的情况下，该研究是可重复的概率。  
-
-很多时候，人们容易混淆这两者，尤其在贝叶斯推理中。因此，清楚条件的前提和结果是很重要的。
-
-#### 似然(likelihood)  
-
-**似然的定义**  
-
-从条件概率中，我们知道 $P(A|B) = 0.56$ 和 $P(A|B^c) = 0.45$，即使用确切语言的研究更可能是可重复的。  
-
-似然（likelihood）描述的是在某个特定数据已经出现的情况下，不同假设为真的可能性。在这个例子中，我们比较两种假设:  
-- $L(B|A) = P(A|B) = 0.56$：假定使用确切语言的研究出现在可重复研究的假设之下，其似然较高。  
-- $L(B^c|A) = P(A|B^c) = 0.45$：假定使用确切语言的研究出现在不可重复研究的假设之下，其似然较对较低。  
-
-因此，似然函数表明：当前数据模式（使用确切语言）在特定假设（可重复或不可重复的研究）下更可能出现：  
-$L(B|A= 0.56 > L(B^c|A) = 0.45$  
-
-这就是似然函数(likelihood function)的核心：某个数据$A$出现已经出现了，它不同的假设（可重复或不可重复）下出现的可能性分别是多少？  
-
-例如，针对“数据 A：研究使用确切语言”的似然可以写成：$L(*|A)$  
-
-⚠️‼️ 似然的计算仍然使用概率：  
-$$  
-L(B|A) = P(A|B) \quad\quad L(B^{c}|A) = P(A|B^{c})  
-$$  
-
-上述两个式子分别表示在“研究可重复”和“研究不可重复”两种可能的情况下，使用确切语言的概率。  
-
-*注意，在似然函数中，数据是已知发生的，而产生数据的假设模型是未知的，也是我们感兴趣的。
-
-#### 概率(Probability) vs 似然(likelihood)  
-
-🤔概率和似然似乎都在表示某种可能性，它们的区别是什么呢？  
-  
-| 特性        | 概率 (Probability)                                      | 似然 (Likelihood)                                   |  
-|-------------|---------------------------------------------------------|----------------------------------------------------|  
-| 定义        | 已知假设条件，得到某个数据的可能性                           | 已知数据，不同假设条件下得到该数据的可能性     |  
-| 范围        | [0, 1]                                                 | 不限于 [0, 1]                                     |  
-| 总和        | 所有可能事件的总和为1                                  | 可以不等于1                                       |  
-| 应用        | 预测和决策                                           | 模型估计和选择                                     |  
-
-注意：  
-* 先验概率的总和等于1，因为先验表示所有可能结果的分布，表示事件B发生的概率，是我们的主观推测；  
-* 似然总和不等于1，因为似然函数不是概率函数，它告诉我们事件A在不同假设下发生的相对可能性。
-
-根据我们的例子，概率和似然可以整理为下表：  
-
-TABLE 2.2: Prior probabilities and likelihoods of reproducible research.  
-
-| event       |     $B$     |     $B^c$   |   total   |  
-|-------------|--------------|--------------|-----------|  
-| prior       |      0.4    |      0.6     |     1     |  
-| likelihood   |     0.56    |     0.45     |   ≠ 1     |
-
-## 分母（normalizing constant）-- 边际概率 (marginal probability)  
-
-似然函数描述了在可重复性研究和不可重复研究中使用确切语言的情况。  
-
-我们想知道的是：所有研究中使用自信语言的总体可能性是多少。  
-
-这被称为边际概率 $P(A)$
-
-我们要做的，就是把每个假设下出现事件$A$的似然与每个假设本身的概率相乘（即把每个假设自身的概念纳入考虑），这两者之和即为边际概率。  
-$$  
- P(A) = P(A \cap B) + P(A \cap B^{c}) = L(B|A) * P(B) + L(B^{c} | A) * P(B^{c}) = P(A|B) * P(B) + P(A| B^{c}) * P(B^{c})  
-$$  
-
-$$ P(A) = 0.56 * 0.4 + 0.45* 0.6 = 0.494 $$  
-
-### 后验概率模型(Posterior probability model via Bayes’ Rule)
-
-**直觉理解**  
-
-最后，我们来计算后事件$B$的后验概率，即，当我们知道某个研究使用了确切的语言风格之后，它能被重复的可能性是多少？  
-
-我们同样通过条件概率来描述它：$P(B|A)$。  
-
-在正式计算之前，我们可以回顾一下这个表格来建立一些直觉。   
-
-||$B$|$B^c$|Total|  
-|---|---|---|---|  
-|$A$|0.56 * 0.4 = 0.224|0.45* 0.6 = 0.27|0.494|  
-|$A^c$|0.176|0.33|0.506|  
-|Total|0.4|0.6|1.0|  
-
-note：  
-- $A$ ：表示使用确切语言的研究。  
-- $A^c$ ：表示不使用确切语言的研究。  
-- $B$ ：表示研究是可重复的。  
-- $B^c$ ：表示研究不可重复的。  
-
-因为我们知道这项研究**使用确切语言风格**，所以我们直接锁定第一行，  
-- 在A行中，45.3%(0.224/0.494)的研究是可重复的，54.7%(0.27/0.494)的研究是不可重复的。  
-- 因此，根据后验概率 45.3%的可能性可以认为当前这一研究是可重复的。  
-
-**正式计算**  
-
-如何凭借贝叶斯公式的数学形式推导得到该结果？  
-
-$$  
-Posterior \sim P(B|A) = \frac {data * prior}{Average \, probability \, of \, data} ={\frac{P(A\cap B)}{P(A)}}={\frac{L(B|A) * P(B)}{L(B|A) * P(B) + L(B^{c}|A) * P(B^{c})}}  
-$$  
-
-- $P(B|A)={\frac{P(B)L(B|A)}{P(A)}}={\frac{0.4\cdot0.56}{0.494}}=0.453$  
-- 当带入之前计算得到的数值到贝叶斯公式中，我们得到了确切语言为可重复研究的概率。  
-
-
-使用同样的方法，我们可以计算出使用确切语言的研究为不可重复研究的概率，结果如下表。  
-- 可以注意到：先验概率和后验概率的和均等于1。  
-
-TABLE 2.4: The prior and posterior models of reproducibility.  
-
-
-| event    | $B$     | $B^c$ | Total    |  
-| --------  | -------- | -------- | -------- |  
-| prior probability | 0.4 | 0.6 | 1 |  
-| posterior probability | 0.453 | 0.547 | 1 |  
-
-思考时间🧐：是否加入分母的意义何在？
-
-#### 后验概率计算模拟练习  
-
-
-🤓为了深入理解先验知识、似然（数据）和后验概率，我们将通过编写代码来计算后验概率，以增强对这些概念的理解和实践能力。
-
-1. 定义研究的可重复性与相应的先验概率
-
-```{r}
-#| _id: 73947288991047B59848C3816D23BCFA
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 定义文章类型
-article <- data.frame(replicated = c("yes", "no"))
-
-# 定义先验概率
-prior <- c(0.4, 0.6)
-```
-
-2. 模拟一些可能被投放给你的研究
-
-```{r}
-#| _id: 5FE6653043FA4C9AB98D071433A517EC
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 模拟生成 10000 项研究，包括其类型
-set.seed(84735)
-article_sim <- article %>% 
-  slice_sample(n = 10000, weight_by = prior, replace = TRUE)
-
-# 查看前 10 行数据
-print(head(article_sim, 10))
-```
-
-```{r}
-#| _id: 0798D80080374E6DB278A4BD30AFD568
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-#我们可以通过画图来查看这些被投放研究的可重复性比例。
-options(repr.plot.width=8, repr.plot.height=5) #自定义画布大小
-article_sim %>%
-  count(replicated) %>% 
-  ggplot(aes(x = replicated, y = n, fill = replicated)) +
-  geom_bar(stat = "identity",width = 0.6) +
-  labs(x = "replicated", y = "counts") +
-  scale_fill_manual(values = c("yes" = "skyblue", "no" = "salmon")) +
-  scale_y_continuous(expand = c(0,0),limits = c(0, 6000)) + 
-  papaja::theme_apa()
-```
-
-3. 接下来我们需要模拟10000项研究使用确切语言风格的情况，  
-- 和之前相同，不可重复研究使用确切语言风格的可能性为45% ，  
-- 可重复研究使用确切语言风格的可能性为56% 
-
-```{r}
-#| _id: EDE9730D549649EAA93AD55395737CD7
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 设置条件概率
-article_sim$data_model <- ifelse(article_sim$replicated == "no", 0.45, 0.56)
-
-# 定义研究是否使用确切语言
-data <- c("certain", "uncertain")
-
-# 生成确切语言相关的数据
-article_sim$language <- mapply(function(p) sample(data, 1, prob = c(p, 1 - p)), article_sim$data_model)
-```
-
-```{r}
-#| _id: E1F09028FF044BED8FFB4AE3E0CB8988
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 显示每个类别研究数量
-result <- article_sim %>%
-  group_by(language, replicated) %>%
-  summarise(数量 = n(), .groups = 'drop') %>%
-  pivot_wider(names_from = replicated, values_from = 数量, values_fill = list(数量 = 0))
-
-result
-```
-
-4. 计算后验值  
-
-还记得我们的先验概率为：  
-- 可重复研究  $P(B)=0.4$  
-- 不可重复性研究 $P(B^c)=0.6$,  
-
-由以上结果可计算似然：  
-- 大约58.1%(2340/(2340+1687))的可重复性研究使用了确切语言, $P(A|B)=0.581$  
-- 44.2%的不可重复性研究使用确切语言(2643/(3330+2643)), $P(A|B^c)=0.442$
-
-结合先验和似然，我们可以进一步计算分母(边际概率)：  
-- $L(B|A)*P(B) + L(B^{c}|A)*P(B^{c}) = 0.581*0.4 + 0.442*0.6 = 0.2324 + 0.2652 ≈ 0.498$  
-
-最后，我们可以计算得到的后验 (使用确切语言研究中，可重复性研究的概率)：  
-- $P(B|A) ={\frac{L(B|A)*P(B)}{P(A)}}= (0.581*0.4)/0.498 ≈ 0.467$  
-- 在10000项研究中，使用确切语言的研究有4980篇(分母)  
-- 而现在，我们可以知道，在使用确切语言的研究中，47%(2340/4980)的研究为可重复研究
-
-```{r}
-#| _id: 463C518551694032AF27D25FB04F8AE7
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 过滤使用确切语言的研究
-usage_yes <- filter(article_sim, language == 'certain')
-
-# 计算使用确切语言的总研究数量
-cat('使用确切语言的研究：', sum(table(usage_yes$replicated)), "\n")
-usage_yes_count <- as.data.frame(table(usage_yes$replicated))
-colnames(usage_yes_count) <- c("replicated", "counts")
-print(usage_yes_count)
-```
-
-同样地，通过画图来可视化使用确切语言的研究的情况
-
-```{r}
-#| _id: 0AEE39A369D24936AB824323E939DB11
-#| collapsed: false
-#| jupyter: {}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 计算所有语言的 replicated 值
-language_counts <- article_sim %>%
-  group_by(language, replicated) %>%
-  summarise(count = n(), .groups = 'drop')
-
-# 绘制图形
-options(repr.plot.width=8, repr.plot.height=5) #自定义画布大小
-ggplot(language_counts, aes(x = replicated, y = count, fill = language)) +
-  geom_bar(stat = "identity", position = "dodge",width=0.8) +
-  facet_wrap(~ language, scales = "free_y") +  # 创建子图
-  scale_y_continuous(expand = c(0,0),limits = c(0, 4000)) + 
-  scale_x_discrete(expand = expansion(mult = c(0.65, 0.65))) +
-  labs(y = 'Count') + 
-  papaja::theme_apa() +
-  theme(legend.position = "none",strip.text = element_text(size = 16))
-```
-
-### 总结 (Recap)  
-
-回到之前的问题：如何预测研究的可重复性？  
-
-
-
-![Image Name](https://cdn.kesci.com/upload/sjq96jfv8f.png?imageView2/0/w/960/h/960)  
-
-
-
-- 哪些信念可以作为先验概率？  
-- 信息的哪些属性可以作为数据？  
-- 如何结合先验和数据更新信念 (贝叶斯公式)。  
-
-## Part3 随机变量的贝叶斯模型
-
-**随机变量 (random variables)**  
-
-在之前的分析中，我们讨论的是对某项研究的“可重复性”这样一个单一事件。  
-
-同样的逻辑可以应用于更加抽象和一般性的**随机变量**进行分析。  
-
-假设为了研究可重复性问题，一个有能力且资金充足的研究团队计划进行一系列可重复性实验，他们希望知道这些实验成功重复的比例是多少。  
-
-首先我们来了解一个概念，胜率或成功率  
-
-* 想象你玩斗地主，有五局三胜，七局四胜这一说，一轮玩下来，就会出现胜率。  
-* 然而，胜率并不是一成不变的，它会随着每次游戏的输赢而变化。  
-* 在每一轮开始前，你并不会知道你这次的胜率是多少  
-
-在我们的例子中，假设计划对6项研究进行重复实验。  
-- 假设该团队对于任何研究成功复现的成功率为$\pi$，$\pi$是**未知的且可能会变化**，所以$\pi$是一个随机变量。  
-- 根据团队先前的经验以及心理学研究的现状，我们猜测其成功复现的成功率为 $\pi = 50\%$。  
-- 他接下来可能成功复现的次数$Y$可能是0，可能是1，也可能是6，可以有7种可能的成功复现次数，$Y \in \{0,1,2,3,4,5,6\}$ 
-
-🤔虽然我们知道他们的平均成功率为 $\pi = 50\%$，但问题在于，对于每一种复现成功的次数（1 ～ 6），其可能性分别是多少呢？ 
-
-**二项式模型**  
-
-由于每次重复实验，结果只有两种可能：成功 vs 失败。  
-
-该团队总共进行6次重复实验，我们想要知道的是成功1次，成功2次，成功3次，...，的概率。  
-
-对于这种情况，我们可以用二项分布来分析。  
-
-该团队的成功率为$\pi$，$在\pi$下某成功次数发生的概率可表示为：  
-
-$$  
-f(y|\pi) = \binom{n}{y} \pi^{y}(1-\pi)^{n-y} \quad\quad for\;y \in \{0,1,2,...,n\}  
-$$  
-$$  
-\binom{n}{y} = \frac{n!}{y!(n-y)!}  
-$$  
-
-$\pi$ 表示成功的可能性，$y$表示在$n$个试次中成功的次数，二项模型含有的前提假设是：  
-
-(1) 所有试次发生都是相互独立的  
-
-(2) 在每个试次中，成功的概率都是一个固定的值$\pi$  
-
-成功次数为0~6 的可能性可以分别写成：  
-
-$$  
-f(Y=0|\pi=0.5) = \binom{6}{0} 0.5^0 (1-0.5)^{6}  
-$$  
-$$  
-f(Y=1|\pi=0.5) = \binom{6}{1} 0.5^1 (1-0.5)^{5}  
-$$  
-$$  
-...  
-$$  
-$$  
-f(Y=5|\pi=0.5) = \binom{6}{5} 0.5^{5} (1-0.5)^{1}  
-$$  
-$$  
-f(Y=6|\pi=0.5) = \binom{6}{6} 0.5^{6} (1-0.5)^{0}  
-$$  
-
-我们可以使用代码帮助计算  
- `st.binom.pmf(y, n, p)`。其中 p 对应公式中的 $\pi$。
-
-```{r}
-#| _id: 9B6ABDBAC2184D748BC14210FEC09798
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 安装和加载包
-options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
-if (!requireNamespace('pacman', quietly = TRUE)) {
-    install.packages('pacman')
-}
-pacman::p_load("tidyverse",'papaja','gridExtra')
-options(warn = -1)  # 抑制警告
-```
-
-```{r}
-#| _id: 964344C1AE4D492EBEE44169E13DAD6F
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-y <- c(0,1,2,3,4,5,6)  # 成功次数 
-n <- 6                # 重复研究总次数
-p <- 0.5              # 假设的成功概率
-
-# 计算概率值
-prob <- dbinom(y, size = n, prob = p)
-# 创建结果数据框
-result_table <- data.frame(successNum = y, Prob = prob)
-
-# 显示结果
-print(result_table,row.names = FALSE)
-```
-
-显然，当团队的成功概率为 0.5 时，其在六次研究中获得 *y* = 3 次成功的概率最高(*p* = 0.3125)。
-
-```{r}
-#| _id: 41D47C047ABC4817902F877AC116E071
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 绘制图形
-options(repr.plot.width=8, repr.plot.height=5) #自定义画布大小
-ggplot(result_table, aes(x = successNum, y = Prob)) +
-  geom_segment(aes(xend = successNum, yend = 0), color = 'gray', size = 1) +
-  geom_point(color = 'black', size = 3) +
-  labs(y = 'f(y | π)', x = 'y') +
-  xlim(-0.2, 6.2) +
-  scale_y_continuous(expand = c(0,0),limits = c(0, 0.5)) + 
-  papaja::theme_apa() 
-```
-
-
-**概率质量函数(probability mass function, pmf)：** 用来描述离散型随机变量在各特定取值上的概率  
-
-在上图中我们看到，成功次数y在不同的取值上的概率不同。  
-
-* 由于$y$的个数是有限的，并且是随机发生的，我们把$y$称为离散型随机变量，而$y$发生的概率$f(y)$则被称为概率质量函数  
-
-
-对于离散型随机变量$Y$，$Y$各取值的概率由$f(y)$指定：  
-$$  
-f(y) = P(Y=y)  
-$$  
-
-并且有如下性质：  
-
-* 对所有y的取值来说，$0\leq f(y) \leq 1$  
-* $\sum_{all\,\pmb{y}}f(y) = 1$，y取值的所有概率之和为1
-
-```{r}
-#| _id: 05FC709EDC61405080FAEF84FC525F6E
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-sum(result_table$Prob)
-```
-
-### 二项似然函数(The Binomial likelihood function)
-
-**不同的信念**  
-
-虽然我们认为该团队重复6个实验的成功率是50%，但并非所有人都这么认为。    
-
-- 乐观派认为该团队的成功概率为 0.8，表示对实验成功复现持高度信心。  
-- 悲观派则认为该团队的成功概率仅为 0.2，意味着对实验成功复现不太乐观。  
-
-成功的概率影响着他们对研究复现结果的预期：如果团队的成功概率高，那么6次研究中成功复现的次数会更多；  
-反之，如果成功概率低，那么研究复现的失败次数就会更多。  
-
-我们可以计算持不同信念的人心中，该团队在6项研究中成功复现的次数的概率分布并画图。
-
-```{r}
-#| _id: 09496DE9C3554C5899C273188217941F
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 定义成功次数和总试验次数
-y <- 0:6  # 成功次数
-n <- 6    # 研究总次数
-
-# 定义三种成功概率并计算似然值
-p_values <- c(0.5, 0.8, 0.2)
-likelihoods <- sapply(p_values, function(p) dbinom(y, size = n, prob = p))
-
-# 创建结果数据框
-result_table <- data.frame(
-  successNum = y,
-  neutral = likelihoods[,1],
-  optimisist = likelihoods[,2],
-  pessimist = likelihoods[,3]
-)
-
-# 输出结果表
-print(result_table,row.names = FALSE)
-```
-
-```{r}
-#| _id: DC62F21B049746FDA1E4D7D3062A8A9F
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 绘制三个子图，每个子图对应不同的成功概率
-plots <- list()
-titles <- c("Team itself(π = 0.5)", "Optimists(π = 0.8)", "Pessimists(π = 0.2)")
-
-for (i in 1:length(p_values)) {
-  plots[[i]] <- ggplot2::ggplot(data.frame(y = y, likelihood = likelihoods[,i]), aes(x = y, y = likelihood)) +
-                  geom_segment(aes(xend = y, yend = 0), color = "gray", size = 1) +
-                  geom_point(color = "black", size = 3) +
-                  labs(title = titles[i], x = 'y', y = 'f(y | π)') +
-                  xlim(-0.2, 6.2) +
-                  scale_y_continuous(expand = c(0,0),limits = c(0, 0.45)) + 
-                  papaja::theme_apa()
-}
-
-# 将三个图以子图的形式并排显示
-options(repr.plot.width=14, repr.plot.height=5) #自定义画布大小
-gridExtra::grid.arrange(grobs = plots, ncol = 3)
-```
-
-显然，对于乐观派来说，团队取得六次成功的概率远高于其他成功次数。而对于悲观派来说，团队全败的可能性远高于其他成功次数。  
-- 换句话说，若团队在6项研究中仅成功复现一次，这种情况在低成功率下(悲观派设想的情境)更可能出现，在高成功率下(乐观派设想的情境)几乎不可能出现。  
-- 那么团队成功重复的成功率率，更可能(likelihood)是悲观派设想的那样($\pi = 0.2$)。  
-
-例如，在乐观派和悲观派眼中(不同成功率$\pi$下)，6项研究只成功1次的可能性(即似然，likelihood)。  
-
-```{r}
-#| _id: 44F114058962412AAEEF8D6DA01A1FB8
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 定义成功次数和研究总次数
-y <- 1  # 成功次数
-n <- 6  # 研究总次数
-
-# 计算似然值，对于三种不同的成功概率 p
-p_values <- c(0.5, 0.8, 0.2)  # 定义三种成功率
-likelihoods <- sapply(p_values, function(p) dbinom(y, size = n, prob = p))  # 计算似然值
-
-# 创建数据框存储结果
-data <- data.frame(p_values, likelihoods)
-
-# 创建图形
-options(repr.plot.width=6, repr.plot.height=4) #自定义画布大小                
-ggplot2::ggplot(data, aes(x = p_values, y = likelihoods)) +
-  geom_segment(aes(xend = p_values, yend = 0), color = "gray", size = 1) +  
-  geom_point(color = "black",size = 3) + 
-  labs(y = 'f(y|π)', x = expression(pi)) +  # 设置坐标轴标签
-  xlim(0, 1) +
-  scale_y_continuous(expand = c(0,0),limits = c(0, 0.45)) +
-  papaja::theme_apa()
-```
-
-**似然函数**  
-
-当团队只成功复现一次时，该事件在不同成功率下出现的可能性可以写为：  
-
-$$  
-f(Y=1|\pi=0.2) = \binom{6}{1} 0.2^1 (1-0.2)^{5}  
-$$  
-$$  
-f(Y=1|\pi=0.5) = \binom{6}{1} 0.5^1 (1-0.5)^{5}  
-$$  
-$$  
-f(Y=1|\pi=0.8) = \binom{6}{1} 0.8^1 (1-0.8)^{5}  
-$$  
-
-因此，成功复现次数为1时的似然函数可以写成  
-
-$$  
-L(\pi|y=1) = f(y=1|\pi) = \binom{6}{1} \pi^{1}(1-\pi)^{6-1} = 6\pi(1-\pi)^{5}  
-$$  
-
-不同成功率下的似然：  
-
-| $\pi$          | 0.2   | 0.5   | 0.8   |  
-|---------------|-------|-------|-------|  
-| $L(\pi \| y=1)$ | 0.3932 | 0.0938 | 0.0015 |  
-
-
-
-
-**注意：**  
-
-似然函数表示的是，在各种可能的成功率$\pi$下,成功次数$Y=1$的可能性，所以  
-1. 该似然函数公式只取决于$\pi$  
-2. 似然函数的总和加起来不为1（从条件概率的公式来看，似然函数的分母是不同的）
-
-#### 条件概率 VS 似然函数  
-
-🤓  
-当$\pi$是一定时，条件概率质量函数$f(·|\pi)$可以帮我们计算在$\pi$取值下（各种模型），不同的数据$Y$(e.g., $y_{1},y_{2}$)发生的可能性。  
-$$  
-f(y_{1}|\pi) \; vs \; f(y_{2}|\pi)  
-$$  
-
-当$Y = y$一定时，似然函数$L(·|y)= f(y|·)$允许我们比较在各种不同的模型，即二项式的$\pi$取值(e.g., $\pi_{1},\pi_{2}$)下，观察到这个数据$y$的可能性(relative likelihood)。  
-
-
-$$  
-L(\pi_{1}|y) \; \text{与} \; L(\pi_{2}|y)  
-$$  
-$$  
-\text{即}  
-$$  
-$$  
-f(y|\pi_{1}) \; \text{与} \; f(y|\pi_{2})  
-$$  
-
-**在二项分布模型下...**  
-
-进行$n = 6$个重复实验时，成功次数与成功率的关系符合二项式模型，可以用如下的形式来表示：  
-
-$$  
-Y|\pi \sim Bin(6,\pi)  
-$$  
-
-
-$$  
-f(y|\pi) = \binom{6}{y} \pi^{y}(1-\pi)^{6-y} \quad\quad for\;y \in \{0,1,2,3,4,5,6\}  
-$$  
-
------------------------------------  
-
-下图给出了几种 $\pi$的取值，我们可以通过概率模型得到每种$Y$发生的可能性。  
-* 同时，我们可以看到，Y=1(赢一次)这一特定的数据模式，在各个$\pi$取值(模型)下的似然。  
-
-```{r}
-#| collapsed: false
-#| jupyter: {}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 定义成功次数和总试验次数
-y <- 0:6  # 成功次数 (0到6)
-n <- 6    # 研究总次数
-pi_values <- c(0.2, 0.5, 0.8)  # 三种不同的成功概率
-
-# 创建一个空列表来存储每个概率的结果
-plots <- list()
-
-# 循环生成每个概率的图
-for (i in seq_along(pi_values)) {
-  pi <- pi_values[i]
-  # 计算似然值
-  likelihoods <- dbinom(y, size = n, prob = pi)
-  y_1 <- dbinom(1, size = 6, prob = pi)  
-
-  # 绘制图形
-  data <- data.frame(y = y, likelihoods = likelihoods)
-  y_label <- ifelse(i == 1, "f(y|π)", "")
-
-  p <- ggplot2::ggplot(data, aes(x = y, y = likelihoods)) +
-    geom_segment(aes(xend = y, yend = 0), color = "black") +
-    geom_segment(x = 1, y = 0, xend = 1, yend = y_1, color = "black", size = 1.5) +
-    geom_point(color = "black", size = 3) +
-    labs(
-      title = paste("Bin(", n, ",", pi, ")", sep = ""),
-      x = "y",
-      y = y_label  
-    ) +
-    scale_y_continuous(expand = c(0, 0), limits = c(0, 0.5)) +
-    papaja::theme_apa()
-  
-  plots[[as.character(pi)]] <- p
-}
-
-options(repr.plot.width = 12, repr.plot.height = 6)
-gridExtra::grid.arrange(grobs = plots, ncol = 3)
-```
-
-### 先验概率模型(**Prior** probability model)
-
-**建立先验模型**  
-
-从前面的描述可以看到，二项分布的参数$\pi$也可以变化，也可以成为一个随机变量。  
-
-- 例如，我们想当一个更有深度的观察者，融合了乐观派、悲观派和中立者三者关于$\pi$的估计。  
-- 但是，我们对三种观点的可能性有不同的信念。  
-
-假如我们总体上是一个乐观派，但不排除悲观派的观点，我们给三派观点分配了一定的概率(先验)。  
-- 例如，设定 $\pi_{0.2} = 0.1$， 或者 $\pi_{0.2} = 0.5$。 但需要所有$f(\pi)$的总和为1。  
-
-
-| $\pi$	    |0.2  |0.5 |0.8 |Total  
-|---------- |-----|----|----|-----|  
-|$f(\pi)$   |0.10  |0.25 |0.65   |1|  
-
-
-我们设定的$\pi$ 的数量也是可以变化的。  
-
-- 例如，我们还可以将一种非常悲观的可能性也纳入进来，认为该团队成功率为0.01，即 $\pi = 0.01$。  
-- 那么新形成的先验分布可能如下。  
-
- 
-| $\pi$    |   0.01  | 0.2  | 0.5  | 0.8  | Total |  
-| -------- | --- | ---- | ---- | ---- | ----- |  
-| $f(\pi)$ |  0.10   | 0.10 | 0.25 | 0.55 | 1     |  
-
-
-
-### 后验概率模型(Posterior probability model)
-
-前述第一个先验模型，我们总体上是乐观的，认为团队高成功率的可能性很高 ($\pi_{0.8} = 0.65$)。  
-
-
-
-| $\pi$	    |0.2  |0.5 |0.8 |Total  
-|---------- |-----|----|----|-----|  
-|$f(\pi)$   |0.10  |0.25 |0.65   |1|  
-
-
-
-然而，最终结果发现：该团队只成功复现一次。  
-
-这个新的数据会如何改变我们的信念？
-
-我们可以综合先验和似然，根据贝叶斯的思路，计算后验概率。  
-
-其中 团队成功复现的概率从降低为。意味着，他成功率为0.2的可能性是最大的 。  
-
-左图为先验模型  
-中间的图为似然模型  
-右边的图为后验模型
-
-```{r}
-#| collapsed: false
-#| jupyter: {}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# Pi 值和对应的数据
-pi_values <- c(0.2, 0.5, 0.8)
-f_pi <- c(0.10, 0.25, 0.65)  # Prior probabilities
-L_pi_given_Y1 <- c(0.617, 0.367, 0.015)  # Likelihoods given Y=1
-posterior <- c(0.617, 0.367, 0.015)  # Posterior
-
-# 创建一个空列表来存储每个图的结果
-plots <- list()
-
-# 定义一个函数来绘制各个子图
-plot_function <- function(title, y_values) {
-  data <- data.frame(pi = pi_values, y = y_values)
-  
-  p <- ggplot(data, aes(x = pi, y = y)) +
-    geom_point(color = "black", size = 2) +  # 散点图
-    geom_segment(aes(xend = pi, yend = 0), color = "black", size = 1) +  # 垂直线
-    labs(title = title, x = expression(pi), y = "Probability") +  # 设置标题和标签
-    scale_y_continuous(expand = c(0, 0), limits = c(0, 0.7)) +  # 设置y轴范围
-    scale_x_continuous(expand = expansion(mult = c(0.1, 0.1))) +
-    papaja::theme_apa()
-  return(p)
-}
-
-# 绘制先验概率
-plots[[1]] <- plot_function("Prior f(π)", f_pi)
-# 绘制似然函数
-plots[[2]] <- plot_function("Likelihood L(π|Y=1)", L_pi_given_Y1)
-# 绘制后验概率
-plots[[3]] <- plot_function("Posterior f(π|Y=1)", posterior)
-
-# 使用 gridExtra 将各个子图放在一起
-options(repr.plot.width = 14, repr.plot.height = 5)
-gridExtra::grid.arrange(grobs = plots, ncol = 3)
-```
-
-**后验模型的计算过程**  
-
-上图所表示的后验可写成：  
-
-$$  
-f(\pi|y=1)  
-$$  
-
-表示当团队只赢成功复现一项研究时，他成功率$\pi$的概率分布  
-
-根据贝叶斯公式，我们可以进一步对后验概率公式进行展开：  
-
-$$  
-posterior = \frac{ prior*likelihood} {normalizing\;\;constant}  
-$$  
-
-$$  
-f(\pi|y=1) = \frac{ f(\pi)L(\pi|y=1)} {f(y=1)} \quad\quad for\;\pi \in {0.2,0.5,0.8}  
-$$  
-
-$$  
-f(\pi=0.2|y=1) = \frac{0.10 \times 0.3932} {0.0637} \approx 0.617  
-$$  
-$$  
-f(\pi=0.5|y=1) = \frac{0.25 \times 0.0938} {0.0637} \approx 0.368  
-$$  
-$$  
-f(\pi=0.8|y=1) = \frac{0.65 \times 0.0015} {0.0637} \approx 0.015  
-$$  
-
-
-下表对后验概率模型进行了总结，我们可知，经过了先前只成功了一项研究的复现经历后，该团队取得成功($\pi$=0.8)的可能性已经从0.65降到了0.015  
-
-
-| $\pi$	        |0.2    |0.5    |0.8 |Total  
-|---------------|-----  |----   |----|-----|  
-|$f(\pi)$   |0.10  |0.25 |0.65|1|  
-|$f(\pi \| y=1)$   |0.617  |0.368 |0.015|1|  
-
-**补充材料**  
-
-省略分母的计算  
-- 在贝叶斯统计中，后验概率的计算公式是：  
-
-$$  
-P(\pi|y) = \frac{P(y|\pi) \cdot P(\pi)}{P(y)} \propto P(y|\pi) \cdot P(\pi)  
-$$  
-
-- **$P(\pi|y)$** 是后验概率。  
-- **$P(y|\pi)$** 是似然函数。  
-- **$P(\pi)$** 是先验概率。  
-- 分母 **$P(y)=\int P(y|\pi) \cdot P(\pi) d \theta$** 是边际似然。  
-
-由于分母 **$P(y)$**（边际似然）在不同参数 **$\pi$** 下是一个常数，因此在比较不同后验概率时，我们可以省略这个常数，因为它对所有的后验概率是相同的。  
-
-
-因此，虽然我们计算的值并不总和为 1，但它们的比例关系没有改变，仍然可以用于比较不同参数下的后验概率。这就是为什么我们可以只关注 **$P(y|\pi) \cdot P(\pi)$** 而不需要计算完整的后验概率。  
-
-那么既然$f(y)$是一个用来标准化的常数，它并不受$\pi$的影响，那么后验概率质量函数$f(\pi|y)$ 就与$f(\pi)$和$L(\pi|y)$成正比  
-
-$$  
-f(\pi | y) = \frac{f(\pi)L(\pi|y)}{f(y)} \propto f(\pi)L(\pi|y)  
-$$  
-即，  
-
-$$  
-posterior \propto prior⋅ likelihood  
-$$  
-
-省略分母后验的计算可写成：  
-$$  
-f(\pi=0.2|y=1) \propto 0.10⋅0.3932  =0.039320  
-$$  
-
-$$  
-f(\pi=0.5|y=1) \propto 0.25⋅0.0938 = 0.023450  
-$$  
-$$  
-f(\pi=0.8|y=1) \propto 0.65⋅0.0015 = 0.000975  
-$$  
-
-$\propto$ 表示成比例，尽管这些未经标准化的后验概率总和不等于1  
-$$  
-0.039320 + 0.023450 + 0.000975 = 0.063745,  
-$$  
-但它们的比例关系并未改变(见下图)  
-
-**Proportionality**  
-
-既然$f(y)$是一个用来标准化的常数，它并不受$\pi$的影响，那么后验概率质量函数$f(\pi|y)$ 就与$f(\pi)$和$L(\pi|y)$成正比  
-
-$$  
-f(\pi | y) = \frac{f(\pi)L(\pi|y)}{f(y)} \propto f(\pi)L(\pi|y)  
-$$  
-即，  
-
-$$  
-posterior \propto prior⋅ likelihood  
-$$  
-
-> 😜这个性质很重要。因为分母的计算量往往比较大，需要遍历所有参数，如果参数不止一个，计算量可想而知。因此，如过能不计算分母也能计算后验，那么这样的方法(后面会介绍的MCMC算法)将会非常有实践意义。
-
-```{r}
-#| _id: E2DC4ED06D5D468495F62290EAE2A323
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# Pi values and corresponding unnormalized posterior data
-pi_values <- c(0.2, 0.5, 0.8)
-unnormalized_posterior <- c(0.03932, 0.02345, 0.00097)  # Unnormalized posterior values
-normalized_posterior <- unnormalized_posterior / sum(unnormalized_posterior)  # Normalized
-
-# 创建数据框
-posterior_data <- data.frame(
-    pi = rep(pi_values, 2),
-    probability = c(normalized_posterior, unnormalized_posterior),
-    type = rep(c("normalized", "unnormalized"), each = length(pi_values))
-)
-
-# 创建子图
-options(repr.plot.width=10, repr.plot.height=5) # 自定义画布大小  
-ggplot2::ggplot(posterior_data, aes(x = pi, y = probability)) +
-    geom_segment(aes(xend = pi, yend = 0), 
-                 color = "black", size = 1.5) +  # 绘制竖线
-    geom_point(color = "black", size = 3) +  # 绘制散点
-    facet_wrap(~type, scales = "free_y",
-               labeller = labeller(type = c(normalized = "Normalized", unnormalized = "Unnormalized"), 
-                                  size=20)) +  # 创建子图
-    labs(x = expression(pi), y = "Probability") +  # 设置坐标轴标签
-    scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
-    scale_x_continuous(expand = expansion(mult = c(0.1, 0.1)))+
-    papaja::theme_apa() +
-    theme(strip.text = element_text(size = 16))
-```
-
-我们可以使用这些未经标准化的后验概率总和作为分母，来对后验概率进行标准化，会得到相同的计算结果。  
-
-$$  
-f(\pi = 0.2 | y = 1) = \frac{0.039320}{0.039320 + 0.023450 + 0.000975} \approx 0.617  
-$$  
-
-注意，分母为所有似然值的总和，因此后验概率的计算公式还可以写成：  
-
-$$  
-f(\pi | y) = \frac{f(\pi)L(\pi|y)}{f(y)} = \frac{f(\pi)L(\pi|y)}{\sum_{\text{all } \pi} f(\pi)L(\pi|y)} .  
+$$
+P(\theta \mid D) = \frac{P(D\mid \theta)\, P(\theta)}{P(D)} = \frac{\text{ways} \times \text{prior}}{\text{所有 (ways × prior) 之和}}
 $$
 
-### Posterior simulation (with code)
+## 完整计算：从先验 × 似然到后验
 
-### 1. 定义先验模型  
-- 定义多个可能的成功率  
-- 定义每个成功率出现的可能性 (注意，其和为1)
+以 $\theta = 0.5$（“蓝蓝白白”）为例：
+
+- 分子：ways × prior = 8 × 0.2 = **1.6**；
+- 分母：0×0.2 + 3×0.2 + 8×0.2 + 9×0.2 + 0×0.2 = 0.6 + 1.6 + 1.8 = **4.0**；
+- 后验：1.6 ÷ 4.0 = **0.40**，即看到“蓝白蓝”后，$\theta=0.5$ 的 plausibility。
+
+![](figs/lec2/sup_rhq79hsbrl.png){width=74%}
+
+## 第 4 次抽到蓝：计数 vs 概率（对照）
+
+![](figs/lec2/sup_rhq60vh4kd.png){width=56%}
+
+| $\theta$ | 似然 $P(\text{蓝}\mid\theta)=\theta$ | 新先验（= 旧后验） | 乘积 | 新后验 |
+|---|---|---|---|---|
+| 0 | 0 | 0 | 0 | 0 |
+| 0.25 | 0.25 | 0.15 | 0.0375 | 0.065 |
+| 0.50 | 0.50 | 0.40 | 0.2000 | 0.348 |
+| 0.75 | 0.75 | 0.45 | 0.3375 | 0.587 |
+| 1 | 1 | 0 | 0 | 0 |
+
+## 对照说明：两种算法，同一答案
+
+数据更新为“蓝白蓝蓝”后，第 15 页（计数）与第 20 页（概率表）殊途同归：
+
+- **计数**：4 次方式数 = 0 / 3 / 16 / 27 / 0（如“蓝蓝白白”：8 × 2 = 16）
+- **概率**：新先验 = 旧后验 [0, .15, .40, .45, 0]，似然 $P(\text{蓝}\mid\theta)=\theta$ → 证据 = 0.575 → 新后验 **[0, .065, .348, .587, 0]**
+
+为什么一致？
+
+- 计数归一化 3/46 ≈ .065、16/46 ≈ .348、27/46 ≈ .587——两列结果**逐格相等**
+- 区别只是“一次数完 4 次”与“先 3 次、后 1 次分步更新”
+- **上一步的后验 = 下一步的先验**：贝叶斯更新可以一步步进行，这就是“从证据中学习”的迭代本质
+
+## 小结：贝叶斯模型的基本语言
+
+- **参数 (parameter)**：描述总体的未知量（本例为蓝色小球占比 $\theta$）；在贝叶斯框架中参数被视为随机变量；
+- **先验 (prior)**：观察数据之前对参数分布的假设；
+- **似然 (likelihood)**：在不同参数假设下，当前数据出现的可能性（方式数）；
+- **证据 (evidence)**：所有参数假设下（似然 × 先验）之和，用于归一化得到后验；
+- **后验 (posterior)**：观察数据之后更新过的参数分布：后验 ∝ 先验 × 似然；它也可以作为**下一轮更新的先验**。
+
+## 与以往学的“统计”有何不同？
+
+::: {style="font-size:0.85em"}
+- 经典统计通常**先假设参数已知/固定**，再问“数据有多罕见”；
+- 贝叶斯相反：**参数未知**，用数据不断更新对参数的信念；
+- **小世界 vs 大世界**：贝叶斯模型所刻画的小世界（哥伦布以为的地球周长 3 万公里）vs 模型运行的真实环境（实际 4 万公里）；
+- 当模型的假设与现实相近时，贝叶斯模型在大世界中也会表现良好。
+
+:::
+
+![](figs/lec2/sup_rhqayo7s64.png){width=32%}
+
+## Part 3: 随机变量的贝叶斯模型 (Bayesian models with random variables)
+
+### 从“推测袋中小球的组成”到“随机变量”
+
+在 Part 2 中，我们用 $\theta$ 表示蓝色小球占比，$\theta$ 只有 5 种离散取值。同样的贝叶斯更新逻辑，现在用于一个**真实的心理学场景**：
+
+假设一个有实力、有经费的团队计划对 **6 项研究**进行重复实验，想知道“能成功重复多少项”。
+
+- 成功率 $\theta$ 是**未知且可能变化**的 → 它是一个随机变量（像 $\theta$ 一样需要被推断）；
+- 成功复现的次数 $Y$ 可能是 0、1、…、6 中的任意值：$Y \in \{0,1,2,3,4,5,6\}$；
+- 类比：斗地主里的“胜率”——每轮玩完都在变，开局前你并不知道这一轮会是多少。
+
+🤔 即便团队的真实水平约为 $\theta = 50\%$，$Y=0$ 到 $Y=6$ 每种结果的**可能性**分别是多少？
+
+## 二项式模型 (The binomial model)
+
+每次重复实验只有两种结果（成功 vs 失败），$n=6$ 次独立实验的成功次数 $Y$ 服从二项分布：
+
+$$
+f(y|\theta) = \binom{n}{y}\, \theta^{y}(1-\theta)^{n-y} \qquad y \in \{0,1,\dots,n\}, \quad \binom{n}{y}=\frac{n!}{y!(n-y)!}
+$$
+
+模型的前提假设：
+
+- 所有试次（各研究的重复实验）**相互独立**；
+- 每次试次的成功概率都是同一个固定值 $\theta$。
+
+
+> 对应 Python 实现见 `Lecture2.py`：`scipy.stats.binom.pmf(y, n, p)`。
+
+## 用 R 计算概率质量函数 (PMF)
+
+以 $\theta = 0.5,\ n = 6$ 为例，逐项计算 $f(y|\theta)$：
 
 ```{r}
-#| _id: AE14DA7DBF2E4C4AAC85A3A7A09A81B6
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 定义可能的成功率
-replicated <- data.frame(pi = c(0.2, 0.5, 0.8))
+# 成功次数、总次数、假设的成功率
+y <- 0:6
+n <- 6
+p <- 0.5
 
-# 定义先验模型
-prior <- c(0.10, 0.25, 0.65)
+# 计算每个 y 的概率
+prob <- dbinom(y, size = n, prob = p)
+result_table <- data.frame(y = y, prob = round(prob, 4))
+print(result_table, row.names = FALSE)
+
+cat("所有概率之和 =", sum(prob), "\n")
 ```
 
-### 2. 模拟在特定成功率下，6项研究中的成功次数  
-- 重复这个过程10000次
+## 概率质量函数 (Probability mass function)
+
+**PMF** 描述离散型随机变量取各个可能值时的概率：$f(y) = P(Y = y)$。
+
+- $Y$ 的取值有限（或可数），称**离散型随机变量**；
+- 性质 1：对所有 $y$，$0 \le f(y) \le 1$；
+- 性质 2：$\sum_{\text{all } y} f(y) = 1$（上一步代码已验证）。
 
 ```{r}
-#| _id: EB13D3BBC8AA444EB4751606BAE3948F
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 设置随机数种子保证可重复性
-set.seed(84735)
-
-# 从先验中抽取10000个
-replicated_sim_indices <- sample(1:nrow(replicated), size = 10000, replace = TRUE, prob = prior)
-replicated_sim <- replicated[replicated_sim_indices, , drop = FALSE]
-replicated_sim$y <- rbinom(n = nrow(replicated_sim), size = 6, prob = replicated_sim$pi)
-
-# 显示前10行数据
-print(head(replicated_sim, 10),row.names = FALSE)
-```
-
-```{r}
-#| _id: 178104DAE86849BE8666A37AA8AB472E
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 对 pi 的抽取情况进行总结
-replicated_counts <- replicated_sim %>%
-  dplyr::group_by(pi) %>%
-  dplyr::summarise(n = n(), .groups = 'drop') %>%
-  dplyr::mutate(percentage = n / sum(n)) %>%
-  dplyr::arrange(pi)
-
-# 打印统计结果
-print(replicated_counts)
-```
-
-### 3.  不同成功率下，不同成功次数的分布情况$f(y|\pi)$
-
-```{r}
-#| _id: 0F1BFF8B7EB74713A32B5E4C20A98CFA
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 创建三个分图
-plot_list <- lapply(c(0.2, 0.5, 0.8), function(pi_value) {
-  ggplot2::ggplot(replicated_sim[replicated_sim$pi == pi_value, ], aes(x = y, stat = "count")) +
-    geom_bar(aes(y = ..count.. / sum(..count..)), 
-                   binwidth = 1, 
-                   fill = "skyblue", color = "black") +  
-    labs(title = paste("Distribution of y for π =", pi_value),
-         y = "Probability",
-         x = "y") +
-    scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
-    scale_x_continuous(expand = expansion(mult = c(0.1, 0.1)),limits = c(0,7))+
-    papaja::theme_apa()
-})
-
-# 使用 gridExtra 将各个子图放在一起
-options(repr.plot.width=14, repr.plot.height=5) #自定义画布大小  
-grid.arrange(grobs = plot_list, ncol = 3)
-```
-
-### 4. 查看$y=1$时，对应的$\pi$的分布情况
-
-```{r}
-#| _id: B07F0C7DA92949F8B37A353DD13C21AC
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 过滤出 y = 1 的情况
-replicated_post <- replicated_sim %>% filter(y == 1)
-# 对 pi 的抽取情况进行总结
-y_1_counts <- replicated_post %>%
-  group_by(pi) %>%
-  summarise(n = n(), .groups = 'drop') %>%
-  arrange(pi)
-
-# 打印统计结果
-print(y_1_counts)
-```
-
-```{r}
-#| _id: E05EE4EBAB694DA3998A35F52F1512D9
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 使用 ggplot 绘制 y = 1 时 pi 的分布图
-options(repr.plot.width=8, repr.plot.height=6) #自定义画布大小  
-ggplot2::ggplot(replicated_post, aes(x = pi)) +
-  geom_histogram(aes(y = ..count.. ), binwidth = 0.1, fill = "darkblue", alpha = 0.7) +
-  scale_x_continuous(breaks = c(0.2, 0.5, 0.8)) +
-  labs(title = "Distribution of π when y = 1",
-       x = expression(pi),
-       y = "counts") +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+#| fig-width: 9.2
+#| fig-height: 3.2
+ggplot(result_table, aes(x = y, y = prob)) +
+  geom_segment(aes(xend = y, yend = 0), color = "gray", linewidth = 1) +
+  geom_point(size = 3) +
+  xlim(-0.2, 6.2) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 0.4)) +
+  labs(x = "y", y = "f(y | θ)") +
   papaja::theme_apa()
 ```
 
-思考：频率学派(经典统计)会如何处理上述两个问题？  
-* 某项研究的可重复性  
-* 重复6次的成功率
+当 $\theta = 0.5$ 时，$y=3$（成功 3 项）的概率最高：$f(3|0.5)=0.3125$。
 
-## Part 4: 频率学派与贝叶斯学派的对比
+## 二项似然函数 (The binomial likelihood): 不同信念
 
-最近的一篇综述讨论了贝叶斯方法在临床研究设计和分析中的应用，同时比较了贝叶斯与频率主义方法之间的哲学和方法论差异。  
+并非所有人都认为成功率是 50%：
 
+- **中立派**（团队自己估计）：$\theta = 0.5$
+- **乐观派**：$\theta = 0.8$（对团队高度有信心）
+- **悲观派**：$\theta = 0.2$（不太看好）
 
-![Image Name](https://cdn.kesci.com/upload/sjzj8nd4te.png?imageView2/0/w/640/h/640)  
-
-
-论文中展示的一个例子是一项用于治疗严重急性呼吸窘迫综合征（ARDS）的体外膜肺氧合法（ECMO）试验，研究体外膜肺氧合法（ECMO）对严重急性呼吸窘迫综合征（ARDS）的效果。该试验的结果引发了频率学派和贝叶斯学派在同一数据下得出不同结论的讨论。  
-
-> Goligher, E. C., Heath, A., & Harhay, M. O. (2024). Bayesian statistics for clinical research. *The Lancet, 404*(10457), 1067-1076.
-
-- 频率学派：试验原本计划招募331名患者，但因中期分析未能证明ECMO治疗具有显著益处，最终只招募了249名患者。结果显示，干预组的死亡率为35%，对照组为46%，表面上看治疗效果显著。然而，基于频率学派的统计分析，P值为0.09，并未达到通常的显著性水平（$p$<0.05）。  
-- 因此研究者得出结论：试验未能提供充分证据证明早期ECMO可以显著降低死亡率。
-
-- 贝叶斯学派：通过使用不同的先验分布时，H<sub>1</sub>（ECMO可以有效降低干预组死亡率）成立的后验概率在88%至99%之间。  
-- 这意味着，贝叶斯方法提供了强有力的证据支持ECMO的效果，甚至有学者建议，ECMO方法应被认为是一种有效的治疗手段。
-
-### 频率学派如何看待这个世界？  
-
-在对比频率学派与贝叶斯学派的差异之前，让我们首先回顾一下频率学派是如何看待这个世界的。
-
-值得注意的是：  
-
-1. 固定的假设：频率学派认为假设（通常是零假设）是一个固定的命题。例如，在试验中，频率学派的零假设是“ECMO对死亡率没有显著影响”。  
-
-2. 数据的随机性：在频率学派的框架下，数据被视为随机变量。通过对这些数据进行分析，频率学派关注在假设为真的前提下，观测到当前数据或更极端数据的概率，即$p$值。  
-
-3. 无限重复实验的假设：频率学派的推断依赖于假设实验可以无限重复进行，进而通过计算在这些重复实验中得到观测数据的频率来推断真相。因此，置信区间也是基于多次实验的频率分布。  
-
-4. 拒绝或接受零假设：通过计算$p$值，频率学派根据预设的显著性水平（通常为0.05）决定是否拒绝零假设。
-
-最后，频率学派如何**推断**出两个总体之间的差异？   
-- 频率学派通过零假设的显著性检验(Null hypothesis significant test, NHST)来判断显著性。通过计算置信区间(confidence interval)和$p$值来帮助推断过程。  
-- 在该临床试验中，通过$p$值（如，0.09）和置信区间来推断两个总体之间的差异。
-
-### 贝叶斯学派如何看待这个世界？
-
-与频率学派不同，贝叶斯学派认为，概率是对不确定性的主观度量。  
-贝叶斯学派的核心思想包括：  
-1. 先验概率：贝叶斯学派从研究者对某个假设的初始信念（即先验概率）出发。这一信念可以基于以往研究、专家意见或临床经验。  
-2. 更新信念：当新数据（如试验结果）出现时，贝叶斯定理提供了一个框架，将先验概率与新证据（通过似然函数表示）结合，生成后验概率。后验概率代表更新后的信念，即在观察到新数据后，某假设为真的概率。  
-3. 后验分布与可信区间(credible intervals)：通过后验概率，贝叶斯方法能够直接评估一个假设为真的可能性。例如，贝叶斯分析可以直接得出H<sub>1</sub>成立的后验概率（如88%）。可信区间的概念也更具直观性，它表示在现有数据和先验信息下，某参数位于该区间内的概率。
-
-#### Thomas Bayes  
-![Image Name](https://pic2.zhimg.com/v2-ae48785e2b67af851e236b3d38c78c8d_r.jpg)  
-
-#### Pierre Simon Laplace  
-
-![Image Name](https://th.bing.com/th/id/R.c252b05834293b10a3005882940d6622?rik=Kr8G5HIK%2fObbHw&riu=http%3a%2f%2fimages.fineartamerica.com%2fimages-medium-large%2fpierre-simon-marquis-de-laplace-maria-platt-evans.jpg&ehk=uHIIZ0qdCLmD0FXAHR4lUGfySQGNKlhNkJgoWIOMJG4%3d&risl=&pid=ImgRaw&r=0)  
-
-### 两个学派的差异对比  
-
-| **频率学派**                                           | **贝叶斯学派**                                         |  
-|-------------------------------------------------------|-------------------------------------------------------|  
-| **概率定义**：概率是事件在无限重复试验中的频率          | **概率定义**：概率是对假设的信念度量                   |  
-| **假设**：假设是固定的，数据是随机的                    | **假设**：假设是随机的，数据是固定的                   |  
-| **推断方式**：基于假设检验，通过$p$值判断是否拒绝零假设    | **推断方式**：通过更新先验与新数据计算后验概率         |  
-| **置信区间**：在重复试验中，95%的区间包含真实参数         | **可信区间**：给出某参数位于区间内的概率（如95%可信度） |  
-| **$p$值**：衡量在零假设下，观测数据或更极端数据的概率      | **后验概率**：给出假设为真的更新概率                   |  
-| **数据独立性**：推断只基于当前试验数据，不考虑先验信息    | **先验信息**：结合历史数据或专家意见，用于更新推断     |  
-| **实验重复性假设**：推断基于实验的假想重复性              | **逐步积累信息**：通过结合新数据不断更新和完善假设     |  
-| **适应性**：实验设计固定，不能在中途更新或调整             | **适应性**：可以灵活调整试验设计和决策，如自适应试验   |  
-
-来源：  
-> Goligher, E. C., Heath, A., & Harhay, M. O. (2024). Bayesian statistics for clinical research. The Lancet, 404(10457), 1067-1076.
-
-### 贝叶斯的主观性  
-
-**任何统计分析方法都不可能完全客观，因此主观性是一个相对概念:**  
-
-* 贝叶斯学派的主观性通过先验的设定来体现，透明，不易让人产生误解  
-
-* 频率学派的主观性暗含在各种**前提预设**中，比如方差分析中的方差齐性和正态性，这种看似‘客观的’预设，一方面难以满足，一方面也是一种主观的设定。  
-
-* 更为宏观的来说，样本的抽取，数据清理方式的选择，分析方法的选择，$p$值的设定，这些都存在主观性。因此，频率学派并没有想象的那么‘客观’。  
-
-* 主观不一定是坏事：通过量化方法将个体的经验和专家知识整合到数据分析之中。  
-
-
-#### 重复抽样的不同作用
-
-##### 频率学派  
-* 统计推断依赖于参数的**抽样分布**，即只要无限(long-run)的进行抽样，样本分布的参数就会有某种分布形式；  
-* 零假设检验（Null Hypothesis Significance Testing，NHST）中的$p$值和置信区间的解读均依赖于“无限次抽样”的预设；  
-* 实际操作中，我们往往只会收集一次数据，并不会反复的进行抽样；有些情境中，预设“无限次重复抽样并不合理；  
-
-##### 贝叶斯学派  
-* 假定参数本身是分布，不确定性一起存在于推断之中；  
-* 直接根据数据对先验信念进行更新；  
-
-**置信区间(confidence intervals) vs 可信区间(credible intervals)**  
-
-**No free lunch: 各有优势和缺陷**
-
-#### 不同的先验和似然会产生不同的后验分布  
-
-![Image Name](https://cdn.kesci.com/upload/image/rhqcb9gji7.png?imageView2/0/w/500/h/500)  
-
-#### NHST的"弱项"
-
-* 无法直接对零假设(null hypothesis)进行支持，即如果两个总体没有显著差异，他们的相似程度有多少？  (许岳培等, 2023, *应用心理学(04)*, 369-384)  
-
-* 一次性只能对比两个总体的假设进行比较；  
-
-* 控制假阳性是一个棘手的问题
-
-## 附录  
-### 本节课python代码  
-
-注意：Python代码需要在python环境中运行，并且需要安装相关的包。和鲸平台中的`pyBayesian`这一计算环境为本课程2024年使用的python环境，包括了可运行的全部的python模块。
+不同 $\theta$ 意味着对 $Y$ 的不同预期。分别计算三种 $\theta$ 下的 $f(y|\theta)$：
 
 ```{r}
-#| collapsed: false
-#| jupyter: {}
-#| notebookId: 68c264c9c7ce8bf310c1bec2
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
-# 导入数据加载和处理包：pandas
-import pandas as pd
-# 导入数字和向量处理包：numpy
-import numpy as np
-# 导入基本绘图工具：matplotlib
-import matplotlib.pyplot as plt
-
-# 使用 pandas 导入示例数据
-try:
-  df = pd.read_csv("/home/mw/input/bayes3797/replicated_language_cleaned.csv") 
-except:
-  df= pd.read_csv('data/replicated_language_cleaned.csv')
-
-df = df.drop('study_name', axis=1)
-df.head()
-
-# 设置APA 7的画图样式
-plt.rcParams.update({
-    'figure.figsize': (4, 3),      # 设置画布大小
-    'font.size': 12,               # 设置字体大小
-    'axes.titlesize': 12,          # 标题字体大小
-    'axes.labelsize': 12,          # 轴标签字体大小
-    'xtick.labelsize': 12,         # x轴刻度字体大小
-    'ytick.labelsize': 12,         # y轴刻度字体大小
-    'lines.linewidth': 1,          # 线宽
-    'axes.linewidth': 1,           # 轴线宽度
-    'axes.edgecolor': 'black',     # 设置轴线颜色为黑色
-    'axes.facecolor': 'white',     # 轴背景颜色（白色）
-    'xtick.direction': 'in',       # x轴刻度线向内
-    'ytick.direction': 'out',      # y轴刻度线向内和向外
-    'xtick.major.size': 6,         # x轴主刻度线长度
-    'ytick.major.size': 6,         # y轴主刻度线长度
-    'xtick.minor.size': 4,         # x轴次刻度线长度（如果启用次刻度线）
-    'ytick.minor.size': 4,         # y轴次刻度线长度（如果启用次刻度线）
-    'xtick.major.width': 1,        # x轴主刻度线宽度
-    'ytick.major.width': 1,        # y轴主刻度线宽度
-    'xtick.minor.width': 0.5,      # x轴次刻度线宽度（如果启用次刻度线）
-    'ytick.minor.width': 0.5,      # y轴次刻度线宽度（如果启用次刻度线）
-    'ytick.labelleft': True,       # y轴标签左侧显示
-    'ytick.labelright': False      # 禁用y轴标签右侧显示
-})
-
-df.head()
-
-# 数据预处理
-# 计算 'certain' 列的中位数
-median_certain = df['certain'].median()
-
-# 创建新列，编码规则：大于中位数为 1，小于等于中位数为 2
-df['language_style'] = df['certain'].apply(lambda x: 1 if x > median_certain else 0)
-
-# 输出结果
-df.head()
-
-# 计算不同水平的数量和百分比
-level_counts = df['replicated'].value_counts()
-level_percentages = df['replicated'].value_counts(normalize=True) * 100
-
-# 百分比保留两位小数
-level_percentages = level_percentages.round(2)
-
-# 创建一个新的 DataFrame 合并结果
-result_df1 = pd.DataFrame({'数量': level_counts, '百分比': level_percentages})
-# 展示结果(0代表不可重复，1代表可重复)
-result_df1
-
-# 计算不同水平的数量
-result_df2 = df.groupby(['replicated', 'language_style']).size().unstack()
-# 结果
-result_df2
-# 定义文章类型
-article = pd.DataFrame({'replicated': ['yes', 'no']})
-
-# 定义先验概率
-prior = [0.4, 0.6]
-
-# 模拟生成 10000 项研究，包括其类型
-np.random.seed(84735)
-article_sim = article.sample(n=10000, weights=prior, replace=True)
-# 查看前 10 行数据
-article_sim.head(10)
-
-#我们可以通过画图来查看这些被投放研究的可重复性比例。
-article_sim['replicated'].value_counts().plot.bar()
-plt.xticks(rotation=0)
-plt.show()
-
-# 设置条件概率
-article_sim['data_model'] = np.where(article_sim['replicated'] == 'no', 0.45, 0.56)
-
-# 定义研究是否使用确切语言
-data = ['certain', 'uncertain']
-
-# 设置随机种子，以便得到重复的结果
-rng=np.random.default_rng(84735)
-# 生成确切语言相关的数据
-article_sim['language'] = article_sim.apply(lambda x: rng.choice(data, 1, p = [x.data_model, 1-x.data_model])[0], axis=1)
-
-# 显示每个类别研究数量
-(
-  article_sim.groupby(['language', 'replicated'])
-    .size()
-    .unstack(fill_value=0)
-)
-
-usage_yes = article_sim[article_sim['language'] == 'certain']
-print('使用确切语言的研究', usage_yes['replicated'].value_counts().sum())
-usage_yes['replicated'].value_counts()
-
-# 定义两幅图的坐标
-fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-
-# 绘制两幅图
-for i, u in enumerate(article_sim['language'].unique()):
-    ax = axes[i]
-    data = article_sim[article_sim['language'] == u]
-    ax.bar(data['replicated'].unique(), data['replicated'].value_counts())
-    ax.set_title(f'language = {u}')
-    ax.set_ylim(0, 10000) 
-
-# 显示   
-fig.tight_layout()
-plt.show()
-
-# 导入数据加载和处理包：pandas
-import pandas as pd
-# 导入数字和向量处理包：numpy
-import numpy as np
-# 导入基本绘图工具：matplotlib
-import matplotlib.pyplot as plt
-# 导入高级绘图工具 seaborn 为 sns
-import seaborn as sns
-# 导入统计建模工具包 scipy.stats 为 st
-import scipy.stats as st 
-
-# 设置APA 7的画图样式
-plt.rcParams.update({
-    'figure.figsize': (4, 3),      # 设置画布大小
-    'font.size': 12,               # 设置字体大小
-    'axes.titlesize': 12,          # 标题字体大小
-    'axes.labelsize': 12,          # 轴标签字体大小
-    'xtick.labelsize': 12,         # x轴刻度字体大小
-    'ytick.labelsize': 12,         # y轴刻度字体大小
-    'lines.linewidth': 1,          # 线宽
-    'axes.linewidth': 1,           # 轴线宽度
-    'axes.edgecolor': 'black',     # 设置轴线颜色为黑色
-    'axes.facecolor': 'white',     # 轴背景颜色（白色）
-    'xtick.direction': 'in',       # x轴刻度线向内
-    'ytick.direction': 'out',      # y轴刻度线向内和向外
-    'xtick.major.size': 6,         # x轴主刻度线长度
-    'ytick.major.size': 6,         # y轴主刻度线长度
-    'xtick.minor.size': 4,         # x轴次刻度线长度（如果启用次刻度线）
-    'ytick.minor.size': 4,         # y轴次刻度线长度（如果启用次刻度线）
-    'xtick.major.width': 1,        # x轴主刻度线宽度
-    'ytick.major.width': 1,        # y轴主刻度线宽度
-    'xtick.minor.width': 0.5,      # x轴次刻度线宽度（如果启用次刻度线）
-    'ytick.minor.width': 0.5,      # y轴次刻度线宽度（如果启用次刻度线）
-    'ytick.labelleft': True,       # y轴标签左侧显示
-    'ytick.labelright': False      # 禁用y轴标签右侧显示
-})
-
-y = [0,1,2,3,4,5,6]  # 成功次数 
-n = 6                # 重复研究总次数
-p = 0.5              # 假设的成功概率
-
-# 计算概率值
-prob = st.binom.pmf(y, n, p)
-
-result_table = pd.DataFrame({"成功次数":y, "概率":prob})
-result_table
-
-# 绘制灰色竖线
-for i, j in zip(y , prob):
-    plt.plot([i, i], [j, 0], 'gray', linestyle='-', linewidth=1, zorder=1, )
-
-# 绘制黑色点(各成功率次数的成功率)
-plt.scatter(y, prob, c='black')
-
-plt.ylabel('$f(y|\pi)$')
-plt.xlabel('y')
-
-plt.xlim(-0.2,6.2)
-plt.ylim(0,0.5)
-plt.show()
-
-sum(result_table['概率'])
-
-y = [0,1,2,3,4,5,6]  # 成功次数 
-n = 6                # 研究总次数
-
-# 计算似然值
-p = 0.5              # 本团队假设的成功复现概率
-likelihood1 = st.binom.pmf(y, n, p)
-p = 0.8              # 乐观派的成功概率
-likelihood2 = st.binom.pmf(y, n, p)
-p = 0.2              # 悲观派眼中的成功概率
-likelihood3 = st.binom.pmf(y, n, p)
-
-result_table = pd.DataFrame({
-  "成功次数":y, 
-  "本团队(pi=0.5)":likelihood1, 
-  "悲观派(pi=0.2)":likelihood2, 
-  "乐观派(pi=0.8)":likelihood3})
-result_table
-
-# 创建子图
-fig, axs = plt.subplots(1, 3, figsize=(10, 4))
-
-# 绘制三个图,每个子图类似原图
-three_pi = ["Team itself ($\pi = 0.5$)","Optimists ($\pi = 0.8$)","Pessimists ($\pi = 0.2$)"]
-likelihoods = [likelihood1, likelihood2, likelihood3]
-for i, ax in enumerate(axs):
-    
-    ax.scatter(y, likelihoods[i], c='black')
-    
-    for xx, yy in zip(y, likelihoods[i]):
-        ax.plot([xx, xx], [yy, 0], 'gray', linestyle='-', linewidth=1, zorder=1)
-    
-    # 添加facet
-    ax.set_title(three_pi[i])
-
-    ax.set_xlim(-0.2,6.2)
-    ax.set_ylim(0,0.4)
-
-fig.supylabel('$f(y|\pi)$')
-fig.supxlabel('y')
-plt.tight_layout()
-plt.show()
-
-# 定义成功次数和研究总次数
-y = 1  # 成功次数，作为数组处理以便向量化计算
-n = 6  # 研究总次数
-
-# 计算似然值，对于三种不同的成功概率 p
-p_values = [0.5, 0.8, 0.2]          # 定义三种成功率
-likelihoods = []                    # 用于存储每种成功率的似然值结果
-
-for p in p_values:
-    likelihood = st.binom.pmf(y, n, p)  # 使用st.binom.pmf计算似然值
-    likelihoods.append(likelihood)      
-
-
-# 创建图形和子图
-fig, ax = plt.subplots()  
-ax.scatter(p_values, likelihoods, c='black')
-# 设置x轴和y轴的限制应该在绘制线条之前完成，以避免重复设置
-ax.set_xlim(-0.2, 1.2)  # x轴范围根据p_values调整，最大不应超过1
-ax.set_ylim(0, 0.5)
-for xx, yy in zip(p_values, likelihoods):
-    ax.plot([xx, xx], [0, yy], 'gray', linestyle='-', linewidth=1, zorder=1)
-    # 注意这里的顺序是 [0, yy] 而不是 [yy, 0]，因为我们希望从x轴画到对应的似然值
-# 设置坐标轴标签，直接使用ax的方法，而不是fig的方法
-ax.set_ylabel('$f(\pi|y)$')  
-ax.set_xlabel('$\pi$')       
-plt.tight_layout()  # 调整布局以避免标签重叠
-plt.show()
-
-# Values for Y (number of successes in n trials)
-y = np.arange(0, 7)
-# Number of trials (n) and different probabilities (π values)
-n = 6
-pi_values = [0.2, 0.5, 0.8]
-
-# Create subplots
-fig, axs = plt.subplots(1, 3, figsize=(12, 5))
-# Loop over each pi value to plot the corresponding binomial distribution
-for i, pi in enumerate(pi_values):
-    # Calculate binomial probabilities for each y (number of successes)
-    likelihoods = st.binom.pmf(y, n, pi)
-    
-    # Scatter plot of the likelihoods
-    axs[i].scatter(y, likelihoods, color='black', zorder=2)
-    
-    # Draw gray vertical lines
-    for yy, likelihood in zip(y, likelihoods):
-        axs[i].plot([yy, yy], [0, likelihood], color='gray', linestyle='-', linewidth=1, zorder=1)
-    
-    # Highlight y = 1 with a black line
-    axs[i].plot([1, 1], [0, st.binom.pmf(1, n, pi)], color='black', linewidth=3, zorder=3)
-    
-    # Title with binomial parameters
-    axs[i].set_title(f'Bin({n},{pi})')
-    
-    # Set y and x axis limits
-    axs[i].set_xlim(-0.5, 6.5)
-    axs[i].set_ylim(0, 0.5)
-
-# Global labels
-fig.supylabel(r'$f(y|\pi)$')
-fig.supxlabel('y')
-
-# Adjust layout for better fit
-plt.tight_layout()
-plt.show()
-
-本项目来源于和鲸社区，使用转载需要标注来源
-作者: ss
-来源: https://www.heywhale.com/mw/project/66e2c44e20251d33770337b6
-# Pi values and corresponding data
-pi_values = [0.2, 0.5, 0.8]
-f_pi = [0.10, 0.25, 0.65]  # Prior probabilities
-L_pi_given_Y1 = [0.617, 0.367, 0.015]  # Likelihoods given Y=1
-posterior = [0.617, 0.367, 0.015]  # Posterior, assumed same as likelihoods here
-
-# Create subplots for prior, likelihood, and posterior
-fig, axs = plt.subplots(1, 3, figsize=(10, 4))
-
-# Prior Probability f(π)
-axs[0].scatter(pi_values, f_pi, color='black', zorder=2)
-for xx, yy in zip(pi_values, f_pi):
-    axs[0].plot([xx, xx], [0, yy], color='black', linewidth=3, zorder=1)
-axs[0].set_title(r'Prior $f(\pi)$')
-axs[0].set_xlim(0.15, 0.85)
-axs[0].set_ylim(0, 0.7)
-
-# Likelihood L(π|Y=1)
-axs[1].scatter(pi_values, L_pi_given_Y1, color='black', zorder=2)
-for xx, yy in zip(pi_values, L_pi_given_Y1):
-    axs[1].plot([xx, xx], [0, yy], color='black', linewidth=3, zorder=1)
-axs[1].set_title(r'Likelihood $L(\pi|Y=1)$')
-axs[1].set_xlim(0.15, 0.85)
-axs[1].set_ylim(0, 0.7)
-
-# Posterior Probability f(π|Y=1)
-axs[2].scatter(pi_values, posterior, color='black', zorder=2)
-for xx, yy in zip(pi_values, posterior):
-    axs[2].plot([xx, xx], [0, yy], color='black', linewidth=3, zorder=1)
-axs[2].set_title(r'Posterior $f(\pi|Y=1)$')
-axs[2].set_xlim(0.15, 0.85)
-axs[2].set_ylim(0, 0.7)
-
-# Set labels and layout
-for ax in axs:
-    ax.set_xlabel(r'$\pi$')
-
-fig.supylabel('Probability')
-plt.tight_layout()
-plt.show()
-
-# Pi values and corresponding unnormalized posterior data
-pi_values = [0.2, 0.5, 0.8]
-unnormalized_posterior = [0.03932, 0.02345, 0.00097]  # Unnormalized posterior values
-normalized_posterior = [val / sum(unnormalized_posterior) for val in unnormalized_posterior]  # Normalized
-
-# Create subplots for normalized and unnormalized posteriors
-fig, axs = plt.subplots(1, 2, figsize=(8, 4))
-
-# Normalized posterior
-axs[0].scatter(pi_values, normalized_posterior, color='black', zorder=2)
-for xx, yy in zip(pi_values, normalized_posterior):
-    axs[0].plot([xx, xx], [0, yy], color='black', linewidth=3, zorder=1)
-axs[0].set_title('Normalized $f(\pi | y=1)$')
-axs[0].set_xlim(0.15, 0.85)
-axs[0].set_ylim(0, 0.7)
-
-# Unnormalized posterior
-axs[1].scatter(pi_values, unnormalized_posterior, color='black', zorder=2)
-for xx, yy in zip(pi_values, unnormalized_posterior):
-    axs[1].plot([xx, xx], [0, yy], color='black', linewidth=3, zorder=1)
-axs[1].set_title('Unnormalized $f(\pi | y=1)$')
-axs[1].set_xlim(0.15, 0.85)
-axs[1].set_ylim(0, 0.05)
-
-# Set labels and layout
-for ax in axs:
-    ax.set_xlabel(r'$\pi$')
-
-fig.supylabel('Probability')
-plt.tight_layout()
-plt.show()
-
-import pandas as pd
-import numpy as np
-
-# 定义可能的成功率
-replicated = pd.DataFrame({'pi':[0.2, 0.5, 0.8]})
-
-# 定义先验模型
-prior = [0.10, 0.25, 0.65]
-
-# 设置随机数种子保证可重复性
-np.random.seed(84735)
-
-# 从先验中抽取10000个 pi 值，并生成对应的y值
-
-replicated_sim = replicated.sample(n=10000, weights=prior, replace=True)
-replicated_sim['y'] = np.random.binomial(n=6, p=replicated_sim['pi'], size=len(replicated_sim))
-replicated_sim.head(10)
-
-#对pi的抽取情况进行总结
-replicated_counts =  replicated_sim['pi'].value_counts().reset_index()
-
-replicated_counts.columns = ['pi','n']
-
-replicated_counts['percentage'] = (replicated_counts['n']/len(replicated_sim))
-
-replicated_counts = replicated_counts.sort_values(by='pi')
-
-print(replicated_counts)
-
-# 导入绘图工具 seaborn
-import seaborn as sns
-# 通过 facegrid 方法根据不同变量绘制不同的图形
-replicated_lik = sns.FacetGrid(replicated_sim,col="pi")
-replicated_lik.map(sns.histplot,'y',stat='probability',discrete=True)
-plt.tight_layout()
-plt.show()
-
-replicated_post = replicated_sim[replicated_sim['y'] == 1].value_counts()
-replicated_post
-
-replicated_post = replicated_sim[replicated_sim['y'] == 1]
-
-replicated_post_plot = sns.histplot(data = replicated_post, x="pi")
-
-#plt.xticks(np.arange(0.2,0.8,0.3))
-
-replicated_post_plot.set(xticks=[0.2,0.5,0.8])
-sns.despine()
+# 三种成功概率下的 f(y|θ)
+y <- 0:6
+p_values <- c(0.5, 0.8, 0.2)
+likelihoods <- sapply(p_values, function(p) dbinom(y, size = 6, prob = p))
+
+result_table3 <- round(data.frame(y = y, likelihoods), 4)
+names(result_table3) <- c("y", "中立派 θ=0.5", "乐观派 θ=0.8", "悲观派 θ=0.2")
+print(result_table3, row.names = FALSE)
 ```
 
+## 三派眼中的 $Y$ 分布
+
+```{r}
+#| fig-width: 13.5
+#| fig-height: 5
+plots <- list()
+titles <- c("Team itself (θ = 0.5)", "Optimists (θ = 0.8)", "Pessimists (θ = 0.2)")
+
+for (i in seq_along(p_values)) {
+  plots[[i]] <- ggplot(
+    data.frame(y = y, lik = likelihoods[, i]),
+    aes(x = y, y = lik)
+  ) +
+    geom_segment(aes(xend = y, yend = 0), color = "gray", linewidth = 1) +
+    geom_point(size = 3) +
+    labs(title = titles[i], y = "f(y | θ)") +
+    xlim(-0.2, 6.2) +
+    scale_y_continuous(expand = c(0, 0), limits = c(0, 0.45)) +
+    papaja::theme_apa()
+}
+gridExtra::grid.arrange(grobs = plots, ncol = 3)
+```
+
+- 乐观派（0.8）认为“成功很多项”最可能；悲观派（0.2）认为“全败/几乎全败”最可能。
+
+## 观察到 $y = 1$：谁的信念更合理？
+
+假设团队 6 项研究**只成功复现了 1 项**。在三派设定的成功率下，这件事的可能性分别是：
+
+```{r}
+# 只成功 1 次时，不同 θ 下的似然
+y_obs <- 1
+lik_obs <- sapply(p_values, function(p) dbinom(y_obs, size = 6, prob = p))
+lik_tab <- data.frame(theta = p_values, L_pi_y1 = round(lik_obs, 4))
+print(lik_tab, row.names = FALSE)
+```
+
+- $\theta=0.2$ 时最可能出现 $y=1$（0.3932），$\theta=0.8$ 时几乎不可能（0.0015）；
+- 若团队真的只成功 1 项，那么成功率**更可能偏低**——悲观派的情境得到了数据的支持。
+
+## 似然函数 $L(\theta | y=1)$
+
+当数据固定为 $y=1$ 时，把它看成 $\theta$ 的函数：
+
+$$
+f(Y=1|\theta) = \binom{6}{1} \theta^1 (1-\theta)^{5} = 6\theta(1-\theta)^5 = L(\theta | y=1)
+$$
+
+| $\theta$ | 0.2 | 0.5 | 0.8 |
+|---|---|---|---|
+| $L(\theta \mid y=1)$ | 0.3932 | 0.0938 | 0.0015 |
+
+注意（与 Part 2 一致）：
+1. 似然函数只随 $\theta$ 变化，数据 $y=1$ 已经固定；
+2. 不同 $\theta$ 下似然的**总和不等于 1**——它只是相对支持度的比较。
+
+## 条件概率 vs 似然函数
+
+- **$\theta$ 固定、$y$ 变化**：$f(y_1|\theta)$ vs $f(y_2|\theta)$ —— 在给定模型下“预测”不同数据的概率；
+- **$y$ 固定、$\theta$ 变化**：$L(\theta_1|y)$ vs $L(\theta_2|y)$，即 $f(y|\theta_1)$ vs $f(y|\theta_2)$ —— 在给定数据下“比较”不同模型。
+
+$$
+Y \mid \theta \sim \text{Bin}(6, \theta), \qquad f(y|\theta) = \binom{6}{y}\theta^y(1-\theta)^{6-y}
+$$
+
+## 同一数据在各模型下的似然
+
+```{r}
+#| fig-width: 13.5
+#| fig-height: 5
+y <- 0:6
+theta_values <- c(0.2, 0.5, 0.8)
+plots <- list()
+
+for (i in seq_along(theta_values)) {
+  pi_v <- theta_values[i]
+  lik_y <- dbinom(y, size = 6, prob = pi_v)
+  y1_lik <- dbinom(1, size = 6, prob = pi_v)
+
+  p <- ggplot(data.frame(y = y, lik = lik_y), aes(x = y, y = lik)) +
+    geom_segment(aes(xend = y, yend = 0), color = "black") +
+    geom_segment(x = 1, y = 0, xend = 1, yend = y1_lik, color = "red", linewidth = 1.6) +
+    geom_point(size = 3) +
+    labs(title = paste0("Bin(6, ", pi_v, ")"), x = "y") +
+    scale_y_continuous(expand = c(0, 0), limits = c(0, 0.5)) +
+    papaja::theme_apa()
+  plots[[i]] <- p
+}
+gridExtra::grid.arrange(grobs = plots, ncol = 3)
+```
+
+红色竖线 = 同一数据 $y=1$ 在不同 $\theta$（模型）下的似然：**从左到右急剧下降**——数据强烈支持低成功率。
+
+## 先验概率模型 (Prior probability model for $\theta$)
+
+像 Part 2 一样，我们也可以对“哪个 $\theta$ 更可能”赋予先验信念。假如我们总体上偏乐观、但不排除其他观点：
+
+| $\theta$ | 0.2 | 0.5 | 0.8 | Total |
+|---|---|---|---|---|
+| $f(\theta)$ | 0.10 | 0.25 | 0.65 | 1 |
+
+$\theta$ 的取值数量也可以扩展（例如再加入非常悲观的 $\theta=0.01$）：
+
+| $\theta$ | 0.01 | 0.2 | 0.5 | 0.8 | Total |
+|---|---|---|---|---|---|
+| $f(\theta)$ | 0.10 | 0.10 | 0.25 | 0.55 | 1 |
+
+原则不变：**穷尽所有可能、和为 1** —— 这就是 $\theta$ 的先验模型。
+
+## 观察数据后：计算后验 $f(\theta | y=1)$
+
+团队最终只成功复现 1 项。先验 $f(\theta)$ 遇到似然 $L(\theta|y=1)$，按贝叶斯公式更新：
+
+$$
+f(\theta|y{=}1) = \frac{f(\theta)\,L(\theta|y{=}1)}{f(y{=}1)} = \frac{f(\theta)\,L(\theta|y{=}1)}{\sum_{\text{all } \theta} f(\theta)\,L(\theta|y{=}1)}
+$$
+
+先计算分母：$f(y{=}1) = 0.10\times0.3932 + 0.25\times0.0938 + 0.65\times0.0015 \approx 0.0637$
+
+| $\theta$ | $f(\theta)$ | $L(\theta\mid y{=}1)$ | $f(\theta)L(\theta\mid y{=}1)$ | $f(\theta\mid y{=}1)$ |
+|---|---|---|---|---|
+| 0.2 | 0.10 | 0.3932 | 0.03932 | 0.617 |
+| 0.5 | 0.25 | 0.0938 | 0.02345 | 0.368 |
+| 0.8 | 0.65 | 0.0015 | 0.00098 | 0.015 |
+
+团队“高成功率”（$\theta=0.8$）的信念从 0.65 骤降到 **0.015**——只成功 1 项是反对高成功率的强证据。
+
+## 先验 → 似然 → 后验
+
+```{r}
+#| fig-width: 13.5
+#| fig-height: 5
+# 参数取值与先验
+theta_values <- c(0.2, 0.5, 0.8)
+prior_theta  <- c(0.10, 0.25, 0.65)
+
+# 真实似然：观察到 y = 1
+lik_theta <- dbinom(1, size = 6, prob = theta_values)
+
+# 后验 = 先验 × 似然 / 归一化
+post_theta <- prior_theta * lik_theta / sum(prior_theta * lik_theta)
+
+plot_pi <- function(title, vals, ymax = 0.7) {
+  ggplot(data.frame(theta = theta_values, v = vals), aes(x = theta, y = v)) +
+    geom_segment(aes(xend = theta, yend = 0), color = "black", linewidth = 1.2) +
+    geom_point(size = 3) +
+    labs(title = title, x = expression(theta), y = "Probability") +
+    scale_y_continuous(expand = c(0, 0), limits = c(0, ymax)) +
+    scale_x_continuous(breaks = theta_values, limits = c(0.1, 0.9)) +
+    papaja::theme_apa()
+}
+
+p1 <- plot_pi("Prior f(θ)", prior_theta)
+p2 <- plot_pi("Likelihood L(θ|y=1)", lik_theta)
+p3 <- plot_pi("Posterior f(θ|y=1)", post_theta)
+gridExtra::grid.arrange(grobs = list(p1, p2, p3), ncol = 3)
+```
+
+## 补充材料：后验 ∝ 先验 × 似然（省略分母！）
+
+分母 $f(y)$ 是一个与 $\theta$ 无关的**归一化常数**：
+
+$$
+f(\theta | y) = \frac{f(\theta)L(\theta|y)}{f(y)} \;\propto\; f(\theta)\,L(\theta|y) \qquad \Rightarrow \qquad \text{posterior} \propto \text{prior} \times \text{likelihood}
+$$
+
+省略分母后（未归一化）：
+
+- $f(\theta{=}0.2|y{=}1) \propto 0.10 \times 0.3932 = 0.03932$
+- $f(\theta{=}0.5|y{=}1) \propto 0.25 \times 0.0938 = 0.02345$
+- $f(\theta{=}0.8|y{=}1) \propto 0.65 \times 0.0015 = 0.00098$
+
+三者总和 0.0637，比例与完整后验（0.617/0.368/0.015）完全一致。
+
+> 😜 这个性质很重要：分母的计算往往需要遍历/积分所有参数。如果**不算分母也能得到后验**，那后面课程介绍的 MCMC 方法就会非常实用。
+
+## 归一化 vs 未归一化的后验
+
+```{r}
+#| fig-width: 12
+#| fig-height: 5
+# 未归一化与归一化后验
+unnorm <- c(0.03932, 0.02345, 0.00098)
+normed <- unnorm / sum(unnorm)
+posterior_data <- data.frame(
+  theta = rep(theta_values, 2),
+  probability = c(normed, unnorm),
+  type = rep(c("normalized", "unnormalized"), each = 3)
+)
+
+ggplot(posterior_data, aes(x = theta, y = probability)) +
+  geom_segment(aes(xend = theta, yend = 0), color = "black", linewidth = 1.4) +
+  geom_point(size = 3) +
+  facet_wrap(~ type, scales = "free_y",
+             labeller = labeller(type = c(normalized = "Normalized",
+                                          unnormalized = "Unnormalized"))) +
+  labs(x = expression(theta), y = "Probability") +
+  scale_x_continuous(breaks = theta_values) +
+  papaja::theme_apa() +
+  theme(strip.text = element_text(size = 15))
+```
+
+两条曲线只差一个常数——**形状（比例关系）完全相同**。
+
+## Posterior simulation：用模拟逼近后验
+
+当 $\theta$ 的取值很多（甚至连续）时，分母的求和/积分会变得困难。另一个思路是：**不解析计算，直接抽样**。
+
+1. 从先验 $f(\theta)$ 中抽取大量 $\theta$；
+2. 对每个 $\theta$，按数据模型模拟 $y \sim \text{Bin}(6, \theta)$；
+3. 只保留 $y = 1$ 的那些样本；
+4. 这些样本中 $\theta$ 的分布，就是**模拟的后验** $f(\theta | y{=}1)$。
+
+## 模拟第 1–2 步：抽 $\theta$、模拟 $y$
+
+```{r}
+# 1. 定义可能的成功率与先验
+replicated <- data.frame(theta = c(0.2, 0.5, 0.8))
+prior_theta   <- c(0.10, 0.25, 0.65)
+
+# 2. 从先验抽取 10000 个 θ，并在每个 θ 下模拟成功次数 y
+set.seed(84735)
+sim_idx <- sample(1:3, size = 10000, replace = TRUE, prob = prior_theta)
+replicated_sim <- replicated[sim_idx, , drop = FALSE]
+replicated_sim$y <- rbinom(nrow(replicated_sim), size = 6, prob = replicated_sim$theta)
+
+head(replicated_sim, 10)
+```
+
+## 检查抽到的 $\theta$：比例应接近先验 (10% / 25% / 65%)
+
+```{r}
+replicated_sim %>%
+  dplyr::count(theta) %>%
+  dplyr::mutate(percent = round(100 * n / sum(n), 2)) %>%
+  print()
+```
+
+## 模拟第 3 步：不同 $\theta$ 下的 $y$ 分布 $f(y|\theta)$
+
+```{r}
+#| fig-width: 13.5
+#| fig-height: 5
+ggplot(replicated_sim, aes(x = y)) +
+  geom_bar(aes(y = after_stat(prop), group = 1),
+           fill = "skyblue", color = "black", width = 0.7) +
+  facet_wrap(~ theta, labeller = label_both) +
+  scale_x_continuous(breaks = 0:6, limits = c(-0.5, 6.5)) +
+  scale_y_continuous(expand = c(0, 0)) +
+  labs(y = "f(y | θ)") +
+  papaja::theme_apa() +
+  theme(strip.text = element_text(size = 15))
+```
+
+每个面板内的条形 = 给定 $\theta$ 时 $Y$ 的条件分布——与前面手算的 PMF 形状一致。
+
+## 模拟第 4 步：只看 $y=1$ 的样本 → 模拟后验
+
+```{r}
+# 条件于 y = 1
+replicated_post <- replicated_sim %>% filter(y == 1)
+
+# 模拟后验中各 θ 的比例
+post_counts <- replicated_post %>%
+  dplyr::count(theta) %>%
+  dplyr::mutate(proportion = round(n / sum(n), 3))
+print(post_counts)
+```
+
+## 模拟后验 vs 解析后验
+
+```{r}
+#| fig-width: 11
+#| fig-height: 5
+# 解析后验 (来自前面的精确计算)
+exact_post <- data.frame(
+  theta = c(0.2, 0.5, 0.8),
+  proportion = c(0.617, 0.368, 0.015),
+  type = "exact"
+)
+sim_post <- data.frame(
+  theta = post_counts$theta,
+  proportion = post_counts$proportion,
+  type = "simulation"
+)
+
+ggplot(rbind(exact_post, sim_post), aes(x = factor(theta), y = proportion, fill = type)) +
+  geom_col(position = position_dodge(0.7), width = 0.6) +
+  scale_fill_manual(values = c("exact" = "gray50", "simulation" = "skyblue")) +
+  labs(x = expression(theta), y = "Posterior probability", fill = "approach") +
+  papaja::theme_apa()
+```
+
+- 模拟后验与解析后验（0.617 / 0.368 / 0.015）几乎重合；
+- 差异来自抽样波动——把 10000 换成更大的数字会进一步缩小。
+
+## 思考：频率学派会如何处理这两个问题？
+
+回顾本讲的两个推断问题：
+
+1. 袋中蓝色小球占比 $\theta$：$P(\theta \mid \text{蓝白蓝})$（Part 2 的计数例）；
+2. 6 项研究的成功率 $\theta$：$f(\theta | y{=}1)$（Part 3）。
+
+🤔 频率学派（经典统计）会怎样回答？它们与贝叶斯学派的根本分歧在哪里？
+
+> 带着问题进入 Part 4；相关练习见课程的闯关题。
+
+## Part 4: 频率学派与贝叶斯学派的对比 (Frequentist vs. Bayesian)
+
+### 同一份数据，两种结论：ECMO 临床试验
+
+![](figs/lec2/sjzj8nd4te.png){width=39%}
+
+::: {style="font-size:0.66em"}
+- **频率学派**：计划 331 名患者，因中期分析未能证明获益而提前停止（249 人）。干预组死亡率 35% vs 对照组 46%，但 $p = 0.09 > 0.05$ → “证据不足，不能证明 ECMO 有效”；
+- **贝叶斯学派**：在不同先验下，$H_1$（ECMO 有效）成立的后验概率高达 **88%～99%** → “强有力的证据支持 ECMO”。
+
+> Goligher, E. C., Heath, A., & Harhay, M. O. (2024). Bayesian statistics for clinical research. *The Lancet*, 404(10457), 1067–1076.
+:::
+
+## 频率学派如何看待这个世界？
+
+1. **假设是固定的**：零假设 $H_0$ 是一个固定为真/假的命题；
+2. **数据是随机的**：在 $H_0$ 为真的前提下，数据可以被反复抽样；
+3. **推断依赖“无限重复实验”**：$p$ 值 = 在 $H_0$ 下观测到当前数据或更极端数据的（假想重复）概率；置信区间同样基于重复抽样的频率性质；
+4. **决策二分**：预设显著性水平（如 0.05），$p < \alpha$ 则拒绝 $H_0$。
+
+本例中：$p = 0.09$ → 未达到 0.05 → 不拒绝 $H_0$ → 结论“证据不足”。
+
+## 贝叶斯学派如何看待这个世界？
+
+概率是对不确定性的**主观度量**，因此可以直接谈论“假设为真的概率”：
+
+1. **先验**：从对假设的初始信念出发（来自以往研究、专家意见、临床经验）；
+2. **更新**：新数据通过似然函数与先验结合，得到**后验概率**；
+3. **直接的概率陈述**：如“$H_1$ 成立的后验概率为 88%”，以及更直观的**可信区间 (credible interval)**。
+
+本例中：不同的合理先验都得到 $H_1$ 后验 ≥ 88%，故结论是“强支持 ECMO”。
+
+## 两位奠基人：Bayes 与 Laplace
+
+- **Thomas Bayes (1701–1761)**：英国牧师与数学家；提出逆概率问题的解法，论文在其身后（1763）才发表；
+- **Pierre-Simon Laplace (1749–1827)**：法国数学家；独立重新发现该定理，并给出今天通用的形式（含先验/归一化表述）。
+
+::: {layout-ncol="2"}
+![](figs/lec2/thomas_bayes.jpg){width=50%}
+
+![](figs/lec2/pierre_laplace.jpg){width=42%}
+:::
+
+## 两个学派的差异对比
+
+| 频率学派 (Frequentist) | 贝叶斯学派 (Bayesian) |
+|---|---|
+| 概率 = 无限重复试验中的**频率** | 概率 = 对假设的**信念度量** |
+| 假设是固定的，数据是随机的 | 假设是随机的，数据是固定的 |
+| 通过 $p$ 值检验是否拒绝 $H_0$ | 用先验 + 数据更新出后验概率 |
+| 置信区间：重复试验中 95% 覆盖真值 | 可信区间：参数落在区间内的概率为 95% |
+| 只基于当前数据，不考虑先验 | 结合历史信息/专家意见 |
+| 实验设计固定，不能中途调整 | 支持自适应设计与决策 |
+| 无法直接支持 $H_0$ | 可直接比较多个假设 |
+
+来源：Goligher et al. (2024)
+
+## 贝叶斯的主观性：没有绝对客观的统计
+
+**主观性是相对的**：
+
+- 贝叶斯学派把主观性**显式放进先验**：透明、可讨论、可检验；
+- 频率学派的主观性则藏在**前提预设**里：方差齐性、正态性……看似“客观”却难以满足；
+- 样本抽取、数据清理、分析方法与 $\alpha$ 水平的选择，处处都有主观判断；
+- 主观不一定是坏事：它把个体经验与专家知识**量化**进分析。
+
+## 重复抽样：两派眼中的不同角色
+
+**频率学派**
+- 推断依赖参数的**抽样分布**（long-run 重复实验的假想）；
+- $p$ 值与置信区间都建立于“可无限重复抽样”之上；
+- 现实中往往只收集一次数据，“无限重复”只是一个思想实验。
+
+**贝叶斯学派**
+- 参数本身就是分布，不确定性直接进入推断；
+- 只需这一次数据，即可更新信念。
+
+> 置信区间 (CI) vs 可信区间 (CrI)：**没有免费的午餐**——两派各有优势与局限。
+
+## 不同的先验/似然 → 不同的后验
+
+![](figs/lec2/rhqcb9gji7.png){width=34%}
+
+- 后验 = 先验 × 似然（再归一化）：**先验与似然都会塑造后验**；
+- 先验差异大时，后验的差异也会明显——因此贝叶斯分析要求**先验要透明、理由要充分**；
+- 数据量足够大时，不同先验的后验会趋于一致（数据会“压过”先验）。
+
+## NHST 的“弱项”
+
+- **无法直接支持零假设**：即使“没有显著差异”，也不知道两个总体有多相似（许岳培 等, 2023, *应用心理学*)；
+- **一次只能比较两个假设**：多假设、多模型的情形难以处理；
+- **控制假阳性很棘手**：多重比较、p-hacking、发表偏倚等问题叠加。
+
+> 这些局限推动了学界对贝叶斯方法（以及更严谨的频率学派实践）的重视。
+
+## 本讲总结 (Recap)
+
+- **单一事件**：先验 $P(B)$ × 似然 $P(A|B)$ → 后验 $P(B|A)$（别忘了分母 $P(A)$）；
+- **随机变量**：二项模型 $Y|\theta \sim \text{Bin}(6, \theta)$，同样的逻辑作用于 $\theta$ 的分布；
+- **Posterior simulation**：抽样代替解析计算——这是通向 MCMC 的桥梁；
+- **两派对比**：概率的定义、随机性的归属、先验的角色各不相同。
+
+> 📌 预告第 3 讲：连续型参数（β 分布）与更一般的贝叶斯建模。
+
+## 参考文献 (References)
+
+- McElreath, R. (2020). *Statistical Rethinking: A Bayesian Course with Examples in R and Stan* (2nd ed.). CRC Press.（Part 2 小球例出处）
+- Goligher, E. C., Heath, A., & Harhay, M. O. (2024). Bayesian statistics for clinical research. *The Lancet*, 404(10457), 1067–1076.
+- 许岳培 等 (2023). *应用心理学*, (04), 369–384.
+
+## 附：Python 对照代码
+
+本讲的示例均有对应的 **Python 实现**，整理在课程根目录的 `Lecture2.py` 中：
+
+- **Part 2 计数例**：`ways = [0, 3, 8, 9, 0]` → `plaus = ways / sum(ways)` 得后验；顺序更新用“似然 × 旧后验”再归一化（约 5 行 numpy）；
+- **Part 3 二项分布**：`scipy.stats.binom.pmf(y, n, p)` 与 10000 次模拟（`np.random.seed(84735)` 保持一致）；
+- 另含基于 Herzenstein 等 (2024) 数据的**可重复性练习**（延伸阅读，对应旧版讲义）。
+
+> 运行方式：`python Lecture2.py`（需已安装 pandas、numpy、matplotlib、scipy；建议用和鲸平台 `pyBayesian` 环境或本地 conda 环境）。

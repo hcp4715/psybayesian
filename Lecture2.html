@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="Lecture2_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Lecture2_files/libs/quarto-html/tabby.min.js"></script>
+<script src="Lecture2_files/libs/quarto-html/popper.min.js"></script>
+<script src="Lecture2_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="Lecture2_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Lecture2_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="Lecture2_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.10.18">
+
+  <meta name="author" content="“胡传鹏 (Dr.&nbsp;Hu Chuan-Peng)”">
+  <title>“高级心理统计 · 第2讲”</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="Lecture2_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="Lecture2_files/libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; font-weight: bold; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="Lecture2_files/libs/revealjs/dist/theme/quarto-03ee58d93aa56ae2ee8298346d0b2a97.css">
+  <link rel="stylesheet" href="lecture.css">
+  <link href="Lecture2_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="Lecture2_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="Lecture2_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="Lecture2_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">“高级心理统计 · 第2讲”</h1>
+  <p class="subtitle">“《贝叶斯统计及其在Python中的实现》 · Bayesian Statistics with Python”</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+“胡传鹏 (Dr.&nbsp;Hu Chuan-Peng)”
+</div>
+        <p class="quarto-title-affiliation">
+            “南京师范大学心理学院 · School of Psychology, Nanjing Normal University”
+          </p>
+    </div>
+</div>
+
+</section>
+<section id="outlines" class="slide level2">
+<h2>Outlines</h2>
+<ul>
+<li><strong>1. 工具准备</strong> — R 与 RStudio / Positron</li>
+<li><strong>2. 计数、概率与贝叶斯定理</strong> — Probability as counting &amp; Bayes’ theorem</li>
+<li><strong>3. 随机变量的贝叶斯模型</strong> — Bayesian model with random variables</li>
+<li><strong>4. 频率学派与贝叶斯学派的对比</strong> — Frequentist vs.&nbsp;Bayesian</li>
+</ul>
+</section>
+<section id="学习目标-learning-objectives" class="slide level2">
+<h2>学习目标 (Learning objectives)</h2>
+<p>学完本讲，你应该能够：</p>
+<ul>
+<li>用<strong>先验 (prior)、似然 (likelihood)、证据 (evidence)、后验 (posterior)</strong> 的语言描述一次“信念更新”</li>
+<li>用“<strong>计数 (counting)</strong>”直观理解贝叶斯公式，并演示<strong>顺序更新</strong>：后验可以成为下一步的先验</li>
+<li>借助 <strong>posterior simulation</strong> 用模拟逼近后验，而不必手算分母</li>
+<li>说清频率学派与贝叶斯学派在世界观与方法上的核心差异</li>
+</ul>
+</section>
+<section id="part-1-工具准备-r-与-rstudiopositron" class="slide level2">
+<h2>Part 1: 工具准备 (R 与 RStudio/Positron)</h2>
+<p>本课程所有计算演示与作业都将基于 <strong>R</strong> 真实运行。</p>
+<ul>
+<li>你需要两样东西：
+<ol type="1">
+<li><strong>R 语言环境</strong>（必需）</li>
+<li><strong>一个集成开发环境 (IDE)</strong>：RStudio Desktop 或 Positron，二者任选其一</li>
+</ol></li>
+</ul>
+</section>
+<section id="step-1-安装-r" class="slide level2">
+<h2>Step 1: 安装 R</h2>
+<ul>
+<li>打开 <strong>清华 CRAN 镜像</strong>（中国大陆下载最快）： <a href="https://mirrors.tuna.tsinghua.edu.cn/CRAN/" class="uri">https://mirrors.tuna.tsinghua.edu.cn/CRAN/</a></li>
+<li>点击 <code>bin/</code> 进入对应平台：
+<ul>
+<li><strong>Windows</strong>：<code>windows/</code> → 下载 <code>R-4.x.x-win.exe</code> 并安装</li>
+<li><strong>macOS</strong>：<code>macosx/</code> → Apple Silicon 芯片选 <code>arm64</code> 版本，Intel 芯片选 <code>x86_64</code> 版本</li>
+</ul></li>
+<li>安装完成后验证：打开 R.app（macOS）或 RGui（Windows），输入：</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="" aria-label="1"></a>version</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>能输出版本信息即安装成功。</p>
+</section>
+<section id="step-2-安装-ide" class="slide level2">
+<h2>Step 2: 安装 IDE</h2>
+<h3 id="rstudio-desktop经典稳定">RStudio Desktop（经典、稳定）</h3>
+<ul>
+<li>官方免费下载：<a href="https://posit.co/download/rstudio-desktop/" class="uri">https://posit.co/download/rstudio-desktop/</a></li>
+<li>安装后首次打开即会自动关联已安装的 R</li>
+</ul>
+<h3 id="positron新一代可选对终端和python支持更好">Positron（新一代，可选，对终端和Python支持更好）</h3>
+<ul>
+<li>由 Posit 推出的开源 IDE（基于 VS Code 内核），同时支持 R 与 Python： <a href="https://positron.posit.co/" class="uri">https://positron.posit.co/</a></li>
+<li>适合希望 R/Python“一个界面通吃”的同学；熟悉 VS Code 的同学上手更快</li>
+</ul>
+<blockquote>
+<p>两者功能对本课程等价，选一个即可，不必都装。</p>
+</blockquote>
+</section>
+<section id="step-3-首次配置与数据准备" class="slide level2">
+<h2>Step 3: 首次配置与数据准备</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="" aria-label="1"></a><span class="co"># 1) 设置清华镜像（中国大陆下载 R 包更快）</span></span>
+<span id="cb2-2"><a href="" aria-label="2"></a><span class="fu">options</span>(<span class="at">repos =</span> <span class="fu">c</span>(<span class="at">CRAN =</span> <span class="st">"https://mirrors.tuna.tsinghua.edu.cn/CRAN/"</span>))</span>
+<span id="cb2-3"><a href="" aria-label="3"></a></span>
+<span id="cb2-4"><a href="" aria-label="4"></a><span class="co"># 2) 安装本课程需要的 R 包（已安装则自动跳过）</span></span>
+<span id="cb2-5"><a href="" aria-label="5"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">'pacman'</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) <span class="fu">install.packages</span>(<span class="st">'pacman'</span>)</span>
+<span id="cb2-6"><a href="" aria-label="6"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(<span class="st">"tidyverse"</span>, <span class="st">"papaja"</span>, <span class="st">"gridExtra"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<ul>
+<li>本讲数据文件：<code>data/replicated_language_cleaned.csv</code></li>
+<li>请保持课程的文件夹结构，代码中的<strong>相对路径</strong>（<code>data/...</code>）才能正常工作</li>
+</ul>
+</section>
+<section id="遇到问题去哪里问" class="slide level2">
+<h2>遇到问题去哪里问？</h2>
+<ul>
+<li>📱 课程微信群：老师与助教会尽快回复</li>
+<li>💻 Gitee 课程仓库的 Issues 区：<a href="https://gitee.com/hcp4715/PyBayesian/issues" class="uri">https://gitee.com/hcp4715/PyBayesian/issues</a></li>
+</ul>
+<blockquote>
+<p>把报错信息、运行环境（操作系统 + R 版本）一起贴出来，问题解决得更快。</p>
+</blockquote>
+</section>
+<section id="part-2-计数概率与贝叶斯定理-counting-probability-bayes-theorem" class="slide level2">
+<h2>Part 2: 计数、概率与贝叶斯定理 (Counting, Probability &amp; Bayes’ theorem)</h2>
+<p>来看一个“推测游戏”（例子改编自 McElreath, <em>Statistical Rethinking</em>）：</p>
+<ul>
+<li>袋子里有 4 颗小球，只有蓝、白两种颜色，<strong>各有多少颗是未知的</strong>；</li>
+<li>可能的颜色组合只有 5 种推测 (conjectures)： <strong>白白白白 · 蓝白白白 · 蓝蓝白白 · 蓝蓝蓝白 · 蓝蓝蓝蓝</strong>；</li>
+<li>我们的任务：不断抽样，推断<strong>哪一种推测最可能</strong>。</li>
+</ul>
+</section>
+<section id="数据-data有放回抽取-3-次-蓝白蓝" class="slide level2">
+<h2>数据 (Data)：有放回抽取 3 次 → “蓝、白、蓝”</h2>
+<ul>
+<li>有放回地依次抽取 3 颗小球，得到结果：<strong>蓝、白、蓝</strong>；</li>
+<li>这个结果就是我们的<strong>数据 (data)</strong>；</li>
+<li>与通常的概率题不同：这里袋中蓝色小球的占比 <span class="math inline">\(\theta\)</span> 是<strong>未知的</strong>，我们要做的，是从数据出发<strong>反推</strong> <span class="math inline">\(\theta\)</span> 更可能是什么。</li>
+</ul>
+<p><img data-src="figs/lec2/sup_rhq5eluxp1.png" style="width:52.0%"></p>
+</section>
+<section id="计数-①全部可能的路径-43-64-条" class="slide level2">
+<h2>计数 ①：全部可能的路径 — <span class="math inline">\(4^3 = 64\)</span> 条</h2>
+<ul>
+<li>假如袋中真是“蓝白白白”（1 蓝 3 白）：每次从 4 颗小球中等可能地抽 1 颗，抽 3 次共有 <span class="math inline">\(4^3 = 64\)</span> 条可能路径；</li>
+<li>图中从内到外每个圆弧代表一次抽取。</li>
+</ul>
+<p><img data-src="figs/lec2/sup_rhq5irv465.png" style="width:62.0%"></p>
+</section>
+<section id="计数-②删除与数据不一致的路径" class="slide level2">
+<h2>计数 ②：删除与数据不一致的路径</h2>
+<ul>
+<li>我们观察到的是“蓝白蓝”：<strong>第 1、3 次必须是蓝，第 2 次必须是白</strong>；</li>
+<li>把所有不符合这一模式的路径删掉后，64 条中只剩下 <strong>3 条</strong>。</li>
+</ul>
+<p><img data-src="figs/lec2/sup_rhq5mj9g4e.png" style="width:60.0%"></p>
+<p>（在“蓝白白白”下：第 1 次蓝有 1 种 × 第 2 次白有 3 种 × 第 3 次蓝有 1 种 = <strong>3 种方式</strong>）</p>
+</section>
+<section id="计数-③对-5-种推测逐一计数" class="slide level2">
+<h2>计数 ③：对 5 种推测逐一计数</h2>
+<p>同样的计数方法，对 5 种推测各做一遍：在每种推测下，能产生“蓝白蓝”这一数据的方式有多少种？</p>
+<p><img data-src="figs/lec2/sup_rhq5v48hnv.png" style="width:72.0%"></p>
+</section>
+<section id="计数-④各推测的方式数-ways" class="slide level2">
+<h2>计数 ④：各推测的“方式数” (ways)</h2>
+<p><img data-src="figs/lec2/sup_rhq5w22f0x.png" style="width:40.0%"></p>
+<div style="font-size:0.82em">
+<ul>
+<li>例如“蓝白白白”：1（蓝）× 3（白）× 1（蓝）= <strong>3 种方式</strong>；</li>
+<li>全部 5 种推测的方式数为：<strong>0 / 3 / 8 / 9 / 0</strong> —— 数据最支持“蓝蓝蓝白”，而“全白”与“全蓝”被完全排除。</li>
+</ul>
+</div>
+</section>
+<section id="更新第-4-次又抽到蓝色数据-蓝白蓝蓝" class="slide level2">
+<h2>更新：第 4 次又抽到蓝色（数据 = “蓝白蓝蓝”）</h2>
+<ul>
+<li>假设再抽一次，又得到一颗<strong>蓝色</strong>小球 → 以“蓝白蓝”为已知信息，继续追加计数；</li>
+<li>例：“蓝蓝白白”：产生“蓝白蓝”有 8 种方式，第 4 次抽到蓝再乘 2 → <strong>8 × 2 = 16 种</strong>；</li>
+<li>各推测更新为：<strong>0 / 3 / 16 / 27 / 0</strong> —— 数据越积越多，对“高蓝比例”的推测越来越有利。</li>
+</ul>
+<p><img data-src="figs/lec2/sup_rhq60vh4kd.png" style="width:68.0%"></p>
+</section>
+<section id="从计数到概率归一化-normalizing" class="slide level2">
+<h2>从计数到概率：归一化 (normalizing)</h2>
+<p>统计中更常用<strong>概率</strong>而不是原始计数——办法是让所有推测的概率加起来等于 1：</p>
+<ul>
+<li>每一种推测的 plausibility = 该推测的计数 ÷ 所有推测计数之和；</li>
+<li>例：看到“蓝白蓝”后，“蓝白白白”（<span class="math inline">\(\theta = 0.25\)</span>）的 plausibility = 3 ÷ 20 = <strong>0.15</strong>。</li>
+</ul>
+<p><img data-src="figs/lec2/sup_rhq6qm3ucu.png" style="width:42.0%"></p>
+</section>
+<section id="推测的先验概率ptheta-prior" class="slide level2">
+<h2>推测的先验概率：<span class="math inline">\(P(\theta)\)</span> (Prior)</h2>
+<ul>
+<li>记蓝色小球占比为 <span class="math inline">\(\theta\)</span>：<span class="math inline">\(\theta \in \{0,\ 0.25,\ 0.5,\ 0.75,\ 1\}\)</span>（对应 5 种推测）；</li>
+<li>看到数据之前，我们默认 5 种推测<strong>等可能</strong>：每个 <span class="math inline">\(\theta\)</span> 的先验概率 <span class="math inline">\(P(\theta) = 1/5 = 0.2\)</span>；</li>
+<li><strong>先验 (prior)</strong>：观察数据之前，对每个假设为真的初始信念。</li>
+</ul>
+<p><img data-src="figs/lec2/sup_rhq738pxrx.jpg" style="width:46.0%"></p>
+</section>
+<section id="用计数理解贝叶斯四个关键术语" class="slide level2">
+<h2>用“计数”理解贝叶斯四个关键术语</h2>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>计数视角</th>
+<th>术语</th>
+<th>记号</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ways：假设 <span class="math inline">\(\theta\)</span> 能产生数据 <span class="math inline">\(D\)</span> 的方式数</td>
+<td><strong>似然 (likelihood)</strong></td>
+<td><span class="math inline">\(P(D \mid \theta)\)</span></td>
+</tr>
+<tr class="even">
+<td>数据之前对 <span class="math inline">\(\theta\)</span> 的信念</td>
+<td><strong>先验 (prior)</strong></td>
+<td><span class="math inline">\(P(\theta)\)</span>，本例 = 0.2</td>
+</tr>
+<tr class="odd">
+<td>所有 (似然 × 先验) 的总和</td>
+<td><strong>证据 (evidence)</strong>，即归一化常数</td>
+<td><span class="math inline">\(P(D)\)</span></td>
+</tr>
+<tr class="even">
+<td>数据之后更新过的信念</td>
+<td><strong>后验 (posterior)</strong></td>
+<td><span class="math inline">\(P(\theta \mid D)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><span class="math display">\[
+P(\theta \mid D) = \frac{P(D\mid \theta)\, P(\theta)}{P(D)} = \frac{\text{ways} \times \text{prior}}{\text{所有 (ways × prior) 之和}}
+\]</span></p>
+</section>
+<section id="完整计算从先验-似然到后验" class="slide level2">
+<h2>完整计算：从先验 × 似然到后验</h2>
+<p>以 <span class="math inline">\(\theta = 0.5\)</span>（“蓝蓝白白”）为例：</p>
+<ul>
+<li>分子：ways × prior = 8 × 0.2 = <strong>1.6</strong>；</li>
+<li>分母：0×0.2 + 3×0.2 + 8×0.2 + 9×0.2 + 0×0.2 = 0.6 + 1.6 + 1.8 = <strong>4.0</strong>；</li>
+<li>后验：1.6 ÷ 4.0 = <strong>0.40</strong>，即看到“蓝白蓝”后，<span class="math inline">\(\theta=0.5\)</span> 的 plausibility。</li>
+</ul>
+<p><img data-src="figs/lec2/sup_rhq79hsbrl.png" style="width:74.0%"></p>
+</section>
+<section id="第-4-次抽到蓝计数-vs-概率对照" class="slide level2">
+<h2>第 4 次抽到蓝：计数 vs 概率（对照）</h2>
+<p><img data-src="figs/lec2/sup_rhq60vh4kd.png" style="width:56.0%"></p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(\theta\)</span></th>
+<th>似然 <span class="math inline">\(P(\text{蓝}\mid\theta)=\theta\)</span></th>
+<th>新先验（= 旧后验）</th>
+<th>乘积</th>
+<th>新后验</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>0.25</td>
+<td>0.25</td>
+<td>0.15</td>
+<td>0.0375</td>
+<td>0.065</td>
+</tr>
+<tr class="odd">
+<td>0.50</td>
+<td>0.50</td>
+<td>0.40</td>
+<td>0.2000</td>
+<td>0.348</td>
+</tr>
+<tr class="even">
+<td>0.75</td>
+<td>0.75</td>
+<td>0.45</td>
+<td>0.3375</td>
+<td>0.587</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="对照说明两种算法同一答案" class="slide level2">
+<h2>对照说明：两种算法，同一答案</h2>
+<p>数据更新为“蓝白蓝蓝”后，第 15 页（计数）与第 20 页（概率表）殊途同归：</p>
+<ul>
+<li><strong>计数</strong>：4 次方式数 = 0 / 3 / 16 / 27 / 0（如“蓝蓝白白”：8 × 2 = 16）</li>
+<li><strong>概率</strong>：新先验 = 旧后验 [0, .15, .40, .45, 0]，似然 <span class="math inline">\(P(\text{蓝}\mid\theta)=\theta\)</span> → 证据 = 0.575 → 新后验 <strong>[0, .065, .348, .587, 0]</strong></li>
+</ul>
+<p>为什么一致？</p>
+<ul>
+<li>计数归一化 3/46 ≈ .065、16/46 ≈ .348、27/46 ≈ .587——两列结果<strong>逐格相等</strong></li>
+<li>区别只是“一次数完 4 次”与“先 3 次、后 1 次分步更新”</li>
+<li><strong>上一步的后验 = 下一步的先验</strong>：贝叶斯更新可以一步步进行，这就是“从证据中学习”的迭代本质</li>
+</ul>
+</section>
+<section id="小结贝叶斯模型的基本语言" class="slide level2">
+<h2>小结：贝叶斯模型的基本语言</h2>
+<ul>
+<li><strong>参数 (parameter)</strong>：描述总体的未知量（本例为蓝色小球占比 <span class="math inline">\(\theta\)</span>）；在贝叶斯框架中参数被视为随机变量；</li>
+<li><strong>先验 (prior)</strong>：观察数据之前对参数分布的假设；</li>
+<li><strong>似然 (likelihood)</strong>：在不同参数假设下，当前数据出现的可能性（方式数）；</li>
+<li><strong>证据 (evidence)</strong>：所有参数假设下（似然 × 先验）之和，用于归一化得到后验；</li>
+<li><strong>后验 (posterior)</strong>：观察数据之后更新过的参数分布：后验 ∝ 先验 × 似然；它也可以作为<strong>下一轮更新的先验</strong>。</li>
+</ul>
+</section>
+<section id="与以往学的统计有何不同" class="slide level2">
+<h2>与以往学的“统计”有何不同？</h2>
+<div style="font-size:0.85em">
+<ul>
+<li>经典统计通常<strong>先假设参数已知/固定</strong>，再问“数据有多罕见”；</li>
+<li>贝叶斯相反：<strong>参数未知</strong>，用数据不断更新对参数的信念；</li>
+<li><strong>小世界 vs 大世界</strong>：贝叶斯模型所刻画的小世界（哥伦布以为的地球周长 3 万公里）vs 模型运行的真实环境（实际 4 万公里）；</li>
+<li>当模型的假设与现实相近时，贝叶斯模型在大世界中也会表现良好。</li>
+</ul>
+</div>
+<p><img data-src="figs/lec2/sup_rhqayo7s64.png" style="width:32.0%"></p>
+</section>
+<section id="part-3-随机变量的贝叶斯模型-bayesian-models-with-random-variables" class="slide level2">
+<h2>Part 3: 随机变量的贝叶斯模型 (Bayesian models with random variables)</h2>
+<h3 id="从推测袋中小球的组成到随机变量">从“推测袋中小球的组成”到“随机变量”</h3>
+<p>在 Part 2 中，我们用 <span class="math inline">\(\theta\)</span> 表示蓝色小球占比，<span class="math inline">\(\theta\)</span> 只有 5 种离散取值。同样的贝叶斯更新逻辑，现在用于一个<strong>真实的心理学场景</strong>：</p>
+<p>假设一个有实力、有经费的团队计划对 <strong>6 项研究</strong>进行重复实验，想知道“能成功重复多少项”。</p>
+<ul>
+<li>成功率 <span class="math inline">\(\theta\)</span> 是<strong>未知且可能变化</strong>的 → 它是一个随机变量（像 <span class="math inline">\(\theta\)</span> 一样需要被推断）；</li>
+<li>成功复现的次数 <span class="math inline">\(Y\)</span> 可能是 0、1、…、6 中的任意值：<span class="math inline">\(Y \in \{0,1,2,3,4,5,6\}\)</span>；</li>
+<li>类比：斗地主里的“胜率”——每轮玩完都在变，开局前你并不知道这一轮会是多少。</li>
+</ul>
+<p>🤔 即便团队的真实水平约为 <span class="math inline">\(\theta = 50\%\)</span>，<span class="math inline">\(Y=0\)</span> 到 <span class="math inline">\(Y=6\)</span> 每种结果的<strong>可能性</strong>分别是多少？</p>
+</section>
+<section id="二项式模型-the-binomial-model" class="slide level2">
+<h2>二项式模型 (The binomial model)</h2>
+<p>每次重复实验只有两种结果（成功 vs 失败），<span class="math inline">\(n=6\)</span> 次独立实验的成功次数 <span class="math inline">\(Y\)</span> 服从二项分布：</p>
+<p><span class="math display">\[
+f(y|\theta) = \binom{n}{y}\, \theta^{y}(1-\theta)^{n-y} \qquad y \in \{0,1,\dots,n\}, \quad \binom{n}{y}=\frac{n!}{y!(n-y)!}
+\]</span></p>
+<p>模型的前提假设：</p>
+<ul>
+<li>所有试次（各研究的重复实验）<strong>相互独立</strong>；</li>
+<li>每次试次的成功概率都是同一个固定值 <span class="math inline">\(\theta\)</span>。</li>
+</ul>
+<blockquote>
+<p>对应 Python 实现见 <code>Lecture2.py</code>：<code>scipy.stats.binom.pmf(y, n, p)</code>。</p>
+</blockquote>
+</section>
+<section id="用-r-计算概率质量函数-pmf" class="slide level2">
+<h2>用 R 计算概率质量函数 (PMF)</h2>
+<p>以 <span class="math inline">\(\theta = 0.5,\ n = 6\)</span> 为例，逐项计算 <span class="math inline">\(f(y|\theta)\)</span>：</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="" aria-label="1"></a><span class="co"># 成功次数、总次数、假设的成功率</span></span>
+<span id="cb3-2"><a href="" aria-label="2"></a>y <span class="ot">&lt;-</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">6</span></span>
+<span id="cb3-3"><a href="" aria-label="3"></a>n <span class="ot">&lt;-</span> <span class="dv">6</span></span>
+<span id="cb3-4"><a href="" aria-label="4"></a>p <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb3-5"><a href="" aria-label="5"></a></span>
+<span id="cb3-6"><a href="" aria-label="6"></a><span class="co"># 计算每个 y 的概率</span></span>
+<span id="cb3-7"><a href="" aria-label="7"></a>prob <span class="ot">&lt;-</span> <span class="fu">dbinom</span>(y, <span class="at">size =</span> n, <span class="at">prob =</span> p)</span>
+<span id="cb3-8"><a href="" aria-label="8"></a>result_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">y =</span> y, <span class="at">prob =</span> <span class="fu">round</span>(prob, <span class="dv">4</span>))</span>
+<span id="cb3-9"><a href="" aria-label="9"></a><span class="fu">print</span>(result_table, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> y   prob
+ 0 0.0156
+ 1 0.0937
+ 2 0.2344
+ 3 0.3125
+ 4 0.2344
+ 5 0.0937
+ 6 0.0156</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="" aria-label="1"></a><span class="fu">cat</span>(<span class="st">"所有概率之和 ="</span>, <span class="fu">sum</span>(prob), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>所有概率之和 = 1 </code></pre>
+</div>
+</div>
+</section>
+<section id="概率质量函数-probability-mass-function" class="slide level2">
+<h2>概率质量函数 (Probability mass function)</h2>
+<p><strong>PMF</strong> 描述离散型随机变量取各个可能值时的概率：<span class="math inline">\(f(y) = P(Y = y)\)</span>。</p>
+<ul>
+<li><span class="math inline">\(Y\)</span> 的取值有限（或可数），称<strong>离散型随机变量</strong>；</li>
+<li>性质 1：对所有 <span class="math inline">\(y\)</span>，<span class="math inline">\(0 \le f(y) \le 1\)</span>；</li>
+<li>性质 2：<span class="math inline">\(\sum_{\text{all } y} f(y) = 1\)</span>（上一步代码已验证）。</li>
+</ul>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="" aria-label="1"></a><span class="fu">ggplot</span>(result_table, <span class="fu">aes</span>(<span class="at">x =</span> y, <span class="at">y =</span> prob)) <span class="sc">+</span></span>
+<span id="cb7-2"><a href="" aria-label="2"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">xend =</span> y, <span class="at">yend =</span> <span class="dv">0</span>), <span class="at">color =</span> <span class="st">"gray"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb7-3"><a href="" aria-label="3"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb7-4"><a href="" aria-label="4"></a>  <span class="fu">xlim</span>(<span class="sc">-</span><span class="fl">0.2</span>, <span class="fl">6.2</span>) <span class="sc">+</span></span>
+<span id="cb7-5"><a href="" aria-label="5"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb7-6"><a href="" aria-label="6"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"y"</span>, <span class="at">y =</span> <span class="st">"f(y | θ)"</span>) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="" aria-label="7"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Lecture2_files/figure-revealjs/unnamed-chunk-3-1.png" width="883"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>当 <span class="math inline">\(\theta = 0.5\)</span> 时，<span class="math inline">\(y=3\)</span>（成功 3 项）的概率最高：<span class="math inline">\(f(3|0.5)=0.3125\)</span>。</p>
+</section>
+<section id="二项似然函数-the-binomial-likelihood-不同信念" class="slide level2">
+<h2>二项似然函数 (The binomial likelihood): 不同信念</h2>
+<p>并非所有人都认为成功率是 50%：</p>
+<ul>
+<li><strong>中立派</strong>（团队自己估计）：<span class="math inline">\(\theta = 0.5\)</span></li>
+<li><strong>乐观派</strong>：<span class="math inline">\(\theta = 0.8\)</span>（对团队高度有信心）</li>
+<li><strong>悲观派</strong>：<span class="math inline">\(\theta = 0.2\)</span>（不太看好）</li>
+</ul>
+<p>不同 <span class="math inline">\(\theta\)</span> 意味着对 <span class="math inline">\(Y\)</span> 的不同预期。分别计算三种 <span class="math inline">\(\theta\)</span> 下的 <span class="math inline">\(f(y|\theta)\)</span>：</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="" aria-label="1"></a><span class="co"># 三种成功概率下的 f(y|θ)</span></span>
+<span id="cb8-2"><a href="" aria-label="2"></a>y <span class="ot">&lt;-</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">6</span></span>
+<span id="cb8-3"><a href="" aria-label="3"></a>p_values <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.8</span>, <span class="fl">0.2</span>)</span>
+<span id="cb8-4"><a href="" aria-label="4"></a>likelihoods <span class="ot">&lt;-</span> <span class="fu">sapply</span>(p_values, <span class="cf">function</span>(p) <span class="fu">dbinom</span>(y, <span class="at">size =</span> <span class="dv">6</span>, <span class="at">prob =</span> p))</span>
+<span id="cb8-5"><a href="" aria-label="5"></a></span>
+<span id="cb8-6"><a href="" aria-label="6"></a>result_table3 <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">data.frame</span>(<span class="at">y =</span> y, likelihoods), <span class="dv">4</span>)</span>
+<span id="cb8-7"><a href="" aria-label="7"></a><span class="fu">names</span>(result_table3) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"y"</span>, <span class="st">"中立派 θ=0.5"</span>, <span class="st">"乐观派 θ=0.8"</span>, <span class="st">"悲观派 θ=0.2"</span>)</span>
+<span id="cb8-8"><a href="" aria-label="8"></a><span class="fu">print</span>(result_table3, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> y 中立派 θ=0.5 乐观派 θ=0.8 悲观派 θ=0.2
+ 0       0.0156       0.0001       0.2621
+ 1       0.0937       0.0015       0.3932
+ 2       0.2344       0.0154       0.2458
+ 3       0.3125       0.0819       0.0819
+ 4       0.2344       0.2458       0.0154
+ 5       0.0937       0.3932       0.0015
+ 6       0.0156       0.2621       0.0001</code></pre>
+</div>
+</div>
+</section>
+<section id="三派眼中的-y-分布" class="slide level2">
+<h2>三派眼中的 <span class="math inline">\(Y\)</span> 分布</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="" aria-label="1"></a>plots <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb10-2"><a href="" aria-label="2"></a>titles <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Team itself (θ = 0.5)"</span>, <span class="st">"Optimists (θ = 0.8)"</span>, <span class="st">"Pessimists (θ = 0.2)"</span>)</span>
+<span id="cb10-3"><a href="" aria-label="3"></a></span>
+<span id="cb10-4"><a href="" aria-label="4"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(p_values)) {</span>
+<span id="cb10-5"><a href="" aria-label="5"></a>  plots[[i]] <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(</span>
+<span id="cb10-6"><a href="" aria-label="6"></a>    <span class="fu">data.frame</span>(<span class="at">y =</span> y, <span class="at">lik =</span> likelihoods[, i]),</span>
+<span id="cb10-7"><a href="" aria-label="7"></a>    <span class="fu">aes</span>(<span class="at">x =</span> y, <span class="at">y =</span> lik)</span>
+<span id="cb10-8"><a href="" aria-label="8"></a>  ) <span class="sc">+</span></span>
+<span id="cb10-9"><a href="" aria-label="9"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">xend =</span> y, <span class="at">yend =</span> <span class="dv">0</span>), <span class="at">color =</span> <span class="st">"gray"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb10-10"><a href="" aria-label="10"></a>    <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb10-11"><a href="" aria-label="11"></a>    <span class="fu">labs</span>(<span class="at">title =</span> titles[i], <span class="at">y =</span> <span class="st">"f(y | θ)"</span>) <span class="sc">+</span></span>
+<span id="cb10-12"><a href="" aria-label="12"></a>    <span class="fu">xlim</span>(<span class="sc">-</span><span class="fl">0.2</span>, <span class="fl">6.2</span>) <span class="sc">+</span></span>
+<span id="cb10-13"><a href="" aria-label="13"></a>    <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.45</span>)) <span class="sc">+</span></span>
+<span id="cb10-14"><a href="" aria-label="14"></a>    papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
+<span id="cb10-15"><a href="" aria-label="15"></a>}</span>
+<span id="cb10-16"><a href="" aria-label="16"></a>gridExtra<span class="sc">::</span><span class="fu">grid.arrange</span>(<span class="at">grobs =</span> plots, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Lecture2_files/figure-revealjs/unnamed-chunk-5-1.png" width="1296"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>乐观派（0.8）认为“成功很多项”最可能；悲观派（0.2）认为“全败/几乎全败”最可能。</li>
+</ul>
+</section>
+<section id="观察到-y-1谁的信念更合理" class="slide level2">
+<h2>观察到 <span class="math inline">\(y = 1\)</span>：谁的信念更合理？</h2>
+<p>假设团队 6 项研究<strong>只成功复现了 1 项</strong>。在三派设定的成功率下，这件事的可能性分别是：</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="" aria-label="1"></a><span class="co"># 只成功 1 次时，不同 θ 下的似然</span></span>
+<span id="cb11-2"><a href="" aria-label="2"></a>y_obs <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb11-3"><a href="" aria-label="3"></a>lik_obs <span class="ot">&lt;-</span> <span class="fu">sapply</span>(p_values, <span class="cf">function</span>(p) <span class="fu">dbinom</span>(y_obs, <span class="at">size =</span> <span class="dv">6</span>, <span class="at">prob =</span> p))</span>
+<span id="cb11-4"><a href="" aria-label="4"></a>lik_tab <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">theta =</span> p_values, <span class="at">L_pi_y1 =</span> <span class="fu">round</span>(lik_obs, <span class="dv">4</span>))</span>
+<span id="cb11-5"><a href="" aria-label="5"></a><span class="fu">print</span>(lik_tab, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> theta L_pi_y1
+   0.5  0.0937
+   0.8  0.0015
+   0.2  0.3932</code></pre>
+</div>
+</div>
+<ul>
+<li><span class="math inline">\(\theta=0.2\)</span> 时最可能出现 <span class="math inline">\(y=1\)</span>（0.3932），<span class="math inline">\(\theta=0.8\)</span> 时几乎不可能（0.0015）；</li>
+<li>若团队真的只成功 1 项，那么成功率<strong>更可能偏低</strong>——悲观派的情境得到了数据的支持。</li>
+</ul>
+</section>
+<section id="似然函数-ltheta-y1" class="slide level2">
+<h2>似然函数 <span class="math inline">\(L(\theta | y=1)\)</span></h2>
+<p>当数据固定为 <span class="math inline">\(y=1\)</span> 时，把它看成 <span class="math inline">\(\theta\)</span> 的函数：</p>
+<p><span class="math display">\[
+f(Y=1|\theta) = \binom{6}{1} \theta^1 (1-\theta)^{5} = 6\theta(1-\theta)^5 = L(\theta | y=1)
+\]</span></p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(\theta\)</span></th>
+<th>0.2</th>
+<th>0.5</th>
+<th>0.8</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(L(\theta \mid y=1)\)</span></td>
+<td>0.3932</td>
+<td>0.0938</td>
+<td>0.0015</td>
+</tr>
+</tbody>
+</table>
+<p>注意（与 Part 2 一致）： 1. 似然函数只随 <span class="math inline">\(\theta\)</span> 变化，数据 <span class="math inline">\(y=1\)</span> 已经固定； 2. 不同 <span class="math inline">\(\theta\)</span> 下似然的<strong>总和不等于 1</strong>——它只是相对支持度的比较。</p>
+</section>
+<section id="条件概率-vs-似然函数" class="slide level2">
+<h2>条件概率 vs 似然函数</h2>
+<ul>
+<li><strong><span class="math inline">\(\theta\)</span> 固定、<span class="math inline">\(y\)</span> 变化</strong>：<span class="math inline">\(f(y_1|\theta)\)</span> vs <span class="math inline">\(f(y_2|\theta)\)</span> —— 在给定模型下“预测”不同数据的概率；</li>
+<li><strong><span class="math inline">\(y\)</span> 固定、<span class="math inline">\(\theta\)</span> 变化</strong>：<span class="math inline">\(L(\theta_1|y)\)</span> vs <span class="math inline">\(L(\theta_2|y)\)</span>，即 <span class="math inline">\(f(y|\theta_1)\)</span> vs <span class="math inline">\(f(y|\theta_2)\)</span> —— 在给定数据下“比较”不同模型。</li>
+</ul>
+<p><span class="math display">\[
+Y \mid \theta \sim \text{Bin}(6, \theta), \qquad f(y|\theta) = \binom{6}{y}\theta^y(1-\theta)^{6-y}
+\]</span></p>
+</section>
+<section id="同一数据在各模型下的似然" class="slide level2">
+<h2>同一数据在各模型下的似然</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="" aria-label="1"></a>y <span class="ot">&lt;-</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">6</span></span>
+<span id="cb13-2"><a href="" aria-label="2"></a>theta_values <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.8</span>)</span>
+<span id="cb13-3"><a href="" aria-label="3"></a>plots <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb13-4"><a href="" aria-label="4"></a></span>
+<span id="cb13-5"><a href="" aria-label="5"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(theta_values)) {</span>
+<span id="cb13-6"><a href="" aria-label="6"></a>  pi_v <span class="ot">&lt;-</span> theta_values[i]</span>
+<span id="cb13-7"><a href="" aria-label="7"></a>  lik_y <span class="ot">&lt;-</span> <span class="fu">dbinom</span>(y, <span class="at">size =</span> <span class="dv">6</span>, <span class="at">prob =</span> pi_v)</span>
+<span id="cb13-8"><a href="" aria-label="8"></a>  y1_lik <span class="ot">&lt;-</span> <span class="fu">dbinom</span>(<span class="dv">1</span>, <span class="at">size =</span> <span class="dv">6</span>, <span class="at">prob =</span> pi_v)</span>
+<span id="cb13-9"><a href="" aria-label="9"></a></span>
+<span id="cb13-10"><a href="" aria-label="10"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">y =</span> y, <span class="at">lik =</span> lik_y), <span class="fu">aes</span>(<span class="at">x =</span> y, <span class="at">y =</span> lik)) <span class="sc">+</span></span>
+<span id="cb13-11"><a href="" aria-label="11"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">xend =</span> y, <span class="at">yend =</span> <span class="dv">0</span>), <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb13-12"><a href="" aria-label="12"></a>    <span class="fu">geom_segment</span>(<span class="at">x =</span> <span class="dv">1</span>, <span class="at">y =</span> <span class="dv">0</span>, <span class="at">xend =</span> <span class="dv">1</span>, <span class="at">yend =</span> y1_lik, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linewidth =</span> <span class="fl">1.6</span>) <span class="sc">+</span></span>
+<span id="cb13-13"><a href="" aria-label="13"></a>    <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb13-14"><a href="" aria-label="14"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste0</span>(<span class="st">"Bin(6, "</span>, pi_v, <span class="st">")"</span>), <span class="at">x =</span> <span class="st">"y"</span>) <span class="sc">+</span></span>
+<span id="cb13-15"><a href="" aria-label="15"></a>    <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb13-16"><a href="" aria-label="16"></a>    papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
+<span id="cb13-17"><a href="" aria-label="17"></a>  plots[[i]] <span class="ot">&lt;-</span> p</span>
+<span id="cb13-18"><a href="" aria-label="18"></a>}</span>
+<span id="cb13-19"><a href="" aria-label="19"></a>gridExtra<span class="sc">::</span><span class="fu">grid.arrange</span>(<span class="at">grobs =</span> plots, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Lecture2_files/figure-revealjs/unnamed-chunk-7-1.png" width="1296"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>红色竖线 = 同一数据 <span class="math inline">\(y=1\)</span> 在不同 <span class="math inline">\(\theta\)</span>（模型）下的似然：<strong>从左到右急剧下降</strong>——数据强烈支持低成功率。</p>
+</section>
+<section id="先验概率模型-prior-probability-model-for-theta" class="slide level2">
+<h2>先验概率模型 (Prior probability model for <span class="math inline">\(\theta\)</span>)</h2>
+<p>像 Part 2 一样，我们也可以对“哪个 <span class="math inline">\(\theta\)</span> 更可能”赋予先验信念。假如我们总体上偏乐观、但不排除其他观点：</p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(\theta\)</span></th>
+<th>0.2</th>
+<th>0.5</th>
+<th>0.8</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(f(\theta)\)</span></td>
+<td>0.10</td>
+<td>0.25</td>
+<td>0.65</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p><span class="math inline">\(\theta\)</span> 的取值数量也可以扩展（例如再加入非常悲观的 <span class="math inline">\(\theta=0.01\)</span>）：</p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(\theta\)</span></th>
+<th>0.01</th>
+<th>0.2</th>
+<th>0.5</th>
+<th>0.8</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(f(\theta)\)</span></td>
+<td>0.10</td>
+<td>0.10</td>
+<td>0.25</td>
+<td>0.55</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>原则不变：<strong>穷尽所有可能、和为 1</strong> —— 这就是 <span class="math inline">\(\theta\)</span> 的先验模型。</p>
+</section>
+<section id="观察数据后计算后验-ftheta-y1" class="slide level2">
+<h2>观察数据后：计算后验 <span class="math inline">\(f(\theta | y=1)\)</span></h2>
+<p>团队最终只成功复现 1 项。先验 <span class="math inline">\(f(\theta)\)</span> 遇到似然 <span class="math inline">\(L(\theta|y=1)\)</span>，按贝叶斯公式更新：</p>
+<p><span class="math display">\[
+f(\theta|y{=}1) = \frac{f(\theta)\,L(\theta|y{=}1)}{f(y{=}1)} = \frac{f(\theta)\,L(\theta|y{=}1)}{\sum_{\text{all } \theta} f(\theta)\,L(\theta|y{=}1)}
+\]</span></p>
+<p>先计算分母：<span class="math inline">\(f(y{=}1) = 0.10\times0.3932 + 0.25\times0.0938 + 0.65\times0.0015 \approx 0.0637\)</span></p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(\theta\)</span></th>
+<th><span class="math inline">\(f(\theta)\)</span></th>
+<th><span class="math inline">\(L(\theta\mid y{=}1)\)</span></th>
+<th><span class="math inline">\(f(\theta)L(\theta\mid y{=}1)\)</span></th>
+<th><span class="math inline">\(f(\theta\mid y{=}1)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.2</td>
+<td>0.10</td>
+<td>0.3932</td>
+<td>0.03932</td>
+<td>0.617</td>
+</tr>
+<tr class="even">
+<td>0.5</td>
+<td>0.25</td>
+<td>0.0938</td>
+<td>0.02345</td>
+<td>0.368</td>
+</tr>
+<tr class="odd">
+<td>0.8</td>
+<td>0.65</td>
+<td>0.0015</td>
+<td>0.00098</td>
+<td>0.015</td>
+</tr>
+</tbody>
+</table>
+<p>团队“高成功率”（<span class="math inline">\(\theta=0.8\)</span>）的信念从 0.65 骤降到 <strong>0.015</strong>——只成功 1 项是反对高成功率的强证据。</p>
+</section>
+<section id="先验-似然-后验" class="slide level2">
+<h2>先验 → 似然 → 后验</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="" aria-label="1"></a><span class="co"># 参数取值与先验</span></span>
+<span id="cb14-2"><a href="" aria-label="2"></a>theta_values <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.8</span>)</span>
+<span id="cb14-3"><a href="" aria-label="3"></a>prior_theta  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.10</span>, <span class="fl">0.25</span>, <span class="fl">0.65</span>)</span>
+<span id="cb14-4"><a href="" aria-label="4"></a></span>
+<span id="cb14-5"><a href="" aria-label="5"></a><span class="co"># 真实似然：观察到 y = 1</span></span>
+<span id="cb14-6"><a href="" aria-label="6"></a>lik_theta <span class="ot">&lt;-</span> <span class="fu">dbinom</span>(<span class="dv">1</span>, <span class="at">size =</span> <span class="dv">6</span>, <span class="at">prob =</span> theta_values)</span>
+<span id="cb14-7"><a href="" aria-label="7"></a></span>
+<span id="cb14-8"><a href="" aria-label="8"></a><span class="co"># 后验 = 先验 × 似然 / 归一化</span></span>
+<span id="cb14-9"><a href="" aria-label="9"></a>post_theta <span class="ot">&lt;-</span> prior_theta <span class="sc">*</span> lik_theta <span class="sc">/</span> <span class="fu">sum</span>(prior_theta <span class="sc">*</span> lik_theta)</span>
+<span id="cb14-10"><a href="" aria-label="10"></a></span>
+<span id="cb14-11"><a href="" aria-label="11"></a>plot_pi <span class="ot">&lt;-</span> <span class="cf">function</span>(title, vals, <span class="at">ymax =</span> <span class="fl">0.7</span>) {</span>
+<span id="cb14-12"><a href="" aria-label="12"></a>  <span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">theta =</span> theta_values, <span class="at">v =</span> vals), <span class="fu">aes</span>(<span class="at">x =</span> theta, <span class="at">y =</span> v)) <span class="sc">+</span></span>
+<span id="cb14-13"><a href="" aria-label="13"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">xend =</span> theta, <span class="at">yend =</span> <span class="dv">0</span>), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">linewidth =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb14-14"><a href="" aria-label="14"></a>    <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb14-15"><a href="" aria-label="15"></a>    <span class="fu">labs</span>(<span class="at">title =</span> title, <span class="at">x =</span> <span class="fu">expression</span>(theta), <span class="at">y =</span> <span class="st">"Probability"</span>) <span class="sc">+</span></span>
+<span id="cb14-16"><a href="" aria-label="16"></a>    <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, ymax)) <span class="sc">+</span></span>
+<span id="cb14-17"><a href="" aria-label="17"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> theta_values, <span class="at">limits =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.9</span>)) <span class="sc">+</span></span>
+<span id="cb14-18"><a href="" aria-label="18"></a>    papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
+<span id="cb14-19"><a href="" aria-label="19"></a>}</span>
+<span id="cb14-20"><a href="" aria-label="20"></a></span>
+<span id="cb14-21"><a href="" aria-label="21"></a>p1 <span class="ot">&lt;-</span> <span class="fu">plot_pi</span>(<span class="st">"Prior f(θ)"</span>, prior_theta)</span>
+<span id="cb14-22"><a href="" aria-label="22"></a>p2 <span class="ot">&lt;-</span> <span class="fu">plot_pi</span>(<span class="st">"Likelihood L(θ|y=1)"</span>, lik_theta)</span>
+<span id="cb14-23"><a href="" aria-label="23"></a>p3 <span class="ot">&lt;-</span> <span class="fu">plot_pi</span>(<span class="st">"Posterior f(θ|y=1)"</span>, post_theta)</span>
+<span id="cb14-24"><a href="" aria-label="24"></a>gridExtra<span class="sc">::</span><span class="fu">grid.arrange</span>(<span class="at">grobs =</span> <span class="fu">list</span>(p1, p2, p3), <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Lecture2_files/figure-revealjs/unnamed-chunk-8-1.png" width="1296"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="补充材料后验-先验-似然省略分母" class="slide level2">
+<h2>补充材料：后验 ∝ 先验 × 似然（省略分母！）</h2>
+<p>分母 <span class="math inline">\(f(y)\)</span> 是一个与 <span class="math inline">\(\theta\)</span> 无关的<strong>归一化常数</strong>：</p>
+<p><span class="math display">\[
+f(\theta | y) = \frac{f(\theta)L(\theta|y)}{f(y)} \;\propto\; f(\theta)\,L(\theta|y) \qquad \Rightarrow \qquad \text{posterior} \propto \text{prior} \times \text{likelihood}
+\]</span></p>
+<p>省略分母后（未归一化）：</p>
+<ul>
+<li><span class="math inline">\(f(\theta{=}0.2|y{=}1) \propto 0.10 \times 0.3932 = 0.03932\)</span></li>
+<li><span class="math inline">\(f(\theta{=}0.5|y{=}1) \propto 0.25 \times 0.0938 = 0.02345\)</span></li>
+<li><span class="math inline">\(f(\theta{=}0.8|y{=}1) \propto 0.65 \times 0.0015 = 0.00098\)</span></li>
+</ul>
+<p>三者总和 0.0637，比例与完整后验（0.617/0.368/0.015）完全一致。</p>
+<blockquote>
+<p>😜 这个性质很重要：分母的计算往往需要遍历/积分所有参数。如果<strong>不算分母也能得到后验</strong>，那后面课程介绍的 MCMC 方法就会非常实用。</p>
+</blockquote>
+</section>
+<section id="归一化-vs-未归一化的后验" class="slide level2">
+<h2>归一化 vs 未归一化的后验</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="" aria-label="1"></a><span class="co"># 未归一化与归一化后验</span></span>
+<span id="cb15-2"><a href="" aria-label="2"></a>unnorm <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.03932</span>, <span class="fl">0.02345</span>, <span class="fl">0.00098</span>)</span>
+<span id="cb15-3"><a href="" aria-label="3"></a>normed <span class="ot">&lt;-</span> unnorm <span class="sc">/</span> <span class="fu">sum</span>(unnorm)</span>
+<span id="cb15-4"><a href="" aria-label="4"></a>posterior_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb15-5"><a href="" aria-label="5"></a>  <span class="at">theta =</span> <span class="fu">rep</span>(theta_values, <span class="dv">2</span>),</span>
+<span id="cb15-6"><a href="" aria-label="6"></a>  <span class="at">probability =</span> <span class="fu">c</span>(normed, unnorm),</span>
+<span id="cb15-7"><a href="" aria-label="7"></a>  <span class="at">type =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"normalized"</span>, <span class="st">"unnormalized"</span>), <span class="at">each =</span> <span class="dv">3</span>)</span>
+<span id="cb15-8"><a href="" aria-label="8"></a>)</span>
+<span id="cb15-9"><a href="" aria-label="9"></a></span>
+<span id="cb15-10"><a href="" aria-label="10"></a><span class="fu">ggplot</span>(posterior_data, <span class="fu">aes</span>(<span class="at">x =</span> theta, <span class="at">y =</span> probability)) <span class="sc">+</span></span>
+<span id="cb15-11"><a href="" aria-label="11"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">xend =</span> theta, <span class="at">yend =</span> <span class="dv">0</span>), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">linewidth =</span> <span class="fl">1.4</span>) <span class="sc">+</span></span>
+<span id="cb15-12"><a href="" aria-label="12"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb15-13"><a href="" aria-label="13"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> type, <span class="at">scales =</span> <span class="st">"free_y"</span>,</span>
+<span id="cb15-14"><a href="" aria-label="14"></a>             <span class="at">labeller =</span> <span class="fu">labeller</span>(<span class="at">type =</span> <span class="fu">c</span>(<span class="at">normalized =</span> <span class="st">"Normalized"</span>,</span>
+<span id="cb15-15"><a href="" aria-label="15"></a>                                          <span class="at">unnormalized =</span> <span class="st">"Unnormalized"</span>))) <span class="sc">+</span></span>
+<span id="cb15-16"><a href="" aria-label="16"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">expression</span>(theta), <span class="at">y =</span> <span class="st">"Probability"</span>) <span class="sc">+</span></span>
+<span id="cb15-17"><a href="" aria-label="17"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> theta_values) <span class="sc">+</span></span>
+<span id="cb15-18"><a href="" aria-label="18"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>() <span class="sc">+</span></span>
+<span id="cb15-19"><a href="" aria-label="19"></a>  <span class="fu">theme</span>(<span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">15</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Lecture2_files/figure-revealjs/unnamed-chunk-9-1.png" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>两条曲线只差一个常数——<strong>形状（比例关系）完全相同</strong>。</p>
+</section>
+<section id="posterior-simulation用模拟逼近后验" class="slide level2">
+<h2>Posterior simulation：用模拟逼近后验</h2>
+<p>当 <span class="math inline">\(\theta\)</span> 的取值很多（甚至连续）时，分母的求和/积分会变得困难。另一个思路是：<strong>不解析计算，直接抽样</strong>。</p>
+<ol type="1">
+<li>从先验 <span class="math inline">\(f(\theta)\)</span> 中抽取大量 <span class="math inline">\(\theta\)</span>；</li>
+<li>对每个 <span class="math inline">\(\theta\)</span>，按数据模型模拟 <span class="math inline">\(y \sim \text{Bin}(6, \theta)\)</span>；</li>
+<li>只保留 <span class="math inline">\(y = 1\)</span> 的那些样本；</li>
+<li>这些样本中 <span class="math inline">\(\theta\)</span> 的分布，就是<strong>模拟的后验</strong> <span class="math inline">\(f(\theta | y{=}1)\)</span>。</li>
+</ol>
+</section>
+<section id="模拟第-12-步抽-theta模拟-y" class="slide level2">
+<h2>模拟第 1–2 步：抽 <span class="math inline">\(\theta\)</span>、模拟 <span class="math inline">\(y\)</span></h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="" aria-label="1"></a><span class="co"># 1. 定义可能的成功率与先验</span></span>
+<span id="cb16-2"><a href="" aria-label="2"></a>replicated <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">theta =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.8</span>))</span>
+<span id="cb16-3"><a href="" aria-label="3"></a>prior_theta   <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.10</span>, <span class="fl">0.25</span>, <span class="fl">0.65</span>)</span>
+<span id="cb16-4"><a href="" aria-label="4"></a></span>
+<span id="cb16-5"><a href="" aria-label="5"></a><span class="co"># 2. 从先验抽取 10000 个 θ，并在每个 θ 下模拟成功次数 y</span></span>
+<span id="cb16-6"><a href="" aria-label="6"></a><span class="fu">set.seed</span>(<span class="dv">84735</span>)</span>
+<span id="cb16-7"><a href="" aria-label="7"></a>sim_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="at">size =</span> <span class="dv">10000</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> prior_theta)</span>
+<span id="cb16-8"><a href="" aria-label="8"></a>replicated_sim <span class="ot">&lt;-</span> replicated[sim_idx, , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb16-9"><a href="" aria-label="9"></a>replicated_sim<span class="sc">$</span>y <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(<span class="fu">nrow</span>(replicated_sim), <span class="at">size =</span> <span class="dv">6</span>, <span class="at">prob =</span> replicated_sim<span class="sc">$</span>theta)</span>
+<span id="cb16-10"><a href="" aria-label="10"></a></span>
+<span id="cb16-11"><a href="" aria-label="11"></a><span class="fu">head</span>(replicated_sim, <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>    theta y
+2     0.5 3
+2.1   0.5 3
+3     0.8 4
+1     0.2 1
+2.2   0.5 3
+3.1   0.8 3
+3.2   0.8 6
+3.3   0.8 4
+2.3   0.5 3
+3.4   0.8 4</code></pre>
+</div>
+</div>
+</section>
+<section id="检查抽到的-theta比例应接近先验-10-25-65" class="slide level2">
+<h2>检查抽到的 <span class="math inline">\(\theta\)</span>：比例应接近先验 (10% / 25% / 65%)</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="" aria-label="1"></a>replicated_sim <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="" aria-label="2"></a>  dplyr<span class="sc">::</span><span class="fu">count</span>(theta) <span class="sc">%&gt;%</span></span>
+<span id="cb18-3"><a href="" aria-label="3"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">percent =</span> <span class="fu">round</span>(<span class="dv">100</span> <span class="sc">*</span> n <span class="sc">/</span> <span class="fu">sum</span>(n), <span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb18-4"><a href="" aria-label="4"></a>  <span class="fu">print</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  theta    n percent
+1   0.2 1017   10.17
+2   0.5 2521   25.21
+3   0.8 6462   64.62</code></pre>
+</div>
+</div>
+</section>
+<section id="模拟第-3-步不同-theta-下的-y-分布-fytheta" class="slide level2">
+<h2>模拟第 3 步：不同 <span class="math inline">\(\theta\)</span> 下的 <span class="math inline">\(y\)</span> 分布 <span class="math inline">\(f(y|\theta)\)</span></h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="" aria-label="1"></a><span class="fu">ggplot</span>(replicated_sim, <span class="fu">aes</span>(<span class="at">x =</span> y)) <span class="sc">+</span></span>
+<span id="cb20-2"><a href="" aria-label="2"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">after_stat</span>(prop), <span class="at">group =</span> <span class="dv">1</span>),</span>
+<span id="cb20-3"><a href="" aria-label="3"></a>           <span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb20-4"><a href="" aria-label="4"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> theta, <span class="at">labeller =</span> label_both) <span class="sc">+</span></span>
+<span id="cb20-5"><a href="" aria-label="5"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">6</span>, <span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">6.5</span>)) <span class="sc">+</span></span>
+<span id="cb20-6"><a href="" aria-label="6"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)) <span class="sc">+</span></span>
+<span id="cb20-7"><a href="" aria-label="7"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"f(y | θ)"</span>) <span class="sc">+</span></span>
+<span id="cb20-8"><a href="" aria-label="8"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>() <span class="sc">+</span></span>
+<span id="cb20-9"><a href="" aria-label="9"></a>  <span class="fu">theme</span>(<span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">15</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Lecture2_files/figure-revealjs/unnamed-chunk-12-1.png" width="1296"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>每个面板内的条形 = 给定 <span class="math inline">\(\theta\)</span> 时 <span class="math inline">\(Y\)</span> 的条件分布——与前面手算的 PMF 形状一致。</p>
+</section>
+<section id="模拟第-4-步只看-y1-的样本-模拟后验" class="slide level2">
+<h2>模拟第 4 步：只看 <span class="math inline">\(y=1\)</span> 的样本 → 模拟后验</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="" aria-label="1"></a><span class="co"># 条件于 y = 1</span></span>
+<span id="cb21-2"><a href="" aria-label="2"></a>replicated_post <span class="ot">&lt;-</span> replicated_sim <span class="sc">%&gt;%</span> <span class="fu">filter</span>(y <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb21-3"><a href="" aria-label="3"></a></span>
+<span id="cb21-4"><a href="" aria-label="4"></a><span class="co"># 模拟后验中各 θ 的比例</span></span>
+<span id="cb21-5"><a href="" aria-label="5"></a>post_counts <span class="ot">&lt;-</span> replicated_post <span class="sc">%&gt;%</span></span>
+<span id="cb21-6"><a href="" aria-label="6"></a>  dplyr<span class="sc">::</span><span class="fu">count</span>(theta) <span class="sc">%&gt;%</span></span>
+<span id="cb21-7"><a href="" aria-label="7"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">proportion =</span> <span class="fu">round</span>(n <span class="sc">/</span> <span class="fu">sum</span>(n), <span class="dv">3</span>))</span>
+<span id="cb21-8"><a href="" aria-label="8"></a><span class="fu">print</span>(post_counts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  theta   n proportion
+1   0.2 404      0.604
+2   0.5 253      0.378
+3   0.8  12      0.018</code></pre>
+</div>
+</div>
+</section>
+<section id="模拟后验-vs-解析后验" class="slide level2">
+<h2>模拟后验 vs 解析后验</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="" aria-label="1"></a><span class="co"># 解析后验 (来自前面的精确计算)</span></span>
+<span id="cb23-2"><a href="" aria-label="2"></a>exact_post <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb23-3"><a href="" aria-label="3"></a>  <span class="at">theta =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.8</span>),</span>
+<span id="cb23-4"><a href="" aria-label="4"></a>  <span class="at">proportion =</span> <span class="fu">c</span>(<span class="fl">0.617</span>, <span class="fl">0.368</span>, <span class="fl">0.015</span>),</span>
+<span id="cb23-5"><a href="" aria-label="5"></a>  <span class="at">type =</span> <span class="st">"exact"</span></span>
+<span id="cb23-6"><a href="" aria-label="6"></a>)</span>
+<span id="cb23-7"><a href="" aria-label="7"></a>sim_post <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb23-8"><a href="" aria-label="8"></a>  <span class="at">theta =</span> post_counts<span class="sc">$</span>theta,</span>
+<span id="cb23-9"><a href="" aria-label="9"></a>  <span class="at">proportion =</span> post_counts<span class="sc">$</span>proportion,</span>
+<span id="cb23-10"><a href="" aria-label="10"></a>  <span class="at">type =</span> <span class="st">"simulation"</span></span>
+<span id="cb23-11"><a href="" aria-label="11"></a>)</span>
+<span id="cb23-12"><a href="" aria-label="12"></a></span>
+<span id="cb23-13"><a href="" aria-label="13"></a><span class="fu">ggplot</span>(<span class="fu">rbind</span>(exact_post, sim_post), <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(theta), <span class="at">y =</span> proportion, <span class="at">fill =</span> type)) <span class="sc">+</span></span>
+<span id="cb23-14"><a href="" aria-label="14"></a>  <span class="fu">geom_col</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="fl">0.7</span>), <span class="at">width =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb23-15"><a href="" aria-label="15"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"exact"</span> <span class="ot">=</span> <span class="st">"gray50"</span>, <span class="st">"simulation"</span> <span class="ot">=</span> <span class="st">"skyblue"</span>)) <span class="sc">+</span></span>
+<span id="cb23-16"><a href="" aria-label="16"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">expression</span>(theta), <span class="at">y =</span> <span class="st">"Posterior probability"</span>, <span class="at">fill =</span> <span class="st">"approach"</span>) <span class="sc">+</span></span>
+<span id="cb23-17"><a href="" aria-label="17"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="Lecture2_files/figure-revealjs/unnamed-chunk-14-1.png" width="1056"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>模拟后验与解析后验（0.617 / 0.368 / 0.015）几乎重合；</li>
+<li>差异来自抽样波动——把 10000 换成更大的数字会进一步缩小。</li>
+</ul>
+</section>
+<section id="思考频率学派会如何处理这两个问题" class="slide level2">
+<h2>思考：频率学派会如何处理这两个问题？</h2>
+<p>回顾本讲的两个推断问题：</p>
+<ol type="1">
+<li>袋中蓝色小球占比 <span class="math inline">\(\theta\)</span>：<span class="math inline">\(P(\theta \mid \text{蓝白蓝})\)</span>（Part 2 的计数例）；</li>
+<li>6 项研究的成功率 <span class="math inline">\(\theta\)</span>：<span class="math inline">\(f(\theta | y{=}1)\)</span>（Part 3）。</li>
+</ol>
+<p>🤔 频率学派（经典统计）会怎样回答？它们与贝叶斯学派的根本分歧在哪里？</p>
+<blockquote>
+<p>带着问题进入 Part 4；相关练习见课程的闯关题。</p>
+</blockquote>
+</section>
+<section id="part-4-频率学派与贝叶斯学派的对比-frequentist-vs.-bayesian" class="slide level2">
+<h2>Part 4: 频率学派与贝叶斯学派的对比 (Frequentist vs.&nbsp;Bayesian)</h2>
+<h3 id="同一份数据两种结论ecmo-临床试验">同一份数据，两种结论：ECMO 临床试验</h3>
+<p><img data-src="figs/lec2/sjzj8nd4te.png" style="width:39.0%"></p>
+<div style="font-size:0.66em">
+<ul>
+<li><strong>频率学派</strong>：计划 331 名患者，因中期分析未能证明获益而提前停止（249 人）。干预组死亡率 35% vs 对照组 46%，但 <span class="math inline">\(p = 0.09 &gt; 0.05\)</span> → “证据不足，不能证明 ECMO 有效”；</li>
+<li><strong>贝叶斯学派</strong>：在不同先验下，<span class="math inline">\(H_1\)</span>（ECMO 有效）成立的后验概率高达 <strong>88%～99%</strong> → “强有力的证据支持 ECMO”。</li>
+</ul>
+<blockquote>
+<p>Goligher, E. C., Heath, A., &amp; Harhay, M. O. (2024). Bayesian statistics for clinical research. <em>The Lancet</em>, 404(10457), 1067–1076.</p>
+</blockquote>
+</div>
+</section>
+<section id="频率学派如何看待这个世界" class="slide level2">
+<h2>频率学派如何看待这个世界？</h2>
+<ol type="1">
+<li><strong>假设是固定的</strong>：零假设 <span class="math inline">\(H_0\)</span> 是一个固定为真/假的命题；</li>
+<li><strong>数据是随机的</strong>：在 <span class="math inline">\(H_0\)</span> 为真的前提下，数据可以被反复抽样；</li>
+<li><strong>推断依赖“无限重复实验”</strong>：<span class="math inline">\(p\)</span> 值 = 在 <span class="math inline">\(H_0\)</span> 下观测到当前数据或更极端数据的（假想重复）概率；置信区间同样基于重复抽样的频率性质；</li>
+<li><strong>决策二分</strong>：预设显著性水平（如 0.05），<span class="math inline">\(p &lt; \alpha\)</span> 则拒绝 <span class="math inline">\(H_0\)</span>。</li>
+</ol>
+<p>本例中：<span class="math inline">\(p = 0.09\)</span> → 未达到 0.05 → 不拒绝 <span class="math inline">\(H_0\)</span> → 结论“证据不足”。</p>
+</section>
+<section id="贝叶斯学派如何看待这个世界" class="slide level2">
+<h2>贝叶斯学派如何看待这个世界？</h2>
+<p>概率是对不确定性的<strong>主观度量</strong>，因此可以直接谈论“假设为真的概率”：</p>
+<ol type="1">
+<li><strong>先验</strong>：从对假设的初始信念出发（来自以往研究、专家意见、临床经验）；</li>
+<li><strong>更新</strong>：新数据通过似然函数与先验结合，得到<strong>后验概率</strong>；</li>
+<li><strong>直接的概率陈述</strong>：如“<span class="math inline">\(H_1\)</span> 成立的后验概率为 88%”，以及更直观的<strong>可信区间 (credible interval)</strong>。</li>
+</ol>
+<p>本例中：不同的合理先验都得到 <span class="math inline">\(H_1\)</span> 后验 ≥ 88%，故结论是“强支持 ECMO”。</p>
+</section>
+<section id="两位奠基人bayes-与-laplace" class="slide level2">
+<h2>两位奠基人：Bayes 与 Laplace</h2>
+<ul>
+<li><strong>Thomas Bayes (1701–1761)</strong>：英国牧师与数学家；提出逆概率问题的解法，论文在其身后（1763）才发表；</li>
+<li><strong>Pierre-Simon Laplace (1749–1827)</strong>：法国数学家；独立重新发现该定理，并给出今天通用的形式（含先验/归一化表述）。</li>
+</ul>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 54.3%;justify-content: center;">
+<p><img data-src="figs/lec2/thomas_bayes.jpg"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 45.7%;justify-content: center;">
+<p><img data-src="figs/lec2/pierre_laplace.jpg"></p>
+</div>
+</div>
+</div>
+</section>
+<section id="两个学派的差异对比" class="slide level2">
+<h2>两个学派的差异对比</h2>
+<table class="caption-top">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>频率学派 (Frequentist)</th>
+<th>贝叶斯学派 (Bayesian)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>概率 = 无限重复试验中的<strong>频率</strong></td>
+<td>概率 = 对假设的<strong>信念度量</strong></td>
+</tr>
+<tr class="even">
+<td>假设是固定的，数据是随机的</td>
+<td>假设是随机的，数据是固定的</td>
+</tr>
+<tr class="odd">
+<td>通过 <span class="math inline">\(p\)</span> 值检验是否拒绝 <span class="math inline">\(H_0\)</span></td>
+<td>用先验 + 数据更新出后验概率</td>
+</tr>
+<tr class="even">
+<td>置信区间：重复试验中 95% 覆盖真值</td>
+<td>可信区间：参数落在区间内的概率为 95%</td>
+</tr>
+<tr class="odd">
+<td>只基于当前数据，不考虑先验</td>
+<td>结合历史信息/专家意见</td>
+</tr>
+<tr class="even">
+<td>实验设计固定，不能中途调整</td>
+<td>支持自适应设计与决策</td>
+</tr>
+<tr class="odd">
+<td>无法直接支持 <span class="math inline">\(H_0\)</span></td>
+<td>可直接比较多个假设</td>
+</tr>
+</tbody>
+</table>
+<p>来源：Goligher et al.&nbsp;(2024)</p>
+</section>
+<section id="贝叶斯的主观性没有绝对客观的统计" class="slide level2">
+<h2>贝叶斯的主观性：没有绝对客观的统计</h2>
+<p><strong>主观性是相对的</strong>：</p>
+<ul>
+<li>贝叶斯学派把主观性<strong>显式放进先验</strong>：透明、可讨论、可检验；</li>
+<li>频率学派的主观性则藏在<strong>前提预设</strong>里：方差齐性、正态性……看似“客观”却难以满足；</li>
+<li>样本抽取、数据清理、分析方法与 <span class="math inline">\(\alpha\)</span> 水平的选择，处处都有主观判断；</li>
+<li>主观不一定是坏事：它把个体经验与专家知识<strong>量化</strong>进分析。</li>
+</ul>
+</section>
+<section id="重复抽样两派眼中的不同角色" class="slide level2">
+<h2>重复抽样：两派眼中的不同角色</h2>
+<p><strong>频率学派</strong> - 推断依赖参数的<strong>抽样分布</strong>（long-run 重复实验的假想）； - <span class="math inline">\(p\)</span> 值与置信区间都建立于“可无限重复抽样”之上； - 现实中往往只收集一次数据，“无限重复”只是一个思想实验。</p>
+<p><strong>贝叶斯学派</strong> - 参数本身就是分布，不确定性直接进入推断； - 只需这一次数据，即可更新信念。</p>
+<blockquote>
+<p>置信区间 (CI) vs 可信区间 (CrI)：<strong>没有免费的午餐</strong>——两派各有优势与局限。</p>
+</blockquote>
+</section>
+<section id="不同的先验似然-不同的后验" class="slide level2">
+<h2>不同的先验/似然 → 不同的后验</h2>
+<p><img data-src="figs/lec2/rhqcb9gji7.png" style="width:34.0%"></p>
+<ul>
+<li>后验 = 先验 × 似然（再归一化）：<strong>先验与似然都会塑造后验</strong>；</li>
+<li>先验差异大时，后验的差异也会明显——因此贝叶斯分析要求<strong>先验要透明、理由要充分</strong>；</li>
+<li>数据量足够大时，不同先验的后验会趋于一致（数据会“压过”先验）。</li>
+</ul>
+</section>
+<section id="nhst-的弱项" class="slide level2">
+<h2>NHST 的“弱项”</h2>
+<ul>
+<li><strong>无法直接支持零假设</strong>：即使“没有显著差异”，也不知道两个总体有多相似（许岳培 等, 2023, <em>应用心理学</em>)；</li>
+<li><strong>一次只能比较两个假设</strong>：多假设、多模型的情形难以处理；</li>
+<li><strong>控制假阳性很棘手</strong>：多重比较、p-hacking、发表偏倚等问题叠加。</li>
+</ul>
+<blockquote>
+<p>这些局限推动了学界对贝叶斯方法（以及更严谨的频率学派实践）的重视。</p>
+</blockquote>
+</section>
+<section id="本讲总结-recap" class="slide level2">
+<h2>本讲总结 (Recap)</h2>
+<ul>
+<li><strong>单一事件</strong>：先验 <span class="math inline">\(P(B)\)</span> × 似然 <span class="math inline">\(P(A|B)\)</span> → 后验 <span class="math inline">\(P(B|A)\)</span>（别忘了分母 <span class="math inline">\(P(A)\)</span>）；</li>
+<li><strong>随机变量</strong>：二项模型 <span class="math inline">\(Y|\theta \sim \text{Bin}(6, \theta)\)</span>，同样的逻辑作用于 <span class="math inline">\(\theta\)</span> 的分布；</li>
+<li><strong>Posterior simulation</strong>：抽样代替解析计算——这是通向 MCMC 的桥梁；</li>
+<li><strong>两派对比</strong>：概率的定义、随机性的归属、先验的角色各不相同。</li>
+</ul>
+<blockquote>
+<p>📌 预告第 3 讲：连续型参数（β 分布）与更一般的贝叶斯建模。</p>
+</blockquote>
+</section>
+<section id="参考文献-references" class="slide level2">
+<h2>参考文献 (References)</h2>
+<ul>
+<li>McElreath, R. (2020). <em>Statistical Rethinking: A Bayesian Course with Examples in R and Stan</em> (2nd ed.). CRC Press.（Part 2 小球例出处）</li>
+<li>Goligher, E. C., Heath, A., &amp; Harhay, M. O. (2024). Bayesian statistics for clinical research. <em>The Lancet</em>, 404(10457), 1067–1076.</li>
+<li>许岳培 等 (2023). <em>应用心理学</em>, (04), 369–384.</li>
+</ul>
+</section>
+<section id="附python-对照代码" class="slide level2">
+<h2>附：Python 对照代码</h2>
+<p>本讲的示例均有对应的 <strong>Python 实现</strong>，整理在课程根目录的 <code>Lecture2.py</code> 中：</p>
+<ul>
+<li><strong>Part 2 计数例</strong>：<code>ways = [0, 3, 8, 9, 0]</code> → <code>plaus = ways / sum(ways)</code> 得后验；顺序更新用“似然 × 旧后验”再归一化（约 5 行 numpy）；</li>
+<li><strong>Part 3 二项分布</strong>：<code>scipy.stats.binom.pmf(y, n, p)</code> 与 10000 次模拟（<code>np.random.seed(84735)</code> 保持一致）；</li>
+<li>另含基于 Herzenstein 等 (2024) 数据的<strong>可重复性练习</strong>（延伸阅读，对应旧版讲义）。</li>
+</ul>
+<blockquote>
+<p>运行方式：<code>python Lecture2.py</code>（需已安装 pandas、numpy、matplotlib、scipy；建议用和鲸平台 <code>pyBayesian</code> 环境或本地 conda 环境）。</p>
+</blockquote>
+
+</section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="Lecture2_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="Lecture2_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="Lecture2_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="Lecture2_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="Lecture2_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="Lecture2_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="Lecture2_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="Lecture2_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="Lecture2_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="Lecture2_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'slide',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1600,
+
+        height: 900,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    
+    <script>
+      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+      // slide changes (different for each slide format).
+      (function () {
+        // dispatch for htmlwidgets
+        function fireSlideEnter() {
+          const event = window.document.createEvent("Event");
+          event.initEvent("slideenter", true, true);
+          window.document.dispatchEvent(event);
+        }
+
+        function fireSlideChanged(previousSlide, currentSlide) {
+          fireSlideEnter();
+
+          // dispatch for shiny
+          if (window.jQuery) {
+            if (previousSlide) {
+              window.jQuery(previousSlide).trigger("hidden");
+            }
+            if (currentSlide) {
+              window.jQuery(currentSlide).trigger("shown");
+            }
+          }
+        }
+
+        // hookup for slidy
+        if (window.w3c_slidy) {
+          window.w3c_slidy.add_observer(function (slide_num) {
+            // slide_num starts at position 1
+            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+          });
+        }
+
+      })();
+    </script>
+
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>
