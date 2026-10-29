@@ -92,7 +92,9 @@
 - **语言**：中文交流，学术内容保留英文术语；回复精炼、多用表格/代码块，避免赘述。
 - **工作目录**：真目录 `/Users/hcp4715/Library/CloudStorage/OneDrive-Personal/Teaching/Bayesian/PsyBayesian/`（OneDrive，勿动其文件结构）。
 - **文件**：每章三份同源文件——`lecN.qmd`（幻灯片）+ `lecN.R` / `lecN.py`（平台版脚本）；**qmd 是脚本的子集**（脚本另有 50000 次模拟、Beta 集中度对比等）。全章共用样式 `lec.css`；数据 `data/`（`flanker_1.csv` 6.7万行、`SMS_Well_being.csv`）；手工素材图 `figs/lecN/`（lec1 14 个文件、13 个被引用）；渲染产物统一收在 `assets/`（`libs/` 共享库 + `figs/lecN/` 各讲的图），项目配置 `_quarto.yml`。
-- **符号与标注约定**：参数正文一律写 math inline `$\theta$`（勿用 `` `ACC` `` / `` `theta` ``）；R/Python 代码里用 ASCII `theta`；坐标轴标签 R 用 `expression(theta)`、Python 用 `r'$\theta$'`；较长图注/图例内用字面 `θ`；区间写 `$[0,1]$` 而非 `` `[0,1]` ``。
+- **符号与标注约定**：**希腊字母一律写 LaTeX 数学符号，禁止直接输入 Unicode 希腊字符**——正文、列表、表格、图注、引用中一律写 `$\theta$`、`$\pi$`、`$\alpha$`、`$\beta$`、`$\mu$`、`$\sigma$`、`$\hat R$`，不得写 θ/π/α/β/μ/σ/θ̂；区间写 `$[0,1]$` 而非行内代码 `` `[0,1]` ``；参数名勿写成行内代码（用 `$\theta$`，勿用 `` `theta` `` / `` `ACC` ``）。
+  - **例外 1（代码）**：R/Python/Stan 中的变量名与参数一律 ASCII（`theta`、`mu`、`sigma`）。
+  - **例外 2（绘图 API）**：由代码生成的坐标轴/标题/图例文本不能写 LaTeX——R 用 `expression(theta)` 或 `bquote()`，Python 用 `r'$\theta$'`（matplotlib 数学模式）；仅当该 API 不支持数学模式（如 ggplot 的普通 `subtitle` 字符串）时才退回字面希腊字符，并且优先改写为 ASCII/英文（matplotlib 缺中文字形时同样会渲染成方框）。
 - **环境**：R 4.5.2（R 包在系统 framework library，故重定向 `HOME` 安全）；ggplot2 **4.0.2**（实测 `geom_line(size=)` 仍生效、`..density..` 仍可用 → 无静默退化；现代写法 `linewidth` / `after_stat(density)` 同样可用）；**`preliz` 未安装**（py 脚本不能直接跑，可用 stub 顶替验证其余逻辑）；`data/evans2020JExpPsycholLearn_exp1_clean_data.csv` 253 行、`percentCoherence` 全为 5（即 5% 一致性条件）、`correct==1` 152 行 / `==0` 101 行。
 - **渲染产物**：lec1 82→83 slides。产物已收拢到 `assets/`：各讲的图在 `assets/figs/lecN/`（由 setup chunk 的 `knitr::opts_chunk$set(fig.path=...)` 指定，**仅 knitr 讲** lec1/2/3），revealjs 库在 `assets/libs/`（全课共享一份，由 `_quarto.yml` 的 `project: lib-dir` 指定）；**不再生成 `lecN_files/`**。旧 `Lecture1_files/`、`Lecture2_files/` 待各自重渲染后删除。
 - **工作方式**：用户会在轮次之间自行 `git commit`——动手前先 `git log` / `git status` 摸清状态。

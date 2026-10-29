@@ -29,6 +29,7 @@ Follow these steps to create a high-quality presentation:
   - **Bridge**: Moving from theory to practical context.
   - **Practice**: Step-by-step guides or code walkthroughs.
   - **Summary**: Key takeaways and next steps.
+- **Math typography (mandatory)**: write Greek letters as LaTeX math — `$\theta$`, `$\alpha$`, `$\mu$` — never as literal Unicode glyphs (`θ`, `α`, `μ`) in prose, bullets, tables, captions or references. In code use ASCII identifiers (`theta`); in plot labels use the plotting library's math mode (R `expression(theta)`, matplotlib `r'$\theta$'`), falling back to a literal glyph only when the API cannot render math.
 
 ## Resources
 

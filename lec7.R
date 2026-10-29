@@ -126,7 +126,7 @@ ggplot(curve_data, aes(x)) +
   geom_line(aes(y = posterior, color = "Posterior"), linewidth = 1) +
   labs(x = expression(theta), y = "Density / scaled likelihood", color = NULL)
 
-# ---- 比较 Beta(11,3) 与 Beta(101,21) 的 94% ETI ----
+# ---- 比较 Beta(11,3) 与 Beta(101,21) 的 95% ETI ----
 # 对应 qmd：credible-intervals-comparison
 
 # 创建 Beta 分布的数据
@@ -134,17 +134,17 @@ x_values <- seq(0, 1, length.out = 100)
 y_values1 <- dbeta(x_values, shape1 = 11, shape2 = 3)
 y_values2 <- dbeta(x_values, shape1 = 101, shape2 = 21)
 
-# 计算 94% 可信区间（CI）
-  lower_bound1_94 <- qbeta(0.03, shape1 = 11, shape2 = 3)
-  upper_bound1_94 <- qbeta(0.97, shape1 = 11, shape2 = 3)
-  lower_bound2_94 <- qbeta(0.03, shape1 = 101, shape2 = 21)
-  upper_bound2_94 <- qbeta(0.97, shape1 = 101, shape2 = 21)
+# 计算 95% 可信区间（CrI）
+  lower_bound1_95 <- qbeta(0.025, shape1 = 11, shape2 = 3)
+  upper_bound1_95 <- qbeta(0.975, shape1 = 11, shape2 = 3)
+  lower_bound2_95 <- qbeta(0.025, shape1 = 101, shape2 = 21)
+  upper_bound2_95 <- qbeta(0.975, shape1 = 101, shape2 = 21)
 
 # 绘制 Beta 分布的 PDF
 p1 <- ggplot2::ggplot(data.frame(x = x_values, y = y_values1),aes(x = x, y = y)) +
   geom_line(col = 'black', linewidth = 1) +
   geom_area(data = subset(data.frame(x = x_values, y = y_values1),
-                           x >= lower_bound1_94 & x <= upper_bound1_94),
+                           x >= lower_bound1_95 & x <= upper_bound1_95),
             aes(x = x, y = y), fill = "lightblue", alpha = 0.5) +
   labs( x = expression(theta), y = NULL, title = "Posterior\n(Beta(alpha = 11, beta = 3))")  +
   scale_y_continuous(expand = c(0,0),limit = c(0,12)) +
@@ -153,7 +153,7 @@ p1 <- ggplot2::ggplot(data.frame(x = x_values, y = y_values1),aes(x = x, y = y))
 p2 <- ggplot2::ggplot(data.frame(x = x_values, y = y_values2),aes(x = x, y = y)) +
   geom_line(col = 'black', linewidth = 0.7) +
   geom_area(data = subset(data.frame(x = x_values, y = y_values2),
-                           x >= lower_bound2_94 & x <= upper_bound2_94),
+                           x >= lower_bound2_95 & x <= upper_bound2_95),
             aes(x = x, y = y), fill = "lightblue", alpha = 0.5) +
   labs( x = expression(theta), y = NULL, title = "Posterior\n(Beta(alpha = 101, beta = 21))")  +
   scale_y_continuous(expand = c(0,0),limit = c(0,12)) +
@@ -162,15 +162,15 @@ p2 <- ggplot2::ggplot(data.frame(x = x_values, y = y_values2),aes(x = x, y = y))
 #并排显示
 p1 + p2
 
-# ---- Beta(101,21) 的 50%、94%、99% ETI ----
+# ---- Beta(101,21) 的 50%、95%、99% ETI ----
 # 对应 qmd：credible-intervals-masses
 
 x_values <- seq(0, 1, length.out = 100)
 y_values <- dbeta(x_values, shape1 = 101, shape2 = 21)
 
 # 计算三种可信区间（CI）
-  lower_bound_94 <- qbeta(0.03, shape1 = 101, shape2 = 21)
-  upper_bound_94 <- qbeta(0.97, shape1 = 101, shape2 = 21)
+  lower_bound_95 <- qbeta(0.025, shape1 = 101, shape2 = 21)
+  upper_bound_95 <- qbeta(0.975, shape1 = 101, shape2 = 21)
   lower_bound_50 <- qbeta(0.25, shape1 = 101, shape2 = 21)
   upper_bound_50 <- qbeta(0.75, shape1 = 101, shape2 = 21)
   lower_bound_99 <- qbeta(0.005, shape1 = 101, shape2 = 21)
@@ -182,7 +182,7 @@ p1 <- ggplot2::ggplot(data.frame(x = x_values, y = y_values),aes(x = x, y = y)) 
   geom_area(data = subset(data.frame(x = x_values, y = y_values),
                            x >= lower_bound_50 & x <= upper_bound_50),
             aes(x = x, y = y), fill = "#bdd7e7", alpha = 0.5) +
-  labs( x = expression(theta), y = NULL, title = "50% CI for Beta(101, 21)")  +
+  labs( x = expression(theta), y = NULL, title = "50% CrI for Beta(101, 21)")  +
   scale_y_continuous(expand = c(0,0),limit = c(0,12)) +
   xlim(0.5,1) +
   papaja::theme_apa()
@@ -191,9 +191,9 @@ p1 <- ggplot2::ggplot(data.frame(x = x_values, y = y_values),aes(x = x, y = y)) 
 p2 <- ggplot2::ggplot(data.frame(x = x_values, y = y_values),aes(x = x, y = y)) +
   geom_line(col = 'black', linewidth = 0.7) +
   geom_area(data = subset(data.frame(x = x_values, y = y_values),
-                           x >= lower_bound_94 & x <= upper_bound_94),
+                           x >= lower_bound_95 & x <= upper_bound_95),
             aes(x = x, y = y), fill = "#6baed6", alpha = 0.5) +
-  labs( x = expression(theta), y = NULL, title = "94% CI for Beta(101, 21)")  +
+  labs( x = expression(theta), y = NULL, title = "95% CrI for Beta(101, 21)")  +
   scale_y_continuous(expand = c(0,0),limit = c(0,12)) +
   xlim(0.5,1) +
   papaja::theme_apa()
@@ -203,7 +203,7 @@ p3 <- ggplot2::ggplot(data.frame(x = x_values, y = y_values),aes(x = x, y = y)) 
   geom_area(data = subset(data.frame(x = x_values, y = y_values),
                            x >= lower_bound_99 & x <= upper_bound_99),
             aes(x = x, y = y), fill = "#3182bd", alpha = 0.5) +
-  labs( x = expression(theta), y = NULL, title = "99% CI for Beta(101, 21)")  +
+  labs( x = expression(theta), y = NULL, title = "99% CrI for Beta(101, 21)")  +
   scale_y_continuous(expand = c(0,0)) +
   xlim(0.5,1) +
   papaja::theme_apa()
@@ -235,19 +235,20 @@ pp <- p + annotate("segment", x = 0.4, xend = 0.6, y = 0, yend = 0,
              color = "#009e73", linewidth = 3)
 pp
 
-# ---- 区间假设：H0 为区间内，Ha 为区间外 ----
+# ---- 区间假设：H0 为区间内，H_1 为区间外 ----
 # 对应 qmd：interval-bayes-factor
 
+# 数据来自 data/beta-binmial.csv（118 次判断、正确 99 次），故后验为 Beta(2 + 99, 2 + 118 - 99) = Beta(101, 21)
 prior_h0 <- pbeta(0.6, 2, 2) - pbeta(0.4, 2, 2)
 post_h0 <- pbeta(0.6, 101, 21) - pbeta(0.4, 101, 21)
-bf_a0 <- ((1 - post_h0) / post_h0) / ((1 - prior_h0) / prior_h0)
+bf_10 <- ((1 - post_h0) / post_h0) / ((1 - prior_h0) / prior_h0)
 
 # ---- 低于 80% 的后验概率 ----
 # 对应 qmd：directional-probability
 
 post_left <- pbeta(0.8, 101, 21)
 
-# ---- 方向假设：Ha 为 theta < 0.8，H0 为 theta >= 0.8 ----
+# ---- 方向假设：H_1 为 theta < 0.8，H0 为 theta >= 0.8 ----
 # 对应 qmd：directional-prior
 
 prior_left <- pbeta(0.8, 2, 2)
@@ -259,8 +260,8 @@ bf_left_right <- posterior_odds / prior_odds
 
 data.frame(
   posterior = c("Beta(11,3)", "Beta(101,21)"),
-  ETI_94_low = c(lower_bound1_94, lower_bound2_94),
-  ETI_94_high = c(upper_bound1_94, upper_bound2_94)
+  ETI_95_low = c(lower_bound1_95, lower_bound2_95),
+  ETI_95_high = c(upper_bound1_95, upper_bound2_95)
 )
 
 data.frame(HDI_95_low = hdi_lower, HDI_95_high = hdi_upper)
@@ -268,11 +269,11 @@ data.frame(HDI_95_low = hdi_lower, HDI_95_high = hdi_upper)
 data.frame(
   prior_h0 = prior_h0,
   post_h0 = post_h0,
-  BF_a0_interval = bf_a0,
+  BF_10_interval = bf_10,
   post_left = post_left,
   prior_left = prior_left,
   prior_odds = prior_odds,
   posterior_odds = posterior_odds,
-  BF_a0_direction = bf_left_right,
-  BF_0a_direction = 1 / bf_left_right
+  BF_10_direction = bf_left_right,
+  BF_01_direction = 1 / bf_left_right
 )

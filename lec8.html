@@ -248,7 +248,7 @@
 <p><img data-src="figs/lec8/1762500850308_1.png"></p>
 </section>
 <section id="贝叶斯框架下的假设检验" class="slide level2">
-<h2>1.贝叶斯框架下的假设检验</h2>
+<h2>1. 贝叶斯框架下的假设检验</h2>
 <h3 id="传统的假设检验方法nhst">1.1 传统的假设检验方法(NHST)</h3>
 <p>🧑‍💻先简单回顾一下传统统计中的零假设显著性检验（Null Hypothesis Significance Test, NHST）。</p>
 <p>NHST基于概率性的反证法：首先建立零假设的前提，然后认为小概率事件(发生概率小于0.05的事件)在单次抽样或实验中不会发生。</p>
@@ -293,41 +293,43 @@
 
 <h3 id="假设检验的统一框架-smiley-et-al.-2023-kiers-tendeiro-2025">1.2 假设检验的统一框架 (Smiley et al., 2023; Kiers &amp; Tendeiro, 2025)</h3>
 <table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: left;">检验类型</th>
+<th style="text-align: left;">零区间</th>
+<th style="text-align: left;">感兴趣区间</th>
+</tr>
+</thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">检验类型</td>
-<td style="text-align: left;">零区间</td>
-<td style="text-align: left;">感兴趣区间</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">双侧NHST</td>
-<td style="text-align: left;">θ = 0</td>
-<td style="text-align: left;">θ &gt; 0 or θ &lt; 0</td>
+<td style="text-align: left;"><span class="math inline">\(\theta = 0\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\theta &gt; 0\)</span> 或 <span class="math inline">\(\theta &lt; 0\)</span></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">单侧NHST</td>
-<td style="text-align: left;">θ &lt; 0</td>
-<td style="text-align: left;">θ &gt; 0</td>
+<td style="text-align: left;"><span class="math inline">\(\theta &lt; 0\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\theta &gt; 0\)</span></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">双侧最小效应检验</td>
-<td style="text-align: left;">−c &lt; θ &lt; c</td>
-<td style="text-align: left;">θ &lt; −c or θ &gt; c</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">单侧最小效应检验</td>
-<td style="text-align: left;">θ &lt; c</td>
-<td style="text-align: left;">θ &gt; c</td>
+<td style="text-align: left;"><span class="math inline">\(-c &lt; \theta &lt; c\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\theta &lt; -c\)</span> 或 <span class="math inline">\(\theta &gt; c\)</span></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">等价性检验</td>
-<td style="text-align: left;">θ &lt; −c or θ &gt; c</td>
-<td style="text-align: left;">−c &lt; θ &lt; c</td>
+<td style="text-align: left;">单侧最小效应检验</td>
+<td style="text-align: left;"><span class="math inline">\(\theta &lt; c\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\theta &gt; c\)</span></td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">等价性检验</td>
+<td style="text-align: left;"><span class="math inline">\(\theta &lt; -c\)</span> 或 <span class="math inline">\(\theta &gt; c\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(-c &lt; \theta &lt; c\)</span></td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">非劣性检验</td>
-<td style="text-align: left;">θ &lt; −c</td>
-<td style="text-align: left;">θ &gt; −c</td>
+<td style="text-align: left;"><span class="math inline">\(\theta &lt; -c\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\theta &gt; -c\)</span></td>
 </tr>
 </tbody>
 </table>
@@ -338,8 +340,8 @@
 </section>
 <section class="slide level2">
 
-<section id="贝叶斯框架下的假设检验优势" style="font-size: 0.7em;">
-<h3>1.3 贝叶斯框架下的假设检验优势</h3>
+<h3 id="贝叶斯框架下的假设检验优势">1.3 贝叶斯框架下的假设检验优势</h3>
+<div style="font-size: 0.7em;">
 <p>与传统假设检验方法相比，贝叶斯框架下的方法具有以下几方面的优势：</p>
 <ol type="1">
 <li><p><strong>可以对假设一视同仁：</strong> 同时评估<span class="math inline">\(H_0\)</span>和<span class="math inline">\(H_1\)</span>的可能性。&nbsp;</p></li>
@@ -351,7 +353,7 @@
 <p>吴凡, 顾全, 施壮华, 高在峰, 沈模卫. (2018). 跳出传统假设检验方法的陷阱——贝叶斯因子在心理学研究领域的应用. <em>应用心理学</em></p>
 <p>许岳培, 陆春雷, 王珺, 宋琼雅, 贾彬彬, 胡传鹏. (2022). 评估零效应的三种统计方法. 应用心理学, <em>28</em>(4), 369–384.</p>
 </blockquote>
-</section>
+</div>
 </section>
 <section class="slide level2">
 
@@ -362,7 +364,7 @@
 <li>判断正确概率 <span class="math inline">\(\theta\)</span> 服从 <strong>Beta 分布</strong>：</li>
 </ul>
 <p><span class="math display">\[
-\begin{equation} \theta \sim \text{Beta}(\alpha, \beta) \end{equation}
+\begin{equation} \theta \sim \mathrm{Beta}(\alpha, \beta) \end{equation}
 \]</span></p>
 <ul>
 <li>在每次试验中，参与者的成功次数 <span class="math inline">\(Y\)</span> 服从 <strong>Binomial 分布</strong>：</li>
@@ -377,8 +379,8 @@
 <p><strong>模型设定</strong></p>
 <p>在这个例子中，我们可以使用Beta-Binomial 模型来表示：</p>
 <blockquote>
-<p>数据: 总试验数为 n = 118，成功次数为 99 <span class="math inline">\((Y = 99)\)</span><br>
-先验分布为：<span class="math inline">\(\theta \sim \text{Beta}(2, 2)\)</span><br>
+<p>数据: 来自 <code>data/beta-binmial.csv</code>（118 次判断、正确 99 次），即 <span class="math inline">\(n = 118\)</span>、<span class="math inline">\(Y = 99\)</span><br>
+先验分布为：<span class="math inline">\(\theta \sim \mathrm{Beta}(2, 2)\)</span><br>
 似然函数为：<span class="math inline">\(Y|\theta \sim \text{Bin}(n, \theta)\)</span></p>
 </blockquote>
 </section>
@@ -486,7 +488,7 @@
 </p>
 <p>建立零假设与备择假设：</p>
 <p><span class="math inline">\(H_0: \theta = 0.5\)</span></p>
-<p><span class="math inline">\(H_a: \theta \ne 0.5\)</span></p>
+<p><span class="math inline">\(H_1: \theta \ne 0.5\)</span></p>
 </section>
 <section id="基于后验分布的统计推断" class="slide level2">
 <h2>2. 基于后验分布的统计推断</h2>
@@ -573,6 +575,8 @@ theta     | [0.76, 0.89]</code></pre>
 </p>
 <p>- HDI 区间为 <span class="math inline">\([0.76, 0.89]\)</span>。</p>
 <p>- ROPE 区间为 <span class="math inline">\([0.4, 0.6]\)</span>。</p>
+<p><strong>两者完全不重叠</strong>：该 95% HDI 整体位于 ROPE 的右侧。</p>
+<p>下一张用 <code>bayestestR::rope()</code> 复核，并作图展示。</p>
 <p><br>
 </p>
 </section>
@@ -637,44 +641,47 @@ theta     |      0.00 %</code></pre>
 <p>事实上，后验分布可以实现以下六种假设检验。</p>
 <p><strong>假设检验的统一框架 (Smiley et al., 2023; Kiers &amp; Tendeiro, 2025)</strong></p>
 <table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: left;">检验类型</th>
+<th style="text-align: left;">零区间</th>
+<th style="text-align: left;">感兴趣区间</th>
+</tr>
+</thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">检验类型</td>
-<td style="text-align: left;">零区间</td>
-<td style="text-align: left;">感兴趣区间</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">双侧NHST</td>
-<td style="text-align: left;">θ = 0</td>
-<td style="text-align: left;">θ &gt; 0 or θ &lt; 0</td>
+<td style="text-align: left;"><span class="math inline">\(\theta = 0\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\theta &gt; 0\)</span> 或 <span class="math inline">\(\theta &lt; 0\)</span></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">单侧NHST</td>
-<td style="text-align: left;">θ &lt; 0</td>
-<td style="text-align: left;">θ &gt; 0</td>
+<td style="text-align: left;"><span class="math inline">\(\theta &lt; 0\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\theta &gt; 0\)</span></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">双侧最小效应检验</td>
-<td style="text-align: left;">−c &lt; θ &lt; c</td>
-<td style="text-align: left;">θ &lt; −c or θ &gt; c</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">单侧最小效应检验</td>
-<td style="text-align: left;">θ &lt; c</td>
-<td style="text-align: left;">θ &gt; c</td>
+<td style="text-align: left;"><span class="math inline">\(-c &lt; \theta &lt; c\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\theta &lt; -c\)</span> 或 <span class="math inline">\(\theta &gt; c\)</span></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">等价性检验</td>
-<td style="text-align: left;">θ &lt; −c or θ &gt; c</td>
-<td style="text-align: left;">−c &lt; θ &lt; c</td>
+<td style="text-align: left;">单侧最小效应检验</td>
+<td style="text-align: left;"><span class="math inline">\(\theta &lt; c\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\theta &gt; c\)</span></td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">等价性检验</td>
+<td style="text-align: left;"><span class="math inline">\(\theta &lt; -c\)</span> 或 <span class="math inline">\(\theta &gt; c\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(-c &lt; \theta &lt; c\)</span></td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">非劣性检验</td>
-<td style="text-align: left;">θ &lt; −c</td>
-<td style="text-align: left;">θ &gt; −c</td>
+<td style="text-align: left;"><span class="math inline">\(\theta &lt; -c\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\theta &gt; -c\)</span></td>
 </tr>
 </tbody>
 </table>
+<p>本例中 <span class="math inline">\(\theta\)</span> 是成功概率：把上表的 <span class="math inline">\(\theta\)</span> 平移 0.5（点零假设即 <span class="math inline">\(\theta = 0.5\)</span>），并取 <span class="math inline">\(c = 0.1\)</span>，即得到 ROPE <span class="math inline">\([0.4, 0.6]\)</span>。</p>
 <div style="font-size: 0.55em;">
 <blockquote>
 <p>Kiers, H. A. L., &amp; Tendeiro, J. N. (2025). Bridging Null Hypothesis Testing and Estimation: A Practical Guide to Statistical Conclusion Drawing From Research in Psychology. <em>Advances in Methods and Practices in Psychological Science</em>, <em>8</em>(3), 25152459251365960. <a href="https://doi.org/10.1177/25152459251365960" target="_blank" rel="noopener noreferrer nofollow">https://doi.org/10.1177/25152459251365960</a></p>
@@ -684,177 +691,99 @@ theta     |      0.00 %</code></pre>
 </section>
 <section class="slide level2">
 
-<p>下面六个面板中，<strong>阴影 = 零假设区间（null region）</strong>，虚线为该区间的边界。</p>
+<p>下面六个面板与上表<strong>逐行对应</strong>（<span class="math inline">\(\theta\)</span> 平移 0.5、<span class="math inline">\(c = 0.1\)</span>）：<strong>阴影 = 零假设区间（null region）</strong>，虚线为该区间的边界。本例后验极度集中在 <span class="math inline">\([0.76, 0.89]\)</span>，因此各检验的后验概率多为 0 或 1。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="" aria-label="1"></a><span class="co"># ============================================</span></span>
-<span id="cb10-2"><a href="" aria-label="2"></a><span class="co"># 1. 后验样本（直接复用前面提取的 theta_post）</span></span>
+<span id="cb10-2"><a href="" aria-label="2"></a><span class="co"># 1. 后验样本</span></span>
 <span id="cb10-3"><a href="" aria-label="3"></a><span class="co"># ============================================</span></span>
-<span id="cb10-4"><a href="" aria-label="4"></a></span>
-<span id="cb10-5"><a href="" aria-label="5"></a><span class="co"># ============================================</span></span>
-<span id="cb10-6"><a href="" aria-label="6"></a><span class="co"># 2. 定义假设检验函数（基于 theta，ROPE = [0.4, 0.6]）</span></span>
-<span id="cb10-7"><a href="" aria-label="7"></a><span class="co"># ============================================</span></span>
-<span id="cb10-8"><a href="" aria-label="8"></a></span>
-<span id="cb10-9"><a href="" aria-label="9"></a><span class="co"># 区间假设：ROPE 检验与等价性检验共用（null = 区间外，interest = 区间内）</span></span>
-<span id="cb10-10"><a href="" aria-label="10"></a>region_test <span class="ot">&lt;-</span> <span class="cf">function</span>(samples, <span class="at">rope_lower =</span> <span class="fl">0.4</span>, <span class="at">rope_upper =</span> <span class="fl">0.6</span>,</span>
-<span id="cb10-11"><a href="" aria-label="11"></a>                        <span class="at">name =</span> <span class="st">"ROPE Test (Practical Equivalence)"</span>) {</span>
-<span id="cb10-12"><a href="" aria-label="12"></a>  interest_region <span class="ot">&lt;-</span> samples <span class="sc">&gt;=</span> rope_lower <span class="sc">&amp;</span> samples <span class="sc">&lt;=</span> rope_upper  <span class="co"># inside ROPE</span></span>
-<span id="cb10-13"><a href="" aria-label="13"></a>  null_region <span class="ot">&lt;-</span> <span class="sc">!</span>interest_region                                    <span class="co"># outside ROPE</span></span>
-<span id="cb10-14"><a href="" aria-label="14"></a>  </span>
-<span id="cb10-15"><a href="" aria-label="15"></a>  <span class="fu">list</span>(</span>
-<span id="cb10-16"><a href="" aria-label="16"></a>    <span class="at">name =</span> name,</span>
-<span id="cb10-17"><a href="" aria-label="17"></a>    <span class="at">null =</span> <span class="fu">paste0</span>(<span class="st">"θ &lt; "</span>, rope_lower, <span class="st">" or θ &gt; "</span>, rope_upper, <span class="st">" (outside ROPE)"</span>),</span>
-<span id="cb10-18"><a href="" aria-label="18"></a>    <span class="at">interest =</span> <span class="fu">paste0</span>(rope_lower, <span class="st">" ≤ θ ≤ "</span>, rope_upper, <span class="st">" (inside ROPE)"</span>),</span>
-<span id="cb10-19"><a href="" aria-label="19"></a>    <span class="at">p_null =</span> <span class="fu">sum</span>(null_region) <span class="sc">/</span> <span class="fu">length</span>(samples),</span>
-<span id="cb10-20"><a href="" aria-label="20"></a>    <span class="at">p_interest =</span> <span class="fu">sum</span>(interest_region) <span class="sc">/</span> <span class="fu">length</span>(samples),</span>
-<span id="cb10-21"><a href="" aria-label="21"></a>    <span class="at">rope_lower =</span> rope_lower,</span>
-<span id="cb10-22"><a href="" aria-label="22"></a>    <span class="at">rope_upper =</span> rope_upper</span>
-<span id="cb10-23"><a href="" aria-label="23"></a>  )</span>
-<span id="cb10-24"><a href="" aria-label="24"></a>}</span>
-<span id="cb10-25"><a href="" aria-label="25"></a></span>
-<span id="cb10-26"><a href="" aria-label="26"></a><span class="co"># 单侧 NHST: H0: θ ≤ 0.5 vs H1: θ &gt; 0.5</span></span>
-<span id="cb10-27"><a href="" aria-label="27"></a>one_sided_nhst <span class="ot">&lt;-</span> <span class="cf">function</span>(samples, <span class="at">null_val =</span> <span class="fl">0.5</span>) {</span>
-<span id="cb10-28"><a href="" aria-label="28"></a>  null_region <span class="ot">&lt;-</span> samples <span class="sc">&lt;=</span> null_val</span>
-<span id="cb10-29"><a href="" aria-label="29"></a>  interest_region <span class="ot">&lt;-</span> samples <span class="sc">&gt;</span> null_val</span>
-<span id="cb10-30"><a href="" aria-label="30"></a>  </span>
-<span id="cb10-31"><a href="" aria-label="31"></a>  <span class="fu">list</span>(</span>
-<span id="cb10-32"><a href="" aria-label="32"></a>    <span class="at">name =</span> <span class="st">"One-sided NHST"</span>,</span>
-<span id="cb10-33"><a href="" aria-label="33"></a>    <span class="at">null =</span> <span class="fu">paste0</span>(<span class="st">"θ ≤ "</span>, null_val),</span>
-<span id="cb10-34"><a href="" aria-label="34"></a>    <span class="at">interest =</span> <span class="fu">paste0</span>(<span class="st">"θ &gt; "</span>, null_val),</span>
-<span id="cb10-35"><a href="" aria-label="35"></a>    <span class="at">p_null =</span> <span class="fu">sum</span>(null_region) <span class="sc">/</span> <span class="fu">length</span>(samples),</span>
-<span id="cb10-36"><a href="" aria-label="36"></a>    <span class="at">p_interest =</span> <span class="fu">sum</span>(interest_region) <span class="sc">/</span> <span class="fu">length</span>(samples),</span>
-<span id="cb10-37"><a href="" aria-label="37"></a>    <span class="at">null_val =</span> null_val</span>
-<span id="cb10-38"><a href="" aria-label="38"></a>  )</span>
-<span id="cb10-39"><a href="" aria-label="39"></a>}</span>
-<span id="cb10-40"><a href="" aria-label="40"></a></span>
-<span id="cb10-41"><a href="" aria-label="41"></a><span class="co"># 双侧最小效应检验: H0: θ ∈ [0.4, 0.6] (no meaningful effect)</span></span>
-<span id="cb10-42"><a href="" aria-label="42"></a>two_sided_met <span class="ot">&lt;-</span> <span class="cf">function</span>(samples, <span class="at">rope_lower =</span> <span class="fl">0.4</span>, <span class="at">rope_upper =</span> <span class="fl">0.6</span>) {</span>
-<span id="cb10-43"><a href="" aria-label="43"></a>  null_region <span class="ot">&lt;-</span> samples <span class="sc">&gt;=</span> rope_lower <span class="sc">&amp;</span> samples <span class="sc">&lt;=</span> rope_upper</span>
-<span id="cb10-44"><a href="" aria-label="44"></a>  interest_region <span class="ot">&lt;-</span> <span class="sc">!</span>null_region</span>
-<span id="cb10-45"><a href="" aria-label="45"></a>  </span>
-<span id="cb10-46"><a href="" aria-label="46"></a>  <span class="fu">list</span>(</span>
-<span id="cb10-47"><a href="" aria-label="47"></a>    <span class="at">name =</span> <span class="st">"Two-sided Minimal Effect Test"</span>,</span>
-<span id="cb10-48"><a href="" aria-label="48"></a>    <span class="at">null =</span> <span class="fu">paste0</span>(rope_lower, <span class="st">" ≤ θ ≤ "</span>, rope_upper, <span class="st">" (trivial effect)"</span>),</span>
-<span id="cb10-49"><a href="" aria-label="49"></a>    <span class="at">interest =</span> <span class="fu">paste0</span>(<span class="st">"θ &lt; "</span>, rope_lower, <span class="st">" or θ &gt; "</span>, rope_upper, <span class="st">" (meaningful effect)"</span>),</span>
-<span id="cb10-50"><a href="" aria-label="50"></a>    <span class="at">p_null =</span> <span class="fu">sum</span>(null_region) <span class="sc">/</span> <span class="fu">length</span>(samples),</span>
-<span id="cb10-51"><a href="" aria-label="51"></a>    <span class="at">p_interest =</span> <span class="fu">sum</span>(interest_region) <span class="sc">/</span> <span class="fu">length</span>(samples),</span>
-<span id="cb10-52"><a href="" aria-label="52"></a>    <span class="at">rope_lower =</span> rope_lower,</span>
-<span id="cb10-53"><a href="" aria-label="53"></a>    <span class="at">rope_upper =</span> rope_upper</span>
-<span id="cb10-54"><a href="" aria-label="54"></a>  )</span>
-<span id="cb10-55"><a href="" aria-label="55"></a>}</span>
-<span id="cb10-56"><a href="" aria-label="56"></a></span>
-<span id="cb10-57"><a href="" aria-label="57"></a><span class="co"># 单侧最小效应检验: H0: θ ≤ 0.6 vs H1: θ &gt; 0.6</span></span>
-<span id="cb10-58"><a href="" aria-label="58"></a>one_sided_met <span class="ot">&lt;-</span> <span class="cf">function</span>(samples, <span class="at">threshold =</span> <span class="fl">0.6</span>) {</span>
-<span id="cb10-59"><a href="" aria-label="59"></a>  null_region <span class="ot">&lt;-</span> samples <span class="sc">&lt;=</span> threshold</span>
-<span id="cb10-60"><a href="" aria-label="60"></a>  interest_region <span class="ot">&lt;-</span> samples <span class="sc">&gt;</span> threshold</span>
-<span id="cb10-61"><a href="" aria-label="61"></a>  </span>
-<span id="cb10-62"><a href="" aria-label="62"></a>  <span class="fu">list</span>(</span>
-<span id="cb10-63"><a href="" aria-label="63"></a>    <span class="at">name =</span> <span class="st">"One-sided Minimal Effect Test"</span>,</span>
-<span id="cb10-64"><a href="" aria-label="64"></a>    <span class="at">null =</span> <span class="fu">paste0</span>(<span class="st">"θ ≤ "</span>, threshold),</span>
-<span id="cb10-65"><a href="" aria-label="65"></a>    <span class="at">interest =</span> <span class="fu">paste0</span>(<span class="st">"θ &gt; "</span>, threshold),</span>
-<span id="cb10-66"><a href="" aria-label="66"></a>    <span class="at">p_null =</span> <span class="fu">sum</span>(null_region) <span class="sc">/</span> <span class="fu">length</span>(samples),</span>
-<span id="cb10-67"><a href="" aria-label="67"></a>    <span class="at">p_interest =</span> <span class="fu">sum</span>(interest_region) <span class="sc">/</span> <span class="fu">length</span>(samples),</span>
-<span id="cb10-68"><a href="" aria-label="68"></a>    <span class="at">threshold =</span> threshold</span>
-<span id="cb10-69"><a href="" aria-label="69"></a>  )</span>
-<span id="cb10-70"><a href="" aria-label="70"></a>}</span>
-<span id="cb10-71"><a href="" aria-label="71"></a></span>
-<span id="cb10-72"><a href="" aria-label="72"></a><span class="co"># 等价性检验：与 ROPE 检验共用同一套区间逻辑，仅名称不同</span></span>
-<span id="cb10-73"><a href="" aria-label="73"></a>equivalence_test <span class="ot">&lt;-</span> <span class="cf">function</span>(samples, <span class="at">rope_lower =</span> <span class="fl">0.4</span>, <span class="at">rope_upper =</span> <span class="fl">0.6</span>) {</span>
-<span id="cb10-74"><a href="" aria-label="74"></a>  <span class="fu">region_test</span>(samples, rope_lower, rope_upper, <span class="at">name =</span> <span class="st">"Equivalence Test"</span>)</span>
-<span id="cb10-75"><a href="" aria-label="75"></a>}</span>
-<span id="cb10-76"><a href="" aria-label="76"></a></span>
-<span id="cb10-77"><a href="" aria-label="77"></a><span class="co"># 非劣性检验: H0: θ &lt; 0.4 vs H1: θ ≥ 0.4</span></span>
-<span id="cb10-78"><a href="" aria-label="78"></a>non_inferiority_test <span class="ot">&lt;-</span> <span class="cf">function</span>(samples, <span class="at">threshold =</span> <span class="fl">0.4</span>) {</span>
-<span id="cb10-79"><a href="" aria-label="79"></a>  null_region <span class="ot">&lt;-</span> samples <span class="sc">&lt;</span> threshold</span>
-<span id="cb10-80"><a href="" aria-label="80"></a>  interest_region <span class="ot">&lt;-</span> samples <span class="sc">&gt;=</span> threshold</span>
-<span id="cb10-81"><a href="" aria-label="81"></a>  </span>
-<span id="cb10-82"><a href="" aria-label="82"></a>  <span class="fu">list</span>(</span>
-<span id="cb10-83"><a href="" aria-label="83"></a>    <span class="at">name =</span> <span class="st">"Non-inferiority Test"</span>,</span>
-<span id="cb10-84"><a href="" aria-label="84"></a>    <span class="at">null =</span> <span class="fu">paste0</span>(<span class="st">"θ &lt; "</span>, threshold),</span>
-<span id="cb10-85"><a href="" aria-label="85"></a>    <span class="at">interest =</span> <span class="fu">paste0</span>(<span class="st">"θ ≥ "</span>, threshold),</span>
-<span id="cb10-86"><a href="" aria-label="86"></a>    <span class="at">p_null =</span> <span class="fu">sum</span>(null_region) <span class="sc">/</span> <span class="fu">length</span>(samples),</span>
-<span id="cb10-87"><a href="" aria-label="87"></a>    <span class="at">p_interest =</span> <span class="fu">sum</span>(interest_region) <span class="sc">/</span> <span class="fu">length</span>(samples),</span>
-<span id="cb10-88"><a href="" aria-label="88"></a>    <span class="at">threshold =</span> threshold</span>
-<span id="cb10-89"><a href="" aria-label="89"></a>  )</span>
-<span id="cb10-90"><a href="" aria-label="90"></a>}</span>
-<span id="cb10-91"><a href="" aria-label="91"></a></span>
-<span id="cb10-92"><a href="" aria-label="92"></a><span class="co"># ============================================</span></span>
-<span id="cb10-93"><a href="" aria-label="93"></a><span class="co"># 3. 执行所有检验 </span></span>
-<span id="cb10-94"><a href="" aria-label="94"></a><span class="co"># ============================================</span></span>
-<span id="cb10-95"><a href="" aria-label="95"></a></span>
-<span id="cb10-96"><a href="" aria-label="96"></a>results <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb10-97"><a href="" aria-label="97"></a>  <span class="fu">region_test</span>(theta_post, <span class="at">rope_lower =</span> <span class="fl">0.4</span>, <span class="at">rope_upper =</span> <span class="fl">0.6</span>),</span>
-<span id="cb10-98"><a href="" aria-label="98"></a>  <span class="fu">one_sided_nhst</span>(theta_post, <span class="at">null_val =</span> <span class="fl">0.5</span>),</span>
-<span id="cb10-99"><a href="" aria-label="99"></a>  <span class="fu">two_sided_met</span>(theta_post, <span class="at">rope_lower =</span> <span class="fl">0.4</span>, <span class="at">rope_upper =</span> <span class="fl">0.6</span>),</span>
-<span id="cb10-100"><a href="" aria-label="100"></a>  <span class="fu">one_sided_met</span>(theta_post, <span class="at">threshold =</span> <span class="fl">0.6</span>),</span>
-<span id="cb10-101"><a href="" aria-label="101"></a>  <span class="fu">equivalence_test</span>(theta_post, <span class="at">rope_lower =</span> <span class="fl">0.4</span>, <span class="at">rope_upper =</span> <span class="fl">0.6</span>),</span>
-<span id="cb10-102"><a href="" aria-label="102"></a>  <span class="fu">non_inferiority_test</span>(theta_post, <span class="at">threshold =</span> <span class="fl">0.4</span>)</span>
-<span id="cb10-103"><a href="" aria-label="103"></a>)</span>
-<span id="cb10-104"><a href="" aria-label="104"></a></span>
-<span id="cb10-105"><a href="" aria-label="105"></a><span class="co"># ============================================</span></span>
-<span id="cb10-106"><a href="" aria-label="106"></a><span class="co"># 4. 可视化函数</span></span>
-<span id="cb10-107"><a href="" aria-label="107"></a><span class="co"># ============================================</span></span>
-<span id="cb10-108"><a href="" aria-label="108"></a></span>
-<span id="cb10-109"><a href="" aria-label="109"></a>visualize_test_theta <span class="ot">&lt;-</span> <span class="cf">function</span>(samples, test_result, <span class="at">x_range =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) {</span>
-<span id="cb10-110"><a href="" aria-label="110"></a>  df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">theta =</span> samples)</span>
-<span id="cb10-111"><a href="" aria-label="111"></a></span>
-<span id="cb10-112"><a href="" aria-label="112"></a>  <span class="co"># 所有面板统一：阴影 = 零假设区间（null region）</span></span>
-<span id="cb10-113"><a href="" aria-label="113"></a>  shade_null <span class="ot">&lt;-</span> <span class="cf">function</span>(p, lower, upper) {</span>
-<span id="cb10-114"><a href="" aria-label="114"></a>    p <span class="sc">+</span> <span class="fu">annotate</span>(<span class="st">"rect"</span>, <span class="at">xmin =</span> lower, <span class="at">xmax =</span> upper, <span class="at">ymin =</span> <span class="dv">0</span>, <span class="at">ymax =</span> <span class="cn">Inf</span>,</span>
-<span id="cb10-115"><a href="" aria-label="115"></a>                 <span class="at">alpha =</span> <span class="fl">0.18</span>, <span class="at">fill =</span> <span class="st">"steelblue"</span>)</span>
-<span id="cb10-116"><a href="" aria-label="116"></a>  }</span>
-<span id="cb10-117"><a href="" aria-label="117"></a></span>
-<span id="cb10-118"><a href="" aria-label="118"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> theta)) <span class="sc">+</span></span>
-<span id="cb10-119"><a href="" aria-label="119"></a>    <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"gray80"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb10-120"><a href="" aria-label="120"></a>    <span class="fu">labs</span>(</span>
-<span id="cb10-121"><a href="" aria-label="121"></a>      <span class="at">title =</span> test_result<span class="sc">$</span>name,</span>
-<span id="cb10-122"><a href="" aria-label="122"></a>      <span class="at">subtitle =</span> <span class="fu">paste0</span>(</span>
-<span id="cb10-123"><a href="" aria-label="123"></a>        <span class="st">"Null: "</span>, test_result<span class="sc">$</span>null, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb10-124"><a href="" aria-label="124"></a>        <span class="st">"Interest: "</span>, test_result<span class="sc">$</span>interest, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb10-125"><a href="" aria-label="125"></a>        <span class="st">"p(null) = "</span>, <span class="fu">sprintf</span>(<span class="st">"%.3f"</span>, test_result<span class="sc">$</span>p_null),</span>
-<span id="cb10-126"><a href="" aria-label="126"></a>        <span class="st">" | p(interest) = "</span>, <span class="fu">sprintf</span>(<span class="st">"%.3f"</span>, test_result<span class="sc">$</span>p_interest)</span>
-<span id="cb10-127"><a href="" aria-label="127"></a>      ),</span>
-<span id="cb10-128"><a href="" aria-label="128"></a>      <span class="at">x =</span> <span class="st">"Parameter θ"</span>,</span>
-<span id="cb10-129"><a href="" aria-label="129"></a>      <span class="at">y =</span> <span class="st">"Posterior Density"</span></span>
-<span id="cb10-130"><a href="" aria-label="130"></a>    ) <span class="sc">+</span></span>
-<span id="cb10-131"><a href="" aria-label="131"></a>    papaja<span class="sc">::</span><span class="fu">theme_apa</span>() <span class="sc">+</span></span>
-<span id="cb10-132"><a href="" aria-label="132"></a>    <span class="fu">theme</span>(</span>
-<span id="cb10-133"><a href="" aria-label="133"></a>      <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">10</span>),</span>
-<span id="cb10-134"><a href="" aria-label="134"></a>      <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">7</span>),</span>
-<span id="cb10-135"><a href="" aria-label="135"></a>      <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">9</span>)</span>
-<span id="cb10-136"><a href="" aria-label="136"></a>    ) <span class="sc">+</span></span>
-<span id="cb10-137"><a href="" aria-label="137"></a>    <span class="fu">xlim</span>(x_range)</span>
-<span id="cb10-138"><a href="" aria-label="138"></a></span>
-<span id="cb10-139"><a href="" aria-label="139"></a>  <span class="co"># 阴影与虚线都标出零假设区间</span></span>
-<span id="cb10-140"><a href="" aria-label="140"></a>  <span class="cf">if</span> (test_result<span class="sc">$</span>name <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"ROPE Test (Practical Equivalence)"</span>, <span class="st">"Equivalence Test"</span>)) {</span>
-<span id="cb10-141"><a href="" aria-label="141"></a>    p <span class="ot">&lt;-</span> <span class="fu">shade_null</span>(p, <span class="sc">-</span><span class="cn">Inf</span>, test_result<span class="sc">$</span>rope_lower)</span>
-<span id="cb10-142"><a href="" aria-label="142"></a>    p <span class="ot">&lt;-</span> <span class="fu">shade_null</span>(p, test_result<span class="sc">$</span>rope_upper, <span class="cn">Inf</span>)</span>
-<span id="cb10-143"><a href="" aria-label="143"></a>    p <span class="ot">&lt;-</span> p <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">c</span>(test_result<span class="sc">$</span>rope_lower, test_result<span class="sc">$</span>rope_upper),</span>
-<span id="cb10-144"><a href="" aria-label="144"></a>                        <span class="at">linetype =</span> <span class="st">"dotted"</span>, <span class="at">color =</span> <span class="st">"steelblue"</span>, <span class="at">linewidth =</span> <span class="fl">0.8</span>)</span>
-<span id="cb10-145"><a href="" aria-label="145"></a>  } <span class="cf">else</span> <span class="cf">if</span> (test_result<span class="sc">$</span>name <span class="sc">==</span> <span class="st">"Two-sided Minimal Effect Test"</span>) {</span>
-<span id="cb10-146"><a href="" aria-label="146"></a>    p <span class="ot">&lt;-</span> <span class="fu">shade_null</span>(p, test_result<span class="sc">$</span>rope_lower, test_result<span class="sc">$</span>rope_upper)</span>
-<span id="cb10-147"><a href="" aria-label="147"></a>    p <span class="ot">&lt;-</span> p <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">c</span>(test_result<span class="sc">$</span>rope_lower, test_result<span class="sc">$</span>rope_upper),</span>
-<span id="cb10-148"><a href="" aria-label="148"></a>                        <span class="at">linetype =</span> <span class="st">"dotted"</span>, <span class="at">color =</span> <span class="st">"steelblue"</span>, <span class="at">linewidth =</span> <span class="fl">0.8</span>)</span>
-<span id="cb10-149"><a href="" aria-label="149"></a>  } <span class="cf">else</span> <span class="cf">if</span> (test_result<span class="sc">$</span>name <span class="sc">==</span> <span class="st">"One-sided NHST"</span>) {</span>
-<span id="cb10-150"><a href="" aria-label="150"></a>    p <span class="ot">&lt;-</span> <span class="fu">shade_null</span>(p, <span class="sc">-</span><span class="cn">Inf</span>, test_result<span class="sc">$</span>null_val)</span>
-<span id="cb10-151"><a href="" aria-label="151"></a>    p <span class="ot">&lt;-</span> p <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> test_result<span class="sc">$</span>null_val, <span class="at">linetype =</span> <span class="st">"dotted"</span>,</span>
-<span id="cb10-152"><a href="" aria-label="152"></a>                        <span class="at">color =</span> <span class="st">"steelblue"</span>, <span class="at">linewidth =</span> <span class="fl">0.8</span>)</span>
-<span id="cb10-153"><a href="" aria-label="153"></a>  } <span class="cf">else</span> {</span>
-<span id="cb10-154"><a href="" aria-label="154"></a>    <span class="co"># One-sided Minimal Effect Test / Non-inferiority Test</span></span>
-<span id="cb10-155"><a href="" aria-label="155"></a>    p <span class="ot">&lt;-</span> <span class="fu">shade_null</span>(p, <span class="sc">-</span><span class="cn">Inf</span>, test_result<span class="sc">$</span>threshold)</span>
-<span id="cb10-156"><a href="" aria-label="156"></a>    p <span class="ot">&lt;-</span> p <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> test_result<span class="sc">$</span>threshold, <span class="at">linetype =</span> <span class="st">"dotted"</span>,</span>
-<span id="cb10-157"><a href="" aria-label="157"></a>                        <span class="at">color =</span> <span class="st">"steelblue"</span>, <span class="at">linewidth =</span> <span class="fl">0.8</span>)</span>
-<span id="cb10-158"><a href="" aria-label="158"></a>  }</span>
-<span id="cb10-159"><a href="" aria-label="159"></a></span>
-<span id="cb10-160"><a href="" aria-label="160"></a>  p</span>
-<span id="cb10-161"><a href="" aria-label="161"></a>}</span>
-<span id="cb10-162"><a href="" aria-label="162"></a></span>
-<span id="cb10-163"><a href="" aria-label="163"></a><span class="co"># 生成图形</span></span>
-<span id="cb10-164"><a href="" aria-label="164"></a>plots <span class="ot">&lt;-</span> <span class="fu">lapply</span>(results, <span class="cf">function</span>(r) <span class="fu">visualize_test_theta</span>(theta_post, r))</span>
-<span id="cb10-165"><a href="" aria-label="165"></a></span>
-<span id="cb10-166"><a href="" aria-label="166"></a><span class="co"># 组合图形（2列）</span></span>
-<span id="cb10-167"><a href="" aria-label="167"></a><span class="fu">do.call</span>(grid.arrange, <span class="fu">c</span>(plots, <span class="at">ncol =</span> <span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-4"><a href="" aria-label="4"></a><span class="co"># theta_post 已在 posterior-samples 中提取，这里直接复用</span></span>
+<span id="cb10-5"><a href="" aria-label="5"></a></span>
+<span id="cb10-6"><a href="" aria-label="6"></a><span class="co"># ============================================</span></span>
+<span id="cb10-7"><a href="" aria-label="7"></a><span class="co"># 2. 六种检验：与 2.3 的表格逐行对应</span></span>
+<span id="cb10-8"><a href="" aria-label="8"></a><span class="co">#    null_parts 给出零假设对应的区间（可以有多个）；点零假设用 NULL</span></span>
+<span id="cb10-9"><a href="" aria-label="9"></a><span class="co"># ============================================</span></span>
+<span id="cb10-10"><a href="" aria-label="10"></a>tests <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb10-11"><a href="" aria-label="11"></a>  <span class="fu">list</span>(<span class="at">name =</span> <span class="st">"1. Two-sided NHST"</span>,</span>
+<span id="cb10-12"><a href="" aria-label="12"></a>       <span class="at">null_label =</span> <span class="st">"θ = 0.5 (point)"</span>, <span class="at">interest_label =</span> <span class="st">"θ ≠ 0.5"</span>,</span>
+<span id="cb10-13"><a href="" aria-label="13"></a>       <span class="at">null_parts =</span> <span class="cn">NULL</span>, <span class="at">vlines =</span> <span class="fl">0.5</span>,</span>
+<span id="cb10-14"><a href="" aria-label="14"></a>       <span class="at">note =</span> <span class="st">"P(θ = 0.5 | Y) = 0：连续参数下点零假设需用 BF（见 3.1）"</span>),</span>
+<span id="cb10-15"><a href="" aria-label="15"></a>  <span class="fu">list</span>(<span class="at">name =</span> <span class="st">"2. One-sided NHST"</span>,</span>
+<span id="cb10-16"><a href="" aria-label="16"></a>       <span class="at">null_label =</span> <span class="st">"θ ≤ 0.5"</span>, <span class="at">interest_label =</span> <span class="st">"θ &gt; 0.5"</span>,</span>
+<span id="cb10-17"><a href="" aria-label="17"></a>       <span class="at">null_parts =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="cn">Inf</span>, <span class="fl">0.5</span>)), <span class="at">vlines =</span> <span class="fl">0.5</span>),</span>
+<span id="cb10-18"><a href="" aria-label="18"></a>  <span class="fu">list</span>(<span class="at">name =</span> <span class="st">"3. Two-sided minimal effect"</span>,</span>
+<span id="cb10-19"><a href="" aria-label="19"></a>       <span class="at">null_label =</span> <span class="st">"0.4 ≤ θ ≤ 0.6"</span>, <span class="at">interest_label =</span> <span class="st">"θ &lt; 0.4 or θ &gt; 0.6"</span>,</span>
+<span id="cb10-20"><a href="" aria-label="20"></a>       <span class="at">null_parts =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.6</span>)), <span class="at">vlines =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.6</span>)),</span>
+<span id="cb10-21"><a href="" aria-label="21"></a>  <span class="fu">list</span>(<span class="at">name =</span> <span class="st">"4. One-sided minimal effect"</span>,</span>
+<span id="cb10-22"><a href="" aria-label="22"></a>       <span class="at">null_label =</span> <span class="st">"θ ≤ 0.6"</span>, <span class="at">interest_label =</span> <span class="st">"θ &gt; 0.6"</span>,</span>
+<span id="cb10-23"><a href="" aria-label="23"></a>       <span class="at">null_parts =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="cn">Inf</span>, <span class="fl">0.6</span>)), <span class="at">vlines =</span> <span class="fl">0.6</span>),</span>
+<span id="cb10-24"><a href="" aria-label="24"></a>  <span class="fu">list</span>(<span class="at">name =</span> <span class="st">"5. Equivalence"</span>,</span>
+<span id="cb10-25"><a href="" aria-label="25"></a>       <span class="at">null_label =</span> <span class="st">"θ &lt; 0.4 or θ &gt; 0.6"</span>, <span class="at">interest_label =</span> <span class="st">"0.4 ≤ θ ≤ 0.6"</span>,</span>
+<span id="cb10-26"><a href="" aria-label="26"></a>       <span class="at">null_parts =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="cn">Inf</span>, <span class="fl">0.4</span>), <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="cn">Inf</span>)), <span class="at">vlines =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.6</span>)),</span>
+<span id="cb10-27"><a href="" aria-label="27"></a>  <span class="fu">list</span>(<span class="at">name =</span> <span class="st">"6. Non-inferiority"</span>,</span>
+<span id="cb10-28"><a href="" aria-label="28"></a>       <span class="at">null_label =</span> <span class="st">"θ &lt; 0.4"</span>, <span class="at">interest_label =</span> <span class="st">"θ ≥ 0.4"</span>,</span>
+<span id="cb10-29"><a href="" aria-label="29"></a>       <span class="at">null_parts =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="cn">Inf</span>, <span class="fl">0.4</span>)), <span class="at">vlines =</span> <span class="fl">0.4</span>)</span>
+<span id="cb10-30"><a href="" aria-label="30"></a>)</span>
+<span id="cb10-31"><a href="" aria-label="31"></a></span>
+<span id="cb10-32"><a href="" aria-label="32"></a><span class="co"># 零假设区间的后验概率质量（点零假设下为 0）</span></span>
+<span id="cb10-33"><a href="" aria-label="33"></a>p_null_of <span class="ot">&lt;-</span> <span class="cf">function</span>(samples, parts) {</span>
+<span id="cb10-34"><a href="" aria-label="34"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(parts)) <span class="fu">return</span>(<span class="dv">0</span>)</span>
+<span id="cb10-35"><a href="" aria-label="35"></a>  inside <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">FALSE</span>, <span class="fu">length</span>(samples))</span>
+<span id="cb10-36"><a href="" aria-label="36"></a>  <span class="cf">for</span> (r <span class="cf">in</span> parts) inside <span class="ot">&lt;-</span> inside <span class="sc">|</span> (samples <span class="sc">&gt;</span> r[<span class="dv">1</span>] <span class="sc">&amp;</span> samples <span class="sc">&lt;</span> r[<span class="dv">2</span>])</span>
+<span id="cb10-37"><a href="" aria-label="37"></a>  <span class="fu">mean</span>(inside)</span>
+<span id="cb10-38"><a href="" aria-label="38"></a>}</span>
+<span id="cb10-39"><a href="" aria-label="39"></a></span>
+<span id="cb10-40"><a href="" aria-label="40"></a><span class="co"># ============================================</span></span>
+<span id="cb10-41"><a href="" aria-label="41"></a><span class="co"># 3. 绘图：阴影 = 零假设区间，虚线 = 边界</span></span>
+<span id="cb10-42"><a href="" aria-label="42"></a><span class="co"># ============================================</span></span>
+<span id="cb10-43"><a href="" aria-label="43"></a>visualize_test_theta <span class="ot">&lt;-</span> <span class="cf">function</span>(samples, test) {</span>
+<span id="cb10-44"><a href="" aria-label="44"></a>  df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">theta =</span> samples)</span>
+<span id="cb10-45"><a href="" aria-label="45"></a>  p0 <span class="ot">&lt;-</span> <span class="fu">p_null_of</span>(samples, test<span class="sc">$</span>null_parts)</span>
+<span id="cb10-46"><a href="" aria-label="46"></a></span>
+<span id="cb10-47"><a href="" aria-label="47"></a>  g <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> theta)) <span class="sc">+</span></span>
+<span id="cb10-48"><a href="" aria-label="48"></a>    <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"gray80"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb10-49"><a href="" aria-label="49"></a>    <span class="fu">labs</span>(</span>
+<span id="cb10-50"><a href="" aria-label="50"></a>      <span class="at">title =</span> test<span class="sc">$</span>name,</span>
+<span id="cb10-51"><a href="" aria-label="51"></a>      <span class="at">subtitle =</span> <span class="fu">paste0</span>(</span>
+<span id="cb10-52"><a href="" aria-label="52"></a>        <span class="st">"Null: "</span>, test<span class="sc">$</span>null_label, <span class="st">" | p(null) = "</span>, <span class="fu">sprintf</span>(<span class="st">"%.3f"</span>, p0), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb10-53"><a href="" aria-label="53"></a>        <span class="st">"Interest: "</span>, test<span class="sc">$</span>interest_label,</span>
+<span id="cb10-54"><a href="" aria-label="54"></a>        <span class="st">" | p(interest) = "</span>, <span class="fu">sprintf</span>(<span class="st">"%.3f"</span>, <span class="dv">1</span> <span class="sc">-</span> p0)</span>
+<span id="cb10-55"><a href="" aria-label="55"></a>      ),</span>
+<span id="cb10-56"><a href="" aria-label="56"></a>      <span class="at">x =</span> <span class="fu">expression</span>(theta),</span>
+<span id="cb10-57"><a href="" aria-label="57"></a>      <span class="at">y =</span> <span class="st">"Posterior density"</span></span>
+<span id="cb10-58"><a href="" aria-label="58"></a>    ) <span class="sc">+</span></span>
+<span id="cb10-59"><a href="" aria-label="59"></a>    papaja<span class="sc">::</span><span class="fu">theme_apa</span>() <span class="sc">+</span></span>
+<span id="cb10-60"><a href="" aria-label="60"></a>    <span class="fu">theme</span>(</span>
+<span id="cb10-61"><a href="" aria-label="61"></a>      <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb10-62"><a href="" aria-label="62"></a>      <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">7</span>),</span>
+<span id="cb10-63"><a href="" aria-label="63"></a>      <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">9</span>)</span>
+<span id="cb10-64"><a href="" aria-label="64"></a>    ) <span class="sc">+</span></span>
+<span id="cb10-65"><a href="" aria-label="65"></a>    <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb10-66"><a href="" aria-label="66"></a></span>
+<span id="cb10-67"><a href="" aria-label="67"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(test<span class="sc">$</span>null_parts)) {</span>
+<span id="cb10-68"><a href="" aria-label="68"></a>    <span class="cf">for</span> (r <span class="cf">in</span> test<span class="sc">$</span>null_parts) {</span>
+<span id="cb10-69"><a href="" aria-label="69"></a>      g <span class="ot">&lt;-</span> g <span class="sc">+</span> <span class="fu">annotate</span>(<span class="st">"rect"</span>, <span class="at">xmin =</span> <span class="fu">max</span>(r[<span class="dv">1</span>], <span class="dv">0</span>), <span class="at">xmax =</span> <span class="fu">min</span>(r[<span class="dv">2</span>], <span class="dv">1</span>),</span>
+<span id="cb10-70"><a href="" aria-label="70"></a>                        <span class="at">ymin =</span> <span class="dv">0</span>, <span class="at">ymax =</span> <span class="cn">Inf</span>,</span>
+<span id="cb10-71"><a href="" aria-label="71"></a>                        <span class="at">alpha =</span> <span class="fl">0.18</span>, <span class="at">fill =</span> <span class="st">"steelblue"</span>)</span>
+<span id="cb10-72"><a href="" aria-label="72"></a>    }</span>
+<span id="cb10-73"><a href="" aria-label="73"></a>  }</span>
+<span id="cb10-74"><a href="" aria-label="74"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(test<span class="sc">$</span>vlines)) {</span>
+<span id="cb10-75"><a href="" aria-label="75"></a>    g <span class="ot">&lt;-</span> g <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> test<span class="sc">$</span>vlines, <span class="at">linetype =</span> <span class="st">"dotted"</span>,</span>
+<span id="cb10-76"><a href="" aria-label="76"></a>                        <span class="at">colour =</span> <span class="st">"steelblue"</span>, <span class="at">linewidth =</span> <span class="fl">0.8</span>)</span>
+<span id="cb10-77"><a href="" aria-label="77"></a>  }</span>
+<span id="cb10-78"><a href="" aria-label="78"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(test<span class="sc">$</span>note)) {</span>
+<span id="cb10-79"><a href="" aria-label="79"></a>    g <span class="ot">&lt;-</span> g <span class="sc">+</span> <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="fl">0.02</span>, <span class="at">y =</span> <span class="cn">Inf</span>, <span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">vjust =</span> <span class="fl">1.8</span>,</span>
+<span id="cb10-80"><a href="" aria-label="80"></a>                      <span class="at">label =</span> test<span class="sc">$</span>note, <span class="at">size =</span> <span class="fl">2.6</span>, <span class="at">colour =</span> <span class="st">"grey30"</span>)</span>
+<span id="cb10-81"><a href="" aria-label="81"></a>  }</span>
+<span id="cb10-82"><a href="" aria-label="82"></a>  g</span>
+<span id="cb10-83"><a href="" aria-label="83"></a>}</span>
+<span id="cb10-84"><a href="" aria-label="84"></a></span>
+<span id="cb10-85"><a href="" aria-label="85"></a><span class="co"># ============================================</span></span>
+<span id="cb10-86"><a href="" aria-label="86"></a><span class="co"># 4. 生成图形（2 列 × 3 行）</span></span>
+<span id="cb10-87"><a href="" aria-label="87"></a><span class="co"># ============================================</span></span>
+<span id="cb10-88"><a href="" aria-label="88"></a>plots <span class="ot">&lt;-</span> <span class="fu">lapply</span>(tests, <span class="cf">function</span>(t) <span class="fu">visualize_test_theta</span>(theta_post, t))</span>
+<span id="cb10-89"><a href="" aria-label="89"></a><span class="fu">do.call</span>(grid.arrange, <span class="fu">c</span>(plots, <span class="at">ncol =</span> <span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1077,7 +1006,7 @@ Inside ROPE
 
 <p><strong>模型假设</strong></p>
 <blockquote>
-<p>判断正确概率 <span class="math inline">\(\theta\)</span> 服从 <strong>Beta 分布</strong>： <span class="math inline">\(\begin{equation} \theta \sim \text{Beta}(\alpha, \beta) \end{equation}\)</span></p>
+<p>判断正确概率 <span class="math inline">\(\theta\)</span> 服从 <strong>Beta 分布</strong>： <span class="math inline">\(\begin{equation} \theta \sim \mathrm{Beta}(\alpha, \beta) \end{equation}\)</span></p>
 </blockquote>
 <blockquote>
 <p>成功次数 <span class="math inline">\(Y\)</span> 服从 <strong>Binomial 分布</strong>： <span class="math inline">\(\begin{equation} Y \sim \text{Binomial}(n, \theta) \end{equation}\)</span></p>
@@ -1091,8 +1020,8 @@ Inside ROPE
 <p><strong>模型设定</strong></p>
 <p>Beta-Binomial 模型：</p>
 <blockquote>
-<p>数据: 总试验数为n=118，成功次数为99 <span class="math inline">\((Y = 99)\)</span><br>
-先验分布为：<span class="math inline">\(\theta \sim \text{Beta}(2, 2)\)</span><br>
+<p>数据: 来自 <code>data/beta-binmial.csv</code>（118 次判断、正确 99 次），即 <span class="math inline">\(n = 118\)</span>、<span class="math inline">\(Y = 99\)</span><br>
+先验分布为：<span class="math inline">\(\theta \sim \mathrm{Beta}(2, 2)\)</span><br>
 似然函数为：<span class="math inline">\(Y|\theta \sim \text{Bin}(n=118, \theta)\)</span></p>
 </blockquote>
 </section>
@@ -1192,14 +1121,14 @@ BF_{10} = \frac{P(\text{Data} | H_1)}{P(\text{Data} | H_0)} = \frac{P(Data|\thet
 \]</span></p>
 <p>其中：</p>
 <ul>
-<li><p>分子 p(θ=0.5 | data, M₁)： 表示在备择模型 M₁（即包含参数 θ 的模型）下，参数 θ 在 0.5（原假设 H₀ 指定的点）处的后验可能性。</p></li>
-<li><p>分母 p(θ=0.5 | M₁)： 表示在备择模型 M₁ 下，看到数据前，参数 θ 在 0.5 处的先验可能性。</p></li>
-<li><p>BF₀₁： 是支持<strong>原假设（M₀）</strong> 相对于<strong>备择假设（M₁）</strong> 的证据。<strong>BF₀₁ 的值越大，证据越支持原假设（即 θ=0.5）</strong>。</p></li>
+<li><p>分子 <span class="math inline">\(p(\theta = 0.5 \mid \text{data}, M_1)\)</span>：表示在备择模型 <span class="math inline">\(M_1\)</span>（即包含参数 <span class="math inline">\(\theta\)</span> 的模型）下，参数 <span class="math inline">\(\theta\)</span> 在 0.5（原假设 <span class="math inline">\(H_0\)</span> 指定的点）处的后验可能性。</p></li>
+<li><p>分母 <span class="math inline">\(p(\theta = 0.5 \mid M_1)\)</span>：表示在备择模型 <span class="math inline">\(M_1\)</span> 下，看到数据前，参数 <span class="math inline">\(\theta\)</span> 在 0.5 处的先验可能性。</p></li>
+<li><p><span class="math inline">\(BF_{01}\)</span>：是支持<strong>原假设（<span class="math inline">\(M_0\)</span>）</strong> 相对于<strong>备择假设（<span class="math inline">\(M_1\)</span>）</strong> 的证据。<strong><span class="math inline">\(BF_{01}\)</span> 的值越大，证据越支持原假设（即 <span class="math inline">\(\theta = 0.5\)</span>）</strong>。</p></li>
 </ul>
 </section>
 <section class="slide level2">
 
-<p>使用后验分布计算 θ = 0.5 处的后验和先验概率密度：</p>
+<p>使用后验分布计算 <span class="math inline">\(\theta = 0.5\)</span> 处的后验和先验概率密度：</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1384,7 +1313,7 @@ BF_{10} = \frac{P(\text{Data} | H_1)}{P(\text{Data} | H_0)} = \frac{P(Data|\thet
 <section class="slide level2">
 
 <p><strong>用桥采样（Bridge Sampling）计算同一个贝叶斯因子</strong></p>
-<p>JASP 的模型比较用的是桥采样：分别估计 H₀（θ = 0.5，点零假设）与 H₁（θ ~ Beta(2, 2)）的边际似然，再取比值。</p>
+<p>JASP 的模型比较用的是桥采样：分别估计 <span class="math inline">\(H_0\)</span>（<span class="math inline">\(\theta = 0.5\)</span>，点零假设）与 <span class="math inline">\(H_1\)</span>（<span class="math inline">\(\theta \sim \mathrm{Beta}(2, 2)\)</span>）的边际似然，再取比值。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1435,7 +1364,7 @@ BF_{10} = \frac{P(\text{Data} | H_1)}{P(\text{Data} | H_0)} = \frac{P(Data|\thet
 <section class="slide level2">
 
 <h3 id="与零区域进行比较的贝叶斯因子">3.2 与零区域进行比较的贝叶斯因子</h3>
-<p>** ROPE**</p>
+<p><strong>ROPE</strong></p>
 <ul>
 <li>假设 <span class="math inline">\(\theta\)</span> 的值在 <span class="math inline">\([0.4, 0.6]\)</span> 时，我们将其视为等于 0.5 的等效区间。</li>
 </ul>
@@ -1513,7 +1442,7 @@ P(0.4 \leq \theta \leq 0.6 \mid Y) = F(0.6) - F(0.4)
 </section>
 <section class="slide level2">
 
-<p><span class="math inline">\(\text{BF}_{01} \ll 1\)</span> 意味着数据<strong>强烈支持</strong> <span class="math inline">\(H_1\)</span>：<span class="math inline">\(\theta\)</span> 落在 <span class="math inline">\((0.4, 0.6)\)</span> 之外。注意这里与 3.1 的点零假设检验方向一致，只是把”θ 是否等于 0.5”换成了”θ 是否落在实用等效区间内”。</p>
+<p><span class="math inline">\(\text{BF}_{01} \ll 1\)</span> 意味着数据<strong>强烈支持</strong> <span class="math inline">\(H_1\)</span>：<span class="math inline">\(\theta\)</span> 落在 <span class="math inline">\((0.4, 0.6)\)</span> 之外。注意这里与 3.1 的点零假设检验方向一致，只是把”<span class="math inline">\(\theta\)</span> 是否等于 0.5”换成了”<span class="math inline">\(\theta\)</span> 是否落在实用等效区间内”。</p>
 <p>给定数据，后验集中在 0.83 附近，与观测到的 99/118 ≈ 0.84 一致；因此可以认为，成功率显著高于随机判断水平（0.5）。</p>
 </section>
 <section class="slide level2">
@@ -1525,9 +1454,9 @@ P(0.4 \leq \theta \leq 0.6 \mid Y) = F(0.6) - F(0.4)
 
 <p><strong>练习1</strong>：</p>
 <p>首先，可以写出”伪代码”作为计算的思路：</p>
-<p>第一步：</p>
-<p>第二步：</p>
-<p>第三步：</p>
+<p>第一步：取出 <span class="math inline">\(\theta\)</span> 的后验样本（先剔除可能出现的 <code>NA</code>）；</p>
+<p>第二步：数出落在 <span class="math inline">\((0.4, 0.6)\)</span> 内的样本比例，即 <span class="math inline">\(P(H_0 \mid Y)\)</span>；</p>
+<p>第三步：在先验样本里同样数一遍得到 <span class="math inline">\(P(H_0)\)</span>，再按「后验概率比 ÷ 先验概率比」得到 <span class="math inline">\(BF_{01}\)</span>。</p>
 </section>
 <section class="slide level2">
 
@@ -1574,9 +1503,14 @@ P(0.4 \leq \theta \leq 0.6 \mid Y) = F(0.6) - F(0.4)
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="" aria-label="1"></a><span class="co"># 第三步： 计算贝叶斯因子：BF₀₁ = 支持 H₀（theta在ROPE内）的概率 / 支持 H₁（theta在ROPE外）的概率</span></span>
-<span id="cb49-2"><a href="" aria-label="2"></a>bf01 <span class="ot">&lt;-</span> (...) <span class="sc">/</span> (...)  </span>
-<span id="cb49-3"><a href="" aria-label="3"></a><span class="fu">cat</span>(<span class="st">"贝叶斯因子 BF₀₁（支持 theta 在 (0.4,0.6) 内）："</span>, <span class="fu">round</span>(bf01, <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="" aria-label="1"></a><span class="co"># 第三步：贝叶斯因子 = 后验概率比 / 先验概率比</span></span>
+<span id="cb49-2"><a href="" aria-label="2"></a><span class="co">#   H₀: θ ∈ (0.4, 0.6)；H₁: θ ∉ (0.4, 0.6)</span></span>
+<span id="cb49-3"><a href="" aria-label="3"></a>post_odds  <span class="ot">&lt;-</span> theta_rope_prob <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> theta_rope_prob)</span>
+<span id="cb49-4"><a href="" aria-label="4"></a><span class="co"># 先验落在 ROPE 内的概率（复用 3.1 提取的 theta_prior）</span></span>
+<span id="cb49-5"><a href="" aria-label="5"></a>prior_in   <span class="ot">&lt;-</span> <span class="fu">mean</span>(theta_prior <span class="sc">&gt;</span> rope_low <span class="sc">&amp;</span> theta_prior <span class="sc">&lt;</span> rope_high)</span>
+<span id="cb49-6"><a href="" aria-label="6"></a>prior_odds <span class="ot">&lt;-</span> prior_in <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> prior_in)</span>
+<span id="cb49-7"><a href="" aria-label="7"></a>bf01 <span class="ot">&lt;-</span> post_odds <span class="sc">/</span> prior_odds</span>
+<span id="cb49-8"><a href="" aria-label="8"></a><span class="fu">cat</span>(<span class="st">"贝叶斯因子 BF₀₁（支持 theta 在 (0.4,0.6) 内）："</span>, <span class="fu">signif</span>(bf01, <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -1687,8 +1621,8 @@ P(0.4 \leq \theta \leq 0.6 \mid Y) = F(0.6) - F(0.4)
 <span id="cb53-26"><a href="" aria-label="26"></a>           <span class="at">ymin =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">ymax =</span> <span class="cn">Inf</span>,</span>
 <span id="cb53-27"><a href="" aria-label="27"></a>           <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">alpha =</span> <span class="fl">0.2</span>, <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
 <span id="cb53-28"><a href="" aria-label="28"></a>  </span>
-<span id="cb53-29"><a href="" aria-label="29"></a>  <span class="co"># 垂直线在 0 处（假设边界）</span></span>
-<span id="cb53-30"><a href="" aria-label="30"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"grey"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb53-29"><a href="" aria-label="29"></a>  <span class="co"># 垂直线标出假设边界 θ = 0.5</span></span>
+<span id="cb53-30"><a href="" aria-label="30"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> h0_boundary, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"grey"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
 <span id="cb53-31"><a href="" aria-label="31"></a>  </span>
 <span id="cb53-32"><a href="" aria-label="32"></a>  <span class="co"># 标签：H₀ 在右侧，H₁ 在左侧</span></span>
 <span id="cb53-33"><a href="" aria-label="33"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>,</span>
@@ -1712,7 +1646,7 @@ P(0.4 \leq \theta \leq 0.6 \mid Y) = F(0.6) - F(0.4)
 <span id="cb53-51"><a href="" aria-label="51"></a>  <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">1</span>) <span class="sc">+</span></span>
 <span id="cb53-52"><a href="" aria-label="52"></a>  </span>
 <span id="cb53-53"><a href="" aria-label="53"></a>  <span class="fu">labs</span>(</span>
-<span id="cb53-54"><a href="" aria-label="54"></a>    <span class="at">title =</span> <span class="st">"Directional Hypothesis: Testing for Negative Effect"</span>,</span>
+<span id="cb53-54"><a href="" aria-label="54"></a>    <span class="at">title =</span> <span class="st">"Directional hypothesis: H1: θ &lt; 0.5"</span>,</span>
 <span id="cb53-55"><a href="" aria-label="55"></a>    <span class="at">x =</span> <span class="fu">expression</span>(theta),</span>
 <span id="cb53-56"><a href="" aria-label="56"></a>    <span class="at">y =</span> <span class="st">"Density"</span>,</span>
 <span id="cb53-57"><a href="" aria-label="57"></a>    <span class="at">fill =</span> <span class="st">"Distribution"</span>,</span>

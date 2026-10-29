@@ -41,6 +41,7 @@ def fmt(x):
 # 1. Data
 # ---------------------------------------------------------------------------
 
+# 数据来自 data/beta-binmial.csv（118 次判断、正确 99 次，ACC 列求和 = 99）
 N, Y = 118, 99
 print(f"N = {N}, Y = {Y}, observed proportion = {Y / N:.3f}")
 
@@ -84,7 +85,8 @@ else:
 # 4. Six framings of hypothesis testing
 # ---------------------------------------------------------------------------
 
-def make_test(samples, name, null_desc, interest_desc, null_spans):
+def make_test(samples, name, null_desc, interest_desc, null_spans, vlines=()):
+    """null_spans 为空表示点零假设（后验下概率质量为 0）。"""
     in_null = np.zeros_like(samples, dtype=bool)
     for lo, hi in null_spans:
         in_null |= (samples >= lo) & (samples <= hi)
@@ -95,31 +97,33 @@ def make_test(samples, name, null_desc, interest_desc, null_spans):
         "p_null": float(in_null.mean()),
         "p_interest": float(1 - in_null.mean()),
         "spans": null_spans,
+        "vlines": vlines,
     }
 
 
+# 六个面板与 lec8.qmd §2.3 的表格逐行对应
 tests = [
-    make_test(theta_post, "ROPE Test (Practical Equivalence)",
-              "θ < 0.4 or θ > 0.6 (outside ROPE)",
-              "0.4 ≤ θ ≤ 0.6 (inside ROPE)",
-              [(-np.inf, 0.4), (0.6, np.inf)]),
-    make_test(theta_post, "One-sided NHST",
+    make_test(theta_post, "1. Two-sided NHST",
+              "θ = 0.5 (point); P(θ = 0.5 | Y) = 0, see BF in 3.1",
+              "θ ≠ 0.5",
+              [], (0.5,)),
+    make_test(theta_post, "2. One-sided NHST",
               "θ ≤ 0.5", "θ > 0.5",
-              [(-np.inf, 0.5)]),
-    make_test(theta_post, "Two-sided Minimal Effect Test",
+              [(-np.inf, 0.5)], (0.5,)),
+    make_test(theta_post, "3. Two-sided Minimal Effect Test",
               "0.4 ≤ θ ≤ 0.6 (trivial effect)",
               "θ < 0.4 or θ > 0.6 (meaningful effect)",
-              [(0.4, 0.6)]),
-    make_test(theta_post, "One-sided Minimal Effect Test",
+              [(0.4, 0.6)], (0.4, 0.6)),
+    make_test(theta_post, "4. One-sided Minimal Effect Test",
               "θ ≤ 0.6", "θ > 0.6",
-              [(-np.inf, 0.6)]),
-    make_test(theta_post, "Equivalence Test",
+              [(-np.inf, 0.6)], (0.6,)),
+    make_test(theta_post, "5. Equivalence Test",
               "θ < 0.4 or θ > 0.6 (outside ROPE)",
               "0.4 ≤ θ ≤ 0.6 (inside ROPE)",
-              [(-np.inf, 0.4), (0.6, np.inf)]),
-    make_test(theta_post, "Non-inferiority Test",
+              [(-np.inf, 0.4), (0.6, np.inf)], (0.4, 0.6)),
+    make_test(theta_post, "6. Non-inferiority Test",
               "θ < 0.4", "θ ≥ 0.4",
-              [(-np.inf, 0.4)]),
+              [(-np.inf, 0.4)], (0.4,)),
 ]
 
 for t in tests:
@@ -131,6 +135,8 @@ for ax, t in zip(axes.ravel(), tests):
     sns.kdeplot(x=theta_post, fill=True, color="grey", alpha=0.4, linewidth=1, ax=ax)
     for lo, hi in t["spans"]:
         ax.axvspan(max(lo, 0), min(hi, 1), color="steelblue", alpha=0.18, linewidth=0)
+    for v in t["vlines"]:
+        ax.axvline(v, linestyle=":", color="steelblue", linewidth=0.8)
     ax.set_xlim(0, 1)
     ax.set_title(t["name"], fontsize=10, fontweight="bold")
     ax.set_xlabel("θ")

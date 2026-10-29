@@ -131,16 +131,16 @@ plt.tight_layout()
 plt.show()
 
 
-# ---- 两个后验的 94% 等尾区间（qmd：credible-intervals-comparison） ----
+# ---- 两个后验的 95% 等尾区间（qmd：credible-intervals-comparison） ----
 # 绘图网格与现有 qmd 保持一致；精确区间边界由分位数函数计算。
 params = [(11, 3), (101, 21)]
-ci_level = 0.94
+ci_level = 0.95
 x_values = np.linspace(0, 1, 100)
 eti_comparison = {}
 fig, axes = plt.subplots(1, 2, figsize=(12, 4.5), sharey=True)
 for ax, (a, b) in zip(axes, params):
     density = stats.beta.pdf(x_values, a, b)
-    lower, upper = stats.beta.ppf([0.03, 0.97], a, b)
+    lower, upper = stats.beta.ppf([0.025, 0.975], a, b)
     eti_comparison[(a, b)] = (lower, upper)
     selected = (x_values >= lower) & (x_values <= upper)
     ax.plot(x_values, density, color="black", linewidth=1)
@@ -152,11 +152,11 @@ plt.tight_layout()
 plt.show()
 
 
-# ---- 50%、94%、99% 等尾区间（qmd：credible-intervals-masses） ----
+# ---- 50%、95%、99% 等尾区间（qmd：credible-intervals-masses） ----
 ci_levels = {
-    "50% CI": (0.25, 0.75),
-    "94% CI": (0.03, 0.97),
-    "99% CI": (0.005, 0.995),
+    "50% CrI": (0.25, 0.75),
+    "95% CrI": (0.025, 0.975),
+    "99% CrI": (0.005, 0.995),
 }
 ci_colors = ["#bdd7e7", "#6baed6", "#3182bd"]
 eti_intervals = {}
@@ -207,12 +207,13 @@ plt.show()
 
 
 # ---- 区间假设与方向假设（qmd：interval-bayes-factor、directional-*） ----
-# 区间假设：H0 为 theta 在 [0.4,0.6] 内，Ha 为区间外。
+# 区间假设：H0 为 theta 在 [0.4,0.6] 内，H_1 为区间外。
+# 数据来自 data/beta-binmial.csv（118 次判断、正确 99 次），故后验为 Beta(101, 21)
 prior_h0 = stats.beta.cdf(0.6, 2, 2) - stats.beta.cdf(0.4, 2, 2)
 post_h0 = stats.beta.cdf(0.6, 101, 21) - stats.beta.cdf(0.4, 101, 21)
-bf_a0 = ((1 - post_h0) / post_h0) / ((1 - prior_h0) / prior_h0)
+bf_10 = ((1 - post_h0) / post_h0) / ((1 - prior_h0) / prior_h0)
 
-# 方向假设：Ha 为 theta < 0.8，H0 为 theta >= 0.8。
+# 方向假设：H_1 为 theta < 0.8，H0 为 theta >= 0.8。
 post_left = stats.beta.cdf(0.8, 101, 21)
 prior_left = stats.beta.cdf(0.8, 2, 2)
 prior_odds = prior_left / (1 - prior_left)
@@ -221,13 +222,13 @@ bf_left_right = posterior_odds / prior_odds
 results = {
     "prior_h0": prior_h0,
     "post_h0": post_h0,
-    "BF_a0_interval": bf_a0,
+    "BF_10_interval": bf_10,
     "post_left": post_left,
     "prior_left": prior_left,
     "prior_odds": prior_odds,
     "posterior_odds": posterior_odds,
-    "BF_a0_direction": bf_left_right,
-    "BF_0a_direction": 1 / bf_left_right,
+    "BF_10_direction": bf_left_right,
+    "BF_01_direction": 1 / bf_left_right,
     "HDI_95_low": hdi_lower,
     "HDI_95_high": hdi_upper,
 }
@@ -240,7 +241,7 @@ results
 #    再每隔 10 个保留一个，对应 R 的 4000 次总迭代、2000 次热身及 thin=10。
 # 3. 原程序将二项数据分布当作似然曲线；现固定 Y=9，在 theta 网格上计算
 #    binom.pmf(9,10,theta)，并按 qmd 的先验峰高进行缩放。绘图使用 SciPy，免去 preliz。
-# 4. ETI 为 94% 以及 50%/94%/99%；HDI 为 95%，使用固定种子的 100000 个 Beta 样本。
+# 4. ETI 为 95% 以及 50%/95%/99%；HDI 为 95%，使用固定种子的 100000 个 Beta 样本。
 # 5. R/Stan 与 PyMC/ArviZ 的采样器、随机数生成器和诊断实现不同；抽样结果、
 #    HDI 端点和诊断数值允许波动，解析分位数、后验概率与 BF 应在浮点精度内一致。
 # 6. 当前 qmd 的 100 点区间着色网格及抽稀演示设置保留；本次未改写课件中的实现。

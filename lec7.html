@@ -388,7 +388,7 @@ P(A|B) = \frac {P(A)P(B|A)}{P(B)}
 <li>判断正确概率 <span class="math inline">\(\theta\)</span> 服从 <strong>Beta 分布</strong>分布：</li>
 </ul>
 <p><span class="math display">\[
-\theta \sim \text{Beta}(\alpha, \beta)
+\theta \sim \mathrm{Beta}(\alpha, \beta)
 \]</span></p>
 <ul>
 <li>在每次试验中，参与者的成功次数 <span class="math inline">\(Y\)</span> 服从 <strong>Binomial 分布</strong>：</li>
@@ -403,7 +403,7 @@ Y \sim \text{Binomial}(n, \theta)
 <p>使用Beta-Binomial 模型来表示：</p>
 <blockquote>
 <p>总试验数为n=10，成功次数为9 <span class="math inline">\((Y = 9)\)</span><br>
-先验分布为：<span class="math inline">\(\theta    \sim \text{Beta}(2, 2)\)</span><br>
+先验分布为：<span class="math inline">\(\theta    \sim \mathrm{Beta}(2, 2)\)</span><br>
 似然函数为：<span class="math inline">\(Y|\theta  \sim \text{Bin}(n, \theta)\)</span></p>
 </blockquote>
 </section>
@@ -1037,7 +1037,7 @@ Y \sim \text{Binomial}(n, \theta)
 <section id="样本量增加后的后验" class="slide level2 smaller">
 <h2>样本量增加后的后验</h2>
 <p>选项 b 同时描述集中趋势和不确定性，更完整地表达后验信息。</p>
-<p>现在保持先验不变，将数据改为 <span class="math inline">\(N=118\)</span>、<span class="math inline">\(Y=99\)</span>：</p>
+<p>现在保持先验不变，把数据换成课程数据文件 <code>data/beta-binmial.csv</code>（118 次判断、正确 99 次，即 <code>ACC</code> 列求和 = 99）：</p>
 <p><span class="math display">\[\theta\sim\mathrm{Beta}(2,2),\qquad Y\mid\theta\sim\mathrm{Binomial}(118,\theta).\]</span></p>
 <p>根据共轭更新：</p>
 <p><span class="math display">\[\theta\mid Y\sim\mathrm{Beta}(2+99,\ 2+118-99)=\mathrm{Beta}(101,21).\]</span></p>
@@ -1062,18 +1062,18 @@ Y \sim \text{Binomial}(n, \theta)
 <li><p>如果只关注众数，两种截然不同的情况却会导致相似的结论❌</p></li>
 <li><p>但很明显，我们可以看到两图中<span class="math inline">\(\theta\)</span>的分布范围是不同的</p></li>
 </ul>
-<p><strong>要同时看到<span class="math inline">\(\theta\)</span>的集中趋势和离散趋势，可使用 <em>94%的可信区间(credible intervals, CrI)</em> 来描述<span class="math inline">\(\theta\)</span></strong></p>
+<p><strong>要同时看到<span class="math inline">\(\theta\)</span>的集中趋势和离散趋势，可使用 <em>95%的可信区间(credible intervals, CrI)</em> 来描述<span class="math inline">\(\theta\)</span></strong></p>
 </section>
 <section id="等尾可信区间" class="slide level2">
-<h2>94% 等尾可信区间</h2>
+<h2>95% 等尾可信区间</h2>
 <p>等尾可信区间（equal-tailed interval, ETI）可由后验分位数构造。</p>
-<p><span class="math display">\[I_{94\%}=[q_{0.03},q_{0.97}].\]</span></p>
-<p>对于 <span class="math inline">\(\mathrm{Beta}(101,21)\)</span>，94% ETI 为 <span class="math inline">\([0.760,\ 0.887]\)</span>。</p>
-<p><strong>给定当前数据、模型和先验，<span class="math inline">\(\theta\)</span> 落在该区间内的后验概率为 94%。</strong></p>
-<p>这不表示“94% 的参与者的成功概率落在该区间内”。</p>
+<p><span class="math display">\[I_{95\%}=[q_{0.025},q_{0.975}].\]</span></p>
+<p>对于 <span class="math inline">\(\mathrm{Beta}(101,21)\)</span>，95% ETI 为 [<span class="math inline">\(0.756\)</span>, <span class="math inline">\(0.889\)</span>]。</p>
+<p><strong>给定当前数据、模型和先验，<span class="math inline">\(\theta\)</span> 落在该区间内的后验概率为 95%。</strong></p>
+<p>这不表示“95% 的参与者的成功概率落在该区间内”。</p>
 </section>
-<section id="比较两个后验的-94-可信区间" class="slide level2 smaller">
-<h2>比较两个后验的 94% 可信区间</h2>
+<section id="比较两个后验的-95-可信区间" class="slide level2 smaller">
+<h2>比较两个后验的 95% 可信区间</h2>
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1082,17 +1082,17 @@ Y \sim \text{Binomial}(n, \theta)
 <span id="cb20-3"><a href="" aria-label="3"></a>y_values1 <span class="ot">&lt;-</span> <span class="fu">dbeta</span>(x_values, <span class="at">shape1 =</span> <span class="dv">11</span>, <span class="at">shape2 =</span> <span class="dv">3</span>)</span>
 <span id="cb20-4"><a href="" aria-label="4"></a>y_values2 <span class="ot">&lt;-</span> <span class="fu">dbeta</span>(x_values, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)</span>
 <span id="cb20-5"><a href="" aria-label="5"></a></span>
-<span id="cb20-6"><a href="" aria-label="6"></a><span class="co"># 计算 94% 可信区间（CI）</span></span>
-<span id="cb20-7"><a href="" aria-label="7"></a>  lower_bound1_94 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.03</span>, <span class="at">shape1 =</span> <span class="dv">11</span>, <span class="at">shape2 =</span> <span class="dv">3</span>)  </span>
-<span id="cb20-8"><a href="" aria-label="8"></a>  upper_bound1_94 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.97</span>, <span class="at">shape1 =</span> <span class="dv">11</span>, <span class="at">shape2 =</span> <span class="dv">3</span>)  </span>
-<span id="cb20-9"><a href="" aria-label="9"></a>  lower_bound2_94 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.03</span>, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)  </span>
-<span id="cb20-10"><a href="" aria-label="10"></a>  upper_bound2_94 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.97</span>, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)  </span>
+<span id="cb20-6"><a href="" aria-label="6"></a><span class="co"># 计算 95% 可信区间（CrI）</span></span>
+<span id="cb20-7"><a href="" aria-label="7"></a>  lower_bound1_95 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.025</span>, <span class="at">shape1 =</span> <span class="dv">11</span>, <span class="at">shape2 =</span> <span class="dv">3</span>)  </span>
+<span id="cb20-8"><a href="" aria-label="8"></a>  upper_bound1_95 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.975</span>, <span class="at">shape1 =</span> <span class="dv">11</span>, <span class="at">shape2 =</span> <span class="dv">3</span>)  </span>
+<span id="cb20-9"><a href="" aria-label="9"></a>  lower_bound2_95 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.025</span>, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)  </span>
+<span id="cb20-10"><a href="" aria-label="10"></a>  upper_bound2_95 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.975</span>, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)  </span>
 <span id="cb20-11"><a href="" aria-label="11"></a></span>
 <span id="cb20-12"><a href="" aria-label="12"></a><span class="co"># 绘制 Beta 分布的 PDF</span></span>
 <span id="cb20-13"><a href="" aria-label="13"></a>p1 <span class="ot">&lt;-</span> ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> x_values, <span class="at">y =</span> y_values1),<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
 <span id="cb20-14"><a href="" aria-label="14"></a>  <span class="fu">geom_line</span>(<span class="at">col =</span> <span class="st">'black'</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
 <span id="cb20-15"><a href="" aria-label="15"></a>  <span class="fu">geom_area</span>(<span class="at">data =</span> <span class="fu">subset</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> x_values, <span class="at">y =</span> y_values1),</span>
-<span id="cb20-16"><a href="" aria-label="16"></a>                           x <span class="sc">&gt;=</span> lower_bound1_94 <span class="sc">&amp;</span> x <span class="sc">&lt;=</span> upper_bound1_94), </span>
+<span id="cb20-16"><a href="" aria-label="16"></a>                           x <span class="sc">&gt;=</span> lower_bound1_95 <span class="sc">&amp;</span> x <span class="sc">&lt;=</span> upper_bound1_95), </span>
 <span id="cb20-17"><a href="" aria-label="17"></a>            <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y), <span class="at">fill =</span> <span class="st">"lightblue"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
 <span id="cb20-18"><a href="" aria-label="18"></a>  <span class="fu">labs</span>( <span class="at">x =</span> <span class="fu">expression</span>(theta), <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">title =</span> <span class="st">"Posterior</span><span class="sc">\n</span><span class="st">(Beta(alpha = 11, beta = 3))"</span>)  <span class="sc">+</span></span>
 <span id="cb20-19"><a href="" aria-label="19"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),<span class="at">limit =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">12</span>)) <span class="sc">+</span> </span>
@@ -1101,7 +1101,7 @@ Y \sim \text{Binomial}(n, \theta)
 <span id="cb20-22"><a href="" aria-label="22"></a>p2 <span class="ot">&lt;-</span> ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> x_values, <span class="at">y =</span> y_values2),<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
 <span id="cb20-23"><a href="" aria-label="23"></a>  <span class="fu">geom_line</span>(<span class="at">col =</span> <span class="st">'black'</span>, <span class="at">linewidth =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
 <span id="cb20-24"><a href="" aria-label="24"></a>  <span class="fu">geom_area</span>(<span class="at">data =</span> <span class="fu">subset</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> x_values, <span class="at">y =</span> y_values2),</span>
-<span id="cb20-25"><a href="" aria-label="25"></a>                           x <span class="sc">&gt;=</span> lower_bound2_94 <span class="sc">&amp;</span> x <span class="sc">&lt;=</span> upper_bound2_94), </span>
+<span id="cb20-25"><a href="" aria-label="25"></a>                           x <span class="sc">&gt;=</span> lower_bound2_95 <span class="sc">&amp;</span> x <span class="sc">&lt;=</span> upper_bound2_95), </span>
 <span id="cb20-26"><a href="" aria-label="26"></a>            <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y), <span class="at">fill =</span> <span class="st">"lightblue"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
 <span id="cb20-27"><a href="" aria-label="27"></a>  <span class="fu">labs</span>( <span class="at">x =</span> <span class="fu">expression</span>(theta), <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">title =</span> <span class="st">"Posterior</span><span class="sc">\n</span><span class="st">(Beta(alpha = 101, beta = 21))"</span>)  <span class="sc">+</span></span>
 <span id="cb20-28"><a href="" aria-label="28"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),<span class="at">limit =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">12</span>)) <span class="sc">+</span> </span>
@@ -1124,14 +1124,14 @@ Y \sim \text{Binomial}(n, \theta)
 <p>可信区间的概率质量应明确报告，并保持图文一致。</p>
 <ul>
 <li>50% ETI：<span class="math inline">\([q_{0.25},q_{0.75}]\)</span>。</li>
-<li>94% ETI：<span class="math inline">\([q_{0.03},q_{0.97}]\)</span>。</li>
+<li>95% ETI：<span class="math inline">\([q_{0.025},q_{0.975}]\)</span>。</li>
 <li>99% ETI：<span class="math inline">\([q_{0.005},q_{0.995}]\)</span>。</li>
 </ul>
 <p>概率质量越高，区间通常越宽。</p>
 <p>ETI 两侧尾部的概率质量相等；HDI 则优先包含后验密度较高的参数值。</p>
 </section>
 <section id="与-99-可信区间" class="slide level2 smaller">
-<h2>50%、94% 与 99% 可信区间</h2>
+<h2>50%、95% 与 99% 可信区间</h2>
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1139,8 +1139,8 @@ Y \sim \text{Binomial}(n, \theta)
 <span id="cb21-2"><a href="" aria-label="2"></a>y_values <span class="ot">&lt;-</span> <span class="fu">dbeta</span>(x_values, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)</span>
 <span id="cb21-3"><a href="" aria-label="3"></a></span>
 <span id="cb21-4"><a href="" aria-label="4"></a><span class="co"># 计算三种可信区间（CI）</span></span>
-<span id="cb21-5"><a href="" aria-label="5"></a>  lower_bound_94 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.03</span>, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)  </span>
-<span id="cb21-6"><a href="" aria-label="6"></a>  upper_bound_94 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.97</span>, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)  </span>
+<span id="cb21-5"><a href="" aria-label="5"></a>  lower_bound_95 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.025</span>, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)  </span>
+<span id="cb21-6"><a href="" aria-label="6"></a>  upper_bound_95 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.975</span>, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)  </span>
 <span id="cb21-7"><a href="" aria-label="7"></a>  lower_bound_50 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.25</span>, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)  </span>
 <span id="cb21-8"><a href="" aria-label="8"></a>  upper_bound_50 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.75</span>, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)  </span>
 <span id="cb21-9"><a href="" aria-label="9"></a>  lower_bound_99 <span class="ot">&lt;-</span> <span class="fu">qbeta</span>(<span class="fl">0.005</span>, <span class="at">shape1 =</span> <span class="dv">101</span>, <span class="at">shape2 =</span> <span class="dv">21</span>)  </span>
@@ -1152,7 +1152,7 @@ Y \sim \text{Binomial}(n, \theta)
 <span id="cb21-15"><a href="" aria-label="15"></a>  <span class="fu">geom_area</span>(<span class="at">data =</span> <span class="fu">subset</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> x_values, <span class="at">y =</span> y_values),</span>
 <span id="cb21-16"><a href="" aria-label="16"></a>                           x <span class="sc">&gt;=</span> lower_bound_50 <span class="sc">&amp;</span> x <span class="sc">&lt;=</span> upper_bound_50), </span>
 <span id="cb21-17"><a href="" aria-label="17"></a>            <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y), <span class="at">fill =</span> <span class="st">"#bdd7e7"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb21-18"><a href="" aria-label="18"></a>  <span class="fu">labs</span>( <span class="at">x =</span> <span class="fu">expression</span>(theta), <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">title =</span> <span class="st">"50% CI for Beta(101, 21)"</span>)  <span class="sc">+</span></span>
+<span id="cb21-18"><a href="" aria-label="18"></a>  <span class="fu">labs</span>( <span class="at">x =</span> <span class="fu">expression</span>(theta), <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">title =</span> <span class="st">"50% CrI for Beta(101, 21)"</span>)  <span class="sc">+</span></span>
 <span id="cb21-19"><a href="" aria-label="19"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),<span class="at">limit =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">12</span>)) <span class="sc">+</span> </span>
 <span id="cb21-20"><a href="" aria-label="20"></a>  <span class="fu">xlim</span>(<span class="fl">0.5</span>,<span class="dv">1</span>) <span class="sc">+</span></span>
 <span id="cb21-21"><a href="" aria-label="21"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
@@ -1161,9 +1161,9 @@ Y \sim \text{Binomial}(n, \theta)
 <span id="cb21-24"><a href="" aria-label="24"></a>p2 <span class="ot">&lt;-</span> ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> x_values, <span class="at">y =</span> y_values),<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
 <span id="cb21-25"><a href="" aria-label="25"></a>  <span class="fu">geom_line</span>(<span class="at">col =</span> <span class="st">'black'</span>, <span class="at">linewidth =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
 <span id="cb21-26"><a href="" aria-label="26"></a>  <span class="fu">geom_area</span>(<span class="at">data =</span> <span class="fu">subset</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> x_values, <span class="at">y =</span> y_values),</span>
-<span id="cb21-27"><a href="" aria-label="27"></a>                           x <span class="sc">&gt;=</span> lower_bound_94 <span class="sc">&amp;</span> x <span class="sc">&lt;=</span> upper_bound_94), </span>
+<span id="cb21-27"><a href="" aria-label="27"></a>                           x <span class="sc">&gt;=</span> lower_bound_95 <span class="sc">&amp;</span> x <span class="sc">&lt;=</span> upper_bound_95), </span>
 <span id="cb21-28"><a href="" aria-label="28"></a>            <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y), <span class="at">fill =</span> <span class="st">"#6baed6"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb21-29"><a href="" aria-label="29"></a>  <span class="fu">labs</span>( <span class="at">x =</span> <span class="fu">expression</span>(theta), <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">title =</span> <span class="st">"94% CI for Beta(101, 21)"</span>)  <span class="sc">+</span></span>
+<span id="cb21-29"><a href="" aria-label="29"></a>  <span class="fu">labs</span>( <span class="at">x =</span> <span class="fu">expression</span>(theta), <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">title =</span> <span class="st">"95% CrI for Beta(101, 21)"</span>)  <span class="sc">+</span></span>
 <span id="cb21-30"><a href="" aria-label="30"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),<span class="at">limit =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">12</span>)) <span class="sc">+</span> </span>
 <span id="cb21-31"><a href="" aria-label="31"></a>  <span class="fu">xlim</span>(<span class="fl">0.5</span>,<span class="dv">1</span>) <span class="sc">+</span></span>
 <span id="cb21-32"><a href="" aria-label="32"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
@@ -1173,7 +1173,7 @@ Y \sim \text{Binomial}(n, \theta)
 <span id="cb21-36"><a href="" aria-label="36"></a>  <span class="fu">geom_area</span>(<span class="at">data =</span> <span class="fu">subset</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> x_values, <span class="at">y =</span> y_values),</span>
 <span id="cb21-37"><a href="" aria-label="37"></a>                           x <span class="sc">&gt;=</span> lower_bound_99 <span class="sc">&amp;</span> x <span class="sc">&lt;=</span> upper_bound_99), </span>
 <span id="cb21-38"><a href="" aria-label="38"></a>            <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y), <span class="at">fill =</span> <span class="st">"#3182bd"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb21-39"><a href="" aria-label="39"></a>  <span class="fu">labs</span>( <span class="at">x =</span> <span class="fu">expression</span>(theta), <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">title =</span> <span class="st">"99% CI for Beta(101, 21)"</span>)  <span class="sc">+</span></span>
+<span id="cb21-39"><a href="" aria-label="39"></a>  <span class="fu">labs</span>( <span class="at">x =</span> <span class="fu">expression</span>(theta), <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">title =</span> <span class="st">"99% CrI for Beta(101, 21)"</span>)  <span class="sc">+</span></span>
 <span id="cb21-40"><a href="" aria-label="40"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)) <span class="sc">+</span> </span>
 <span id="cb21-41"><a href="" aria-label="41"></a>  <span class="fu">xlim</span>(<span class="fl">0.5</span>,<span class="dv">1</span>) <span class="sc">+</span></span>
 <span id="cb21-42"><a href="" aria-label="42"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
@@ -1196,7 +1196,7 @@ Y \sim \text{Binomial}(n, \theta)
 <ol type="1">
 <li>保持先验为 <span class="math inline">\(\mathrm{Beta}(2,2)\)</span>。</li>
 <li>提取 <span class="math inline">\(\theta\)</span> 的后验样本。</li>
-<li>使用 <code>quantile()</code> 计算 50%、94%、99% ETI。</li>
+<li>使用 <code>quantile()</code> 计算 50%、95%、99% ETI。</li>
 <li>与 <code>qbeta()</code> 给出的解析区间比较。</li>
 </ol>
 <blockquote>
@@ -1302,11 +1302,11 @@ Y \sim \text{Binomial}(n, \theta)
 <h2>研究问题：成功概率与随机水平</h2>
 <p>以 <span class="math inline">\(N=118\)</span>、<span class="math inline">\(Y=99\)</span> 为例，后验为 <span class="math inline">\(\mathrm{Beta}(101,21)\)</span>。</p>
 <p>研究问题：成功概率是否不同于随机水平 <span class="math inline">\(0.5\)</span>？</p>
-<p><span class="math display">\[H_0:\theta=0.5,\qquad H_a:\theta\ne0.5.\]</span></p>
+<p><span class="math display">\[H_0:\theta=0.5,\qquad H_1:\theta\ne0.5.\]</span></p>
 <ul>
 <li>HDI 可用于检查 <span class="math inline">\(0.5\)</span> 是否位于高密度可信范围内。</li>
 <li>如果关心“高于 0.5”，可直接计算 <span class="math inline">\(P(\theta&gt;0.5\mid Y)\)</span>。</li>
-<li>点零假设的 Bayes factor 需要单独定义相应模型。</li>
+<li>点零假设的 Bayes factor 需要单独定义相应模型，本讲不展开，见第 8 讲 §3.1。</li>
 </ul>
 </section>
 <section id="通过-hdi-描述可信参数范围" class="slide level2">
@@ -1447,15 +1447,15 @@ f(\theta_\text{low} | \alpha, \beta) = f(\theta_\text{high} | \alpha, \beta)
 \begin{align*}  
 \text{Bayes Factor} &amp;= \frac{\text{posterior odds }}{\text{prior odds }} \\  
 &amp;= \frac{\text{后验概率比}}{\text{先验概率比}}  \\  
-&amp;= \frac{P(H_a | Y) / P(H_0 | Y)}{P(H_a) / P(H_0)}  
+&amp;= \frac{P(H_1 | Y) / P(H_0 | Y)}{P(H_1) / P(H_0)}  
 \end{align*}  
 \]</span></p>
 <ul>
-<li><span class="math inline">\(BF_{a0}\)</span> = 1，收集到的数据并没有改变备择假设<span class="math inline">\(H_a\)</span>的相对可能性<br>
+<li><span class="math inline">\(BF_{10}\)</span> = 1，收集到的数据并没有改变备择假设<span class="math inline">\(H_1\)</span>的相对可能性<br>
 </li>
-<li><span class="math inline">\(BF_{a0}\)</span> &gt; 1，收集到的数据增加了备择假设<span class="math inline">\(H_a\)</span>的相对可能性。BF越大，表明支持备择假设<span class="math inline">\(H_a\)</span>的证据越强<br>
+<li><span class="math inline">\(BF_{10}\)</span> &gt; 1，收集到的数据增加了备择假设<span class="math inline">\(H_1\)</span>的相对可能性。BF越大，表明支持备择假设<span class="math inline">\(H_1\)</span>的证据越强<br>
 </li>
-<li><span class="math inline">\(BF_{a0}\)</span> &lt; 1，收集到的数据削弱了备择假设<span class="math inline">\(H_a\)</span>的相对可能性。BF越小，表明支持备择假设<span class="math inline">\(H_a\)</span>的证据越弱</li>
+<li><span class="math inline">\(BF_{10}\)</span> &lt; 1，收集到的数据削弱了备择假设<span class="math inline">\(H_1\)</span>的相对可能性。BF越小，表明支持备择假设<span class="math inline">\(H_1\)</span>的证据越弱</li>
 </ul>
 </section>
 <section id="贝叶斯因子的常用解释尺度" class="slide level2 smaller">
@@ -1470,23 +1470,23 @@ f(\theta_\text{low} | \alpha, \beta) = f(\theta_\text{high} | \alpha, \beta)
 <tbody>
 <tr class="odd">
 <td>&gt; 100</td>
-<td>极强的证据支持<span class="math inline">\(H_a\)</span></td>
+<td>极强的证据支持<span class="math inline">\(H_1\)</span></td>
 </tr>
 <tr class="even">
 <td>30 ~ 100</td>
-<td>非常强的证据支持<span class="math inline">\(H_a\)</span></td>
+<td>非常强的证据支持<span class="math inline">\(H_1\)</span></td>
 </tr>
 <tr class="odd">
 <td>10 ~ 30</td>
-<td>较强的证据支持<span class="math inline">\(H_a\)</span></td>
+<td>较强的证据支持<span class="math inline">\(H_1\)</span></td>
 </tr>
 <tr class="even">
 <td>3 ~ 10</td>
-<td>中等程度的证据支持<span class="math inline">\(H_a\)</span></td>
+<td>中等程度的证据支持<span class="math inline">\(H_1\)</span></td>
 </tr>
 <tr class="odd">
 <td>1 ~ 3</td>
-<td>较弱的证据支持<span class="math inline">\(H_a\)</span></td>
+<td>较弱的证据支持<span class="math inline">\(H_1\)</span></td>
 </tr>
 <tr class="even">
 <td>1</td>
@@ -1532,9 +1532,9 @@ f(\theta_\text{low} | \alpha, \beta) = f(\theta_\text{high} | \alpha, \beta)
 <section id="区间假设比较区间内与区间外" class="slide level2">
 <h2>区间假设：比较区间内与区间外</h2>
 <p>定义互补的区间假设：</p>
-<p><span class="math display">\[H_0:\theta\in[0.4,0.6],\qquad H_a:\theta\notin[0.4,0.6].\]</span></p>
+<p><span class="math display">\[H_0:\theta\in[0.4,0.6],\qquad H_1:\theta\notin[0.4,0.6].\]</span></p>
 <p>将 <span class="math inline">\(\mathrm{Beta}(2,2)\)</span> 先验限制在两个区域内并分别归一化，可得到两个假设的条件先验。</p>
-<p><span class="math display">\[BF_{a0}=\frac{P(H_a\mid Y)/P(H_0\mid Y)}{P(H_a)/P(H_0)}.\]</span></p>
+<p><span class="math display">\[BF_{10}=\frac{P(H_1\mid Y)/P(H_0\mid Y)}{P(H_1)/P(H_0)}.\]</span></p>
 <p>在当前完整先验下，假设的先验概率来自相应区域的概率质量，不能直接假定为各 0.5。</p>
 </section>
 <section id="由先验和后验概率质量计算-bf" class="slide level2 smaller">
@@ -1542,7 +1542,7 @@ f(\theta_\text{low} | \alpha, \beta) = f(\theta_\text{high} | \alpha, \beta)
 <p>令 <span class="math inline">\(p_0=P(0.4\le\theta\le0.6)\)</span>，<span class="math inline">\(p_{0\mid Y}=P(0.4\le\theta\le0.6\mid Y)\)</span>。</p>
 <p><span class="math display">\[p_0=F_{\mathrm{Beta}(2,2)}(0.6)-F_{\mathrm{Beta}(2,2)}(0.4),\]</span></p>
 <p><span class="math display">\[p_{0\mid Y}=F_{\mathrm{Beta}(101,21)}(0.6)-F_{\mathrm{Beta}(101,21)}(0.4).\]</span></p>
-<p><span class="math display">\[BF_{a0}=\frac{(1-p_{0\mid Y})/p_{0\mid Y}}{(1-p_0)/p_0}.\]</span></p>
+<p><span class="math display">\[BF_{10}=\frac{(1-p_{0\mid Y})/p_{0\mid Y}}{(1-p_0)/p_0}.\]</span></p>
 <p>这与两个截断先验模型的边际似然比一致。</p>
 </section>
 <section id="区间假设的实际计算结果" class="slide level2">
@@ -1552,13 +1552,13 @@ f(\theta_\text{low} | \alpha, \beta) = f(\theta_\text{high} | \alpha, \beta)
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="" aria-label="1"></a>prior_h0 <span class="ot">&lt;-</span> <span class="fu">pbeta</span>(<span class="fl">0.6</span>, <span class="dv">2</span>, <span class="dv">2</span>) <span class="sc">-</span> <span class="fu">pbeta</span>(<span class="fl">0.4</span>, <span class="dv">2</span>, <span class="dv">2</span>)</span>
 <span id="cb24-2"><a href="" aria-label="2"></a>post_h0 <span class="ot">&lt;-</span> <span class="fu">pbeta</span>(<span class="fl">0.6</span>, <span class="dv">101</span>, <span class="dv">21</span>) <span class="sc">-</span> <span class="fu">pbeta</span>(<span class="fl">0.4</span>, <span class="dv">101</span>, <span class="dv">21</span>)</span>
-<span id="cb24-3"><a href="" aria-label="3"></a>bf_a0 <span class="ot">&lt;-</span> ((<span class="dv">1</span> <span class="sc">-</span> post_h0) <span class="sc">/</span> post_h0) <span class="sc">/</span> ((<span class="dv">1</span> <span class="sc">-</span> prior_h0) <span class="sc">/</span> prior_h0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb24-3"><a href="" aria-label="3"></a>bf_10 <span class="ot">&lt;-</span> ((<span class="dv">1</span> <span class="sc">-</span> post_h0) <span class="sc">/</span> post_h0) <span class="sc">/</span> ((<span class="dv">1</span> <span class="sc">-</span> prior_h0) <span class="sc">/</span> prior_h0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <ul>
 <li>区间内先验概率：0.296。</li>
 <li>区间内后验概率：2.135e-08。</li>
-<li><span class="math inline">\(BF_{a0}=\)</span> 1.970e+07；<span class="math inline">\(BF_{0a}=1/BF_{a0}\)</span>。</li>
+<li><span class="math inline">\(BF_{10}=\)</span> 1.970e+07；<span class="math inline">\(BF_{01}=1/BF_{10}\)</span>。</li>
 <li>数据增强了区间外假设的相对证据，<strong>并不证明 <span class="math inline">\(\theta\)</span> 等于 0.8</strong>。</li>
 </ul>
 <p>Bayes factor 依赖先验和区间设定；应用中应报告其敏感性。</p>
@@ -1588,11 +1588,11 @@ f(\theta_\text{low} | \alpha, \beta) = f(\theta_\text{high} | \alpha, \beta)
 <section id="互补方向假设的后验概率比" class="slide level2">
 <h2>互补方向假设的后验概率比</h2>
 <p>将两个互补的方向假设写为：</p>
-<p><span class="math display">\[H_a:\theta&lt;0.8,\qquad H_0:\theta\ge0.8.\]</span></p>
+<p><span class="math display">\[H_1:\theta&lt;0.8,\qquad H_0:\theta\ge0.8.\]</span></p>
 <ul>
-<li><span class="math inline">\(P(H_a\mid Y)=\)</span> 0.202。</li>
+<li><span class="math inline">\(P(H_1\mid Y)=\)</span> 0.202。</li>
 <li><span class="math inline">\(P(H_0\mid Y)=\)</span> 0.798。</li>
-<li>后验概率比为 <span class="math inline">\(P(H_a\mid Y)/P(H_0\mid Y)=\)</span> 0.253。</li>
+<li>后验概率比为 <span class="math inline">\(P(H_1\mid Y)/P(H_0\mid Y)=\)</span> 0.253。</li>
 </ul>
 <p>在这两个区域中，后验概率更倾向于 <span class="math inline">\(\theta\ge0.8\)</span>。</p>
 </section>
@@ -1609,7 +1609,7 @@ f(\theta_\text{low} | \alpha, \beta) = f(\theta_\text{high} | \alpha, \beta)
 </details>
 </div>
 <ul>
-<li><span class="math inline">\(P(H_a)=\)</span> 0.896。</li>
+<li><span class="math inline">\(P(H_1)=\)</span> 0.896。</li>
 <li><span class="math inline">\(P(H_0)=\)</span> 0.104。</li>
 <li>先验概率比为 8.615。</li>
 </ul>
@@ -1617,12 +1617,12 @@ f(\theta_\text{low} | \alpha, \beta) = f(\theta_\text{high} | \alpha, \beta)
 </section>
 <section id="从概率比到-bayes-factor" class="slide level2">
 <h2>从概率比到 Bayes factor</h2>
-<p><span class="math display">\[BF_{a0}=\frac{\text{posterior odds}}{\text{prior odds}}.\]</span></p>
-<p>本例中，<span class="math inline">\(BF_{a0}=\)</span> 0.029，其倒数 <span class="math inline">\(BF_{0a}=\)</span> 34.0。</p>
+<p><span class="math display">\[BF_{10}=\frac{\text{posterior odds}}{\text{prior odds}}.\]</span></p>
+<p>本例中，<span class="math inline">\(BF_{10}=\)</span> 0.029，其倒数 <span class="math inline">\(BF_{01}=\)</span> 34.0。</p>
 <ul>
-<li><span class="math inline">\(H_a:\theta&lt;0.8\)</span>；<span class="math inline">\(H_0:\theta\ge0.8\)</span>。</li>
-<li>相比于先验，数据提高了 <span class="math inline">\(H_0\)</span> 相对于 <span class="math inline">\(H_a\)</span> 的支持程度。</li>
-<li><span class="math inline">\(P(H_a\mid Y)\)</span> 是后验概率；<span class="math inline">\(BF_{a0}\)</span> 描述相对证据的更新，两者不同。</li>
+<li><span class="math inline">\(H_1:\theta&lt;0.8\)</span>；<span class="math inline">\(H_0:\theta\ge0.8\)</span>。</li>
+<li>相比于先验，数据提高了 <span class="math inline">\(H_0\)</span> 相对于 <span class="math inline">\(H_1\)</span> 的支持程度。</li>
+<li><span class="math inline">\(P(H_1\mid Y)\)</span> 是后验概率；<span class="math inline">\(BF_{10}\)</span> 描述相对证据的更新，两者不同。</li>
 </ul>
 <p>这个结论基于 <span class="math inline">\(\mathrm{Beta}(2,2)\)</span> 的条件先验；改变先验可能改变 Bayes factor。</p>
 </section>

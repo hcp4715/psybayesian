@@ -43,6 +43,7 @@ cache_rds <- function(path, code) {
 # ---- qmd chunk: bb-fit (line 241) ----
 
 # 准备数据
+# 数据来自 data/beta-binmial.csv（118 次判断、正确 99 次，ACC 列求和 = 99）
 stan_data <- list(N = 118,Y = 99)
 
 # 定义模型
@@ -107,134 +108,62 @@ plot(result, rope_color = "grey70") + papaja::theme_apa()
 # ---- qmd chunk: plot-six-tests (line 474) ----
 
 # ============================================
-# 1. 后验样本（直接复用前面提取的 theta_post）
+# 1. 后验样本
 # ============================================
-
-# ============================================
-# 2. 定义假设检验函数（基于 theta，ROPE = [0.4, 0.6]）
-# ============================================
-
-# 区间假设：ROPE 检验与等价性检验共用（null = 区间外，interest = 区间内）
-region_test <- function(samples, rope_lower = 0.4, rope_upper = 0.6,
-                        name = "ROPE Test (Practical Equivalence)") {
-  interest_region <- samples >= rope_lower & samples <= rope_upper  # inside ROPE
-  null_region <- !interest_region                                    # outside ROPE
-  
-  list(
-    name = name,
-    null = paste0("θ < ", rope_lower, " or θ > ", rope_upper, " (outside ROPE)"),
-    interest = paste0(rope_lower, " ≤ θ ≤ ", rope_upper, " (inside ROPE)"),
-    p_null = sum(null_region) / length(samples),
-    p_interest = sum(interest_region) / length(samples),
-    rope_lower = rope_lower,
-    rope_upper = rope_upper
-  )
-}
-
-# 单侧 NHST: H0: θ ≤ 0.5 vs H1: θ > 0.5
-one_sided_nhst <- function(samples, null_val = 0.5) {
-  null_region <- samples <= null_val
-  interest_region <- samples > null_val
-  
-  list(
-    name = "One-sided NHST",
-    null = paste0("θ ≤ ", null_val),
-    interest = paste0("θ > ", null_val),
-    p_null = sum(null_region) / length(samples),
-    p_interest = sum(interest_region) / length(samples),
-    null_val = null_val
-  )
-}
-
-# 双侧最小效应检验: H0: θ ∈ [0.4, 0.6] (no meaningful effect)
-two_sided_met <- function(samples, rope_lower = 0.4, rope_upper = 0.6) {
-  null_region <- samples >= rope_lower & samples <= rope_upper
-  interest_region <- !null_region
-  
-  list(
-    name = "Two-sided Minimal Effect Test",
-    null = paste0(rope_lower, " ≤ θ ≤ ", rope_upper, " (trivial effect)"),
-    interest = paste0("θ < ", rope_lower, " or θ > ", rope_upper, " (meaningful effect)"),
-    p_null = sum(null_region) / length(samples),
-    p_interest = sum(interest_region) / length(samples),
-    rope_lower = rope_lower,
-    rope_upper = rope_upper
-  )
-}
-
-# 单侧最小效应检验: H0: θ ≤ 0.6 vs H1: θ > 0.6
-one_sided_met <- function(samples, threshold = 0.6) {
-  null_region <- samples <= threshold
-  interest_region <- samples > threshold
-  
-  list(
-    name = "One-sided Minimal Effect Test",
-    null = paste0("θ ≤ ", threshold),
-    interest = paste0("θ > ", threshold),
-    p_null = sum(null_region) / length(samples),
-    p_interest = sum(interest_region) / length(samples),
-    threshold = threshold
-  )
-}
-
-# 等价性检验：与 ROPE 检验共用同一套区间逻辑，仅名称不同
-equivalence_test <- function(samples, rope_lower = 0.4, rope_upper = 0.6) {
-  region_test(samples, rope_lower, rope_upper, name = "Equivalence Test")
-}
-
-# 非劣性检验: H0: θ < 0.4 vs H1: θ ≥ 0.4
-non_inferiority_test <- function(samples, threshold = 0.4) {
-  null_region <- samples < threshold
-  interest_region <- samples >= threshold
-  
-  list(
-    name = "Non-inferiority Test",
-    null = paste0("θ < ", threshold),
-    interest = paste0("θ ≥ ", threshold),
-    p_null = sum(null_region) / length(samples),
-    p_interest = sum(interest_region) / length(samples),
-    threshold = threshold
-  )
-}
+# theta_post 已在 posterior-samples 中提取，这里直接复用
 
 # ============================================
-# 3. 执行所有检验 
+# 2. 六种检验：与 2.3 的表格逐行对应
+#    null_parts 给出零假设对应的区间（可以有多个）；点零假设用 NULL
 # ============================================
-
-results <- list(
-  region_test(theta_post, rope_lower = 0.4, rope_upper = 0.6),
-  one_sided_nhst(theta_post, null_val = 0.5),
-  two_sided_met(theta_post, rope_lower = 0.4, rope_upper = 0.6),
-  one_sided_met(theta_post, threshold = 0.6),
-  equivalence_test(theta_post, rope_lower = 0.4, rope_upper = 0.6),
-  non_inferiority_test(theta_post, threshold = 0.4)
+tests <- list(
+  list(name = "1. Two-sided NHST",
+       null_label = "θ = 0.5 (point)", interest_label = "θ ≠ 0.5",
+       null_parts = NULL, vlines = 0.5,
+       note = "P(θ = 0.5 | Y) = 0：连续参数下点零假设需用 BF（见 3.1）"),
+  list(name = "2. One-sided NHST",
+       null_label = "θ ≤ 0.5", interest_label = "θ > 0.5",
+       null_parts = list(c(-Inf, 0.5)), vlines = 0.5),
+  list(name = "3. Two-sided minimal effect",
+       null_label = "0.4 ≤ θ ≤ 0.6", interest_label = "θ < 0.4 or θ > 0.6",
+       null_parts = list(c(0.4, 0.6)), vlines = c(0.4, 0.6)),
+  list(name = "4. One-sided minimal effect",
+       null_label = "θ ≤ 0.6", interest_label = "θ > 0.6",
+       null_parts = list(c(-Inf, 0.6)), vlines = 0.6),
+  list(name = "5. Equivalence",
+       null_label = "θ < 0.4 or θ > 0.6", interest_label = "0.4 ≤ θ ≤ 0.6",
+       null_parts = list(c(-Inf, 0.4), c(0.6, Inf)), vlines = c(0.4, 0.6)),
+  list(name = "6. Non-inferiority",
+       null_label = "θ < 0.4", interest_label = "θ ≥ 0.4",
+       null_parts = list(c(-Inf, 0.4)), vlines = 0.4)
 )
 
-# ============================================
-# 4. 可视化函数
-# ============================================
+# 零假设区间的后验概率质量（点零假设下为 0）
+p_null_of <- function(samples, parts) {
+  if (is.null(parts)) return(0)
+  inside <- rep(FALSE, length(samples))
+  for (r in parts) inside <- inside | (samples > r[1] & samples < r[2])
+  mean(inside)
+}
 
-visualize_test_theta <- function(samples, test_result, x_range = c(0, 1)) {
+# ============================================
+# 3. 绘图：阴影 = 零假设区间，虚线 = 边界
+# ============================================
+visualize_test_theta <- function(samples, test) {
   df <- data.frame(theta = samples)
+  p0 <- p_null_of(samples, test$null_parts)
 
-  # 所有面板统一：阴影 = 零假设区间（null region）
-  shade_null <- function(p, lower, upper) {
-    p + annotate("rect", xmin = lower, xmax = upper, ymin = 0, ymax = Inf,
-                 alpha = 0.18, fill = "steelblue")
-  }
-
-  p <- ggplot(df, aes(x = theta)) +
+  g <- ggplot(df, aes(x = theta)) +
     geom_density(fill = "gray80", alpha = 0.5) +
     labs(
-      title = test_result$name,
+      title = test$name,
       subtitle = paste0(
-        "Null: ", test_result$null, "\n",
-        "Interest: ", test_result$interest, "\n",
-        "p(null) = ", sprintf("%.3f", test_result$p_null),
-        " | p(interest) = ", sprintf("%.3f", test_result$p_interest)
+        "Null: ", test$null_label, " | p(null) = ", sprintf("%.3f", p0), "\n",
+        "Interest: ", test$interest_label,
+        " | p(interest) = ", sprintf("%.3f", 1 - p0)
       ),
-      x = "Parameter θ",
-      y = "Posterior Density"
+      x = expression(theta),
+      y = "Posterior density"
     ) +
     papaja::theme_apa() +
     theme(
@@ -242,36 +171,30 @@ visualize_test_theta <- function(samples, test_result, x_range = c(0, 1)) {
       plot.subtitle = element_text(size = 7),
       axis.title = element_text(size = 9)
     ) +
-    xlim(x_range)
+    xlim(0, 1)
 
-  # 阴影与虚线都标出零假设区间
-  if (test_result$name %in% c("ROPE Test (Practical Equivalence)", "Equivalence Test")) {
-    p <- shade_null(p, -Inf, test_result$rope_lower)
-    p <- shade_null(p, test_result$rope_upper, Inf)
-    p <- p + geom_vline(xintercept = c(test_result$rope_lower, test_result$rope_upper),
-                        linetype = "dotted", color = "steelblue", linewidth = 0.8)
-  } else if (test_result$name == "Two-sided Minimal Effect Test") {
-    p <- shade_null(p, test_result$rope_lower, test_result$rope_upper)
-    p <- p + geom_vline(xintercept = c(test_result$rope_lower, test_result$rope_upper),
-                        linetype = "dotted", color = "steelblue", linewidth = 0.8)
-  } else if (test_result$name == "One-sided NHST") {
-    p <- shade_null(p, -Inf, test_result$null_val)
-    p <- p + geom_vline(xintercept = test_result$null_val, linetype = "dotted",
-                        color = "steelblue", linewidth = 0.8)
-  } else {
-    # One-sided Minimal Effect Test / Non-inferiority Test
-    p <- shade_null(p, -Inf, test_result$threshold)
-    p <- p + geom_vline(xintercept = test_result$threshold, linetype = "dotted",
-                        color = "steelblue", linewidth = 0.8)
+  if (!is.null(test$null_parts)) {
+    for (r in test$null_parts) {
+      g <- g + annotate("rect", xmin = max(r[1], 0), xmax = min(r[2], 1),
+                        ymin = 0, ymax = Inf,
+                        alpha = 0.18, fill = "steelblue")
+    }
   }
-
-  p
+  if (!is.null(test$vlines)) {
+    g <- g + geom_vline(xintercept = test$vlines, linetype = "dotted",
+                        colour = "steelblue", linewidth = 0.8)
+  }
+  if (!is.null(test$note)) {
+    g <- g + annotate("text", x = 0.02, y = Inf, hjust = 0, vjust = 1.8,
+                      label = test$note, size = 2.6, colour = "grey30")
+  }
+  g
 }
 
-# 生成图形
-plots <- lapply(results, function(r) visualize_test_theta(theta_post, r))
-
-# 组合图形（2列）
+# ============================================
+# 4. 生成图形（2 列 × 3 行）
+# ============================================
+plots <- lapply(tests, function(t) visualize_test_theta(theta_post, t))
 do.call(grid.arrange, c(plots, ncol = 2))
 
 # ---- qmd chunk: rope-print (line 649) ----
@@ -520,9 +443,13 @@ cat("BF_01 =", fmt_bf(BF01_rope), " | BF_10 =", fmt_bf(BF10_rope), "\n")
 # ---- qmd chunk: exercise-step3 (line 1237) ----
 
 # [练习骨架，qmd 中为 eval: false]
-# 第三步： 计算贝叶斯因子：BF₀₁ = 支持 H₀（theta在ROPE内）的概率 / 支持 H₁（theta在ROPE外）的概率
-# bf01 <- (...) / (...)  
-# cat("贝叶斯因子 BF₀₁（支持 theta 在 (0.4,0.6) 内）：", round(bf01, 3), "\n")
+# 第三步：贝叶斯因子 = 后验概率比 / 先验概率比
+#   H₀: θ ∈ (0.4, 0.6)；H₁: θ ∉ (0.4, 0.6)
+# post_odds  <- theta_rope_prob / (1 - theta_rope_prob)
+# prior_in   <- mean(theta_prior > rope_low & theta_prior < rope_high)
+# prior_odds <- prior_in / (1 - prior_in)
+# bf01 <- post_odds / prior_odds
+# cat("贝叶斯因子 BF₀₁（支持 theta 在 (0.4,0.6) 内）：", signif(bf01, 3), "\n")
 
 # ---- qmd chunk: helper-odds (line 1259) ----
 
@@ -606,8 +533,8 @@ calculate_odds <- function(theta_samples, region = c(0.4, 0.6)) {
 #            ymin = -Inf, ymax = Inf,
 #            fill = "blue", alpha = 0.2, inherit.aes = FALSE) +
 
-  # 垂直线在 0 处（假设边界）
-#   geom_vline(xintercept = 0, linetype = "dashed", color = "grey", linewidth = 1) +
+  # 垂直线标出假设边界 θ = 0.5
+#   geom_vline(xintercept = h0_boundary, linetype = "dashed", color = "grey", linewidth = 1) +
 
   # 标签：H₀ 在右侧，H₁ 在左侧
 #   annotate("text",

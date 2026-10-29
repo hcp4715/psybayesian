@@ -248,13 +248,13 @@ Y|\mu  \sim \ N(\mu, 0.75^2)
 <h2>方法1: 解析解</h2>
 <p>在第五课中，提示过Normal-Normal为共轭先验，因此其后验分布可直接计算：</p>
 <p><span class="math display">\[  
-\mu|\vec{y} \sim N\left(\frac{\theta\sigma^2 + \bar{y}n\tau^2}{n\tau^2 + \sigma^2}, \frac{\tau^2\sigma^2}{n\tau^2 + \sigma^2}\right)  
+\mu|\vec{y} \sim N\left(\frac{\mu_0\sigma^2 + \bar{y}n\tau^2}{n\tau^2 + \sigma^2}, \frac{\tau^2\sigma^2}{n\tau^2 + \sigma^2}\right)  
 \]</span></p>
 <p>其中：</p>
 <ul>
 <li><span class="math inline">\(\bar{y}\)</span> 是样本的均值（观测到的数据, <span class="math inline">\(Y=6.25\)</span>），<br>
 </li>
-<li><span class="math inline">\(\sigma^2\)</span> 是数据的方差（此处用已知正态分布的方差0.75替代），<br>
+<li><span class="math inline">\(\sigma^2\)</span> 是数据的方差（本例数据标准差已知为 0.75，故 <span class="math inline">\(\sigma^2 = 0.75^2 = 0.5625\)</span>），<br>
 </li>
 <li><span class="math inline">\(\tau^2\)</span> 是先验的方差（<span class="math inline">\(\sigma^2_{prior} = 1\)</span>）。</li>
 </ul>
@@ -262,7 +262,7 @@ Y|\mu  \sim \ N(\mu, 0.75^2)
 <section id="后验均值代入计算" class="slide level2">
 <h2>后验均值：代入计算</h2>
 <ul>
-<li><p><strong>后验均值</strong>：后验均值是先验均值 <span class="math inline">\(\theta\)</span> 和样本均值 <span class="math inline">\(\bar{y}\)</span> 的加权平均：</p>
+<li><p><strong>后验均值</strong>：后验均值是先验均值 <span class="math inline">\(\mu_0\)</span> 和样本均值 <span class="math inline">\(\bar{y}\)</span> 的加权平均：</p>
 <p><span class="math display">\[  
 \text{posterior mean} = \frac{0 \times 0.75^2 + 6.25 \times 1^2}{1^2 + 0.75^2} = \frac{6.25}{1.5625} = 4  
 \]</span></p></li>
@@ -287,15 +287,14 @@ Y|\mu  \sim \ N(\mu, 0.75^2)
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="" aria-label="1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(rstan, tidyverse, papaja, bayesplot, patchwork, gridExtra)</span>
-<span id="cb1-2"><a href="" aria-label="2"></a><span class="fu">options</span>(<span class="at">warn =</span> <span class="sc">-</span><span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="" aria-label="1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(rstan, tidyverse, papaja, bayesplot, patchwork, gridExtra)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
 <section class="slide level2">
 
 <h3 id="step-1准备观测数据">Step 1：准备观测数据</h3>
-<div class="cell" data-collapsed="false" data-jupyter="{&quot;outputs_hidden&quot;:false}" data-notebookid="68d7f5f0641ee0c1d9bb01cc" data-scrolled="false" data-slideshow="{&quot;slide_type&quot;:&quot;slide&quot;}" data-tags="[]" data-trusted="true" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="" aria-label="1"></a><span class="co"># 生成模拟数据</span></span>
@@ -308,7 +307,7 @@ Y|\mu  \sim \ N(\mu, 0.75^2)
 <h3 id="step-2用-stan-语法定义模型">Step 2：用 Stan 语法定义模型</h3>
 <p>这一步在 Stan 中声明数据、参数、先验和似然。<br>
 其中 <span class="math inline">\(\mu\)</span> 是需要估计的均值参数。</p>
-<div class="cell" data-collapsed="false" data-jupyter="{}" data-notebookid="68d7f5f0641ee0c1d9bb01cc" data-scrolled="false" data-slideshow="{&quot;slide_type&quot;:&quot;slide&quot;}" data-tags="[]" data-trusted="true" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="" aria-label="1"></a><span class="co"># 使用Stan语法建构模型</span></span>
@@ -336,7 +335,7 @@ Y|\mu  \sim \ N(\mu, 0.75^2)
 
 <h3 id="step-3传入数据并运行-mcmc">Step 3：传入数据并运行 MCMC</h3>
 <p>这一步把 R 中的数据传给 Stan，并使用多条马尔可夫链进行后验采样。</p>
-<div class="cell" data-notebookid="68d7f5f0641ee0c1d9bb01cc" data-jupyter="{}" data-collapsed="false" data-scrolled="false" data-tags="[]" data-slideshow="{&quot;slide_type&quot;:&quot;slide&quot;}" data-trusted="true">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="" aria-label="1"></a><span class="co"># 准备数据</span></span>
@@ -360,7 +359,7 @@ Y|\mu  \sim \ N(\mu, 0.75^2)
 
 <h3 id="step-4查看-stan-采样结果">Step 4：查看 Stan 采样结果</h3>
 <p>这一步查看模型采样后的结果摘要，包括参数估计、后验区间和收敛诊断信息。</p>
-<div class="cell" data-collapsed="false" data-jupyter="{}" data-notebookid="68d7f5f0641ee0c1d9bb01cc" data-scrolled="false" data-slideshow="{&quot;slide_type&quot;:&quot;slide&quot;}" data-tags="[]" data-trusted="true" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="" aria-label="1"></a><span class="co"># 显示采样结果</span></span>
@@ -371,11 +370,11 @@ Y|\mu  \sim \ N(\mu, 0.75^2)
 4 chains, each with iter=2000; warmup=1000; thin=1; 
 post-warmup draws per chain=1000, total post-warmup draws=4000.
 
-       mean se_mean   sd   2.5%    25%    50%    75%  97.5% n_eff Rhat
-mu     3.98    0.02 0.58   2.88   3.58   3.98   4.38   5.11  1379    1
-lp__ -12.96    0.01 0.65 -14.79 -13.09 -12.73 -12.55 -12.50  1924    1
+       mean se_mean  sd   2.5%    25%    50%    75%  97.5% n_eff Rhat
+mu     4.02    0.02 0.6   2.84   3.63   4.01   4.43   5.16  1536    1
+lp__ -13.00    0.02 0.7 -15.01 -13.18 -12.73 -12.55 -12.50  2095    1
 
-Samples were drawn using NUTS(diag_e) at Wed Oct 21 21:36:41 2026.
+Samples were drawn using NUTS(diag_e) at Fri Oct 30 00:36:16 2026.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).</code></pre>
@@ -399,7 +398,7 @@ convergence, Rhat=1).</code></pre>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-7-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec6/trace-plot-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -410,7 +409,7 @@ convergence, Rhat=1).</code></pre>
 
 <h3 id="step-5提取并可视化后验样本">Step 5：提取并可视化后验样本</h3>
 <p>这一步从 Stan 模型中提取参数 <span class="math inline">\(\mu\)</span> 的后验样本，并画出后验密度曲线。</p>
-<div class="cell" data-collapsed="false" data-jupyter="{}" data-notebookid="68d7f5f0641ee0c1d9bb01cc" data-scrolled="false" data-slideshow="{&quot;slide_type&quot;:&quot;slide&quot;}" data-tags="[]" data-trusted="true" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}">
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="" aria-label="1"></a><span class="co"># 绘制后验分布</span></span>
@@ -425,7 +424,7 @@ convergence, Rhat=1).</code></pre>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-8-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec6/posterior-hist-normal-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -435,8 +434,8 @@ convergence, Rhat=1).</code></pre>
 
 <h3 id="step-6与共轭后验进行对比">Step 6：与共轭后验进行对比</h3>
 <p>这一步把 Stan 抽样得到的后验分布，与 Normal-Normal 共轭公式得到的理论后验放在一起比较。<br>
-同时标出后验均值和 94% HDI。</p>
-<div class="cell" data-collapsed="false" data-jupyter="{}" data-notebookid="68d7f5f0641ee0c1d9bb01cc" data-scrolled="false" data-slideshow="{&quot;slide_type&quot;:&quot;slide&quot;}" data-tags="[]" data-trusted="true" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}">
+同时标出后验均值和 95% HDI。</p>
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="" aria-label="1"></a><span class="co"># 方法1 已推导的共轭后验：N(4, 0.6^2)</span></span>
@@ -450,8 +449,8 @@ convergence, Rhat=1).</code></pre>
 <span id="cb9-9"><a href="" aria-label="9"></a>x <span class="ot">&lt;-</span> <span class="fu">seq</span>(post_mean <span class="sc">-</span> <span class="dv">4</span> <span class="sc">*</span> post_sd, post_mean <span class="sc">+</span> <span class="dv">4</span> <span class="sc">*</span> post_sd, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
 <span id="cb9-10"><a href="" aria-label="10"></a>theoretical <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> x, <span class="at">density =</span> stats<span class="sc">::</span><span class="fu">dnorm</span>(x, post_mean, post_sd))</span>
 <span id="cb9-11"><a href="" aria-label="11"></a></span>
-<span id="cb9-12"><a href="" aria-label="12"></a><span class="co"># 计算 94% HDI 与后验均值</span></span>
-<span id="cb9-13"><a href="" aria-label="13"></a>hdi     <span class="ot">&lt;-</span> bayestestR<span class="sc">::</span><span class="fu">hdi</span>(posterior_samples<span class="sc">$</span>mu, <span class="at">ci =</span> <span class="fl">0.94</span>)</span>
+<span id="cb9-12"><a href="" aria-label="12"></a><span class="co"># 计算 95% HDI 与后验均值</span></span>
+<span id="cb9-13"><a href="" aria-label="13"></a>hdi     <span class="ot">&lt;-</span> bayestestR<span class="sc">::</span><span class="fu">hdi</span>(posterior_samples<span class="sc">$</span>mu, <span class="at">ci =</span> <span class="fl">0.95</span>)</span>
 <span id="cb9-14"><a href="" aria-label="14"></a>mean_mu <span class="ot">&lt;-</span> <span class="fu">mean</span>(posterior_samples<span class="sc">$</span>mu)</span>
 <span id="cb9-15"><a href="" aria-label="15"></a></span>
 <span id="cb9-16"><a href="" aria-label="16"></a><span class="co"># 叠加 Stan 采样密度与理论后验</span></span>
@@ -472,7 +471,7 @@ convergence, Rhat=1).</code></pre>
 <span id="cb9-31"><a href="" aria-label="31"></a>  ) <span class="sc">+</span></span>
 <span id="cb9-32"><a href="" aria-label="32"></a>  ggplot2<span class="sc">::</span><span class="fu">annotate</span>(<span class="st">"text"</span>,</span>
 <span id="cb9-33"><a href="" aria-label="33"></a>    <span class="at">x =</span> mean_mu, <span class="at">y =</span> <span class="fl">0.02</span>,</span>
-<span id="cb9-34"><a href="" aria-label="34"></a>    <span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"94% HDI; mean="</span>, <span class="fu">round</span>(mean_mu, <span class="dv">2</span>)),</span>
+<span id="cb9-34"><a href="" aria-label="34"></a>    <span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"95% HDI; mean="</span>, <span class="fu">round</span>(mean_mu, <span class="dv">2</span>)),</span>
 <span id="cb9-35"><a href="" aria-label="35"></a>    <span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">color =</span> <span class="st">"black"</span></span>
 <span id="cb9-36"><a href="" aria-label="36"></a>  ) <span class="sc">+</span></span>
 <span id="cb9-37"><a href="" aria-label="37"></a>  ggplot2<span class="sc">::</span><span class="fu">labs</span>(</span>
@@ -486,7 +485,7 @@ convergence, Rhat=1).</code></pre>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-9-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec6/compare-conjugate-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -578,7 +577,7 @@ convergence, Rhat=1).</code></pre>
 <span id="cb10-11"><a href="" aria-label="11"></a><span class="fu">cat</span>(<span class="st">"前 10 个样本值："</span>, <span class="fu">head</span>(samples, <span class="dv">10</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>前 10 个样本值： 4.456253 4.472246 3.405645 4.396805 5.316351 3.961205 4.086402 4.513851 4.209031 4.120954</code></pre>
+<pre><code>前 10 个样本值： 4.543541 4.238803 4.833759 4.236146 3.473166 4.345571 3.739735 3.584051 4.127781 4.705284</code></pre>
 </div>
 </div>
 </section>
@@ -588,21 +587,20 @@ convergence, Rhat=1).</code></pre>
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="" aria-label="1"></a><span class="co"># 绘制图像</span></span>
-<span id="cb12-2"><a href="" aria-label="2"></a><span class="fu">options</span>(<span class="at">repr.plot.width=</span><span class="dv">10</span>, <span class="at">repr.plot.height=</span><span class="dv">6</span>) </span>
-<span id="cb12-3"><a href="" aria-label="3"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> x_range, <span class="at">y =</span> y_norm)</span>
-<span id="cb12-4"><a href="" aria-label="4"></a>ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
-<span id="cb12-5"><a href="" aria-label="5"></a>  ggplot2<span class="sc">::</span><span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> samples, <span class="at">y =</span> <span class="fu">after_stat</span>(density)),  </span>
-<span id="cb12-6"><a href="" aria-label="6"></a>                          <span class="at">bins =</span> <span class="dv">45</span>, </span>
-<span id="cb12-7"><a href="" aria-label="7"></a>                          <span class="at">fill =</span> <span class="st">"lightgrey"</span>, </span>
-<span id="cb12-8"><a href="" aria-label="8"></a>                          <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
-<span id="cb12-9"><a href="" aria-label="9"></a>  ggplot2<span class="sc">::</span><span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="fl">1.5</span>) <span class="sc">+</span> </span>
-<span id="cb12-10"><a href="" aria-label="10"></a>  ggplot2<span class="sc">::</span><span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>) , <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.85</span>)) <span class="sc">+</span></span>
-<span id="cb12-11"><a href="" aria-label="11"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb12-2"><a href="" aria-label="2"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> x_range, <span class="at">y =</span> y_norm)</span>
+<span id="cb12-3"><a href="" aria-label="3"></a>ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
+<span id="cb12-4"><a href="" aria-label="4"></a>  ggplot2<span class="sc">::</span><span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> samples, <span class="at">y =</span> <span class="fu">after_stat</span>(density)),  </span>
+<span id="cb12-5"><a href="" aria-label="5"></a>                          <span class="at">bins =</span> <span class="dv">45</span>, </span>
+<span id="cb12-6"><a href="" aria-label="6"></a>                          <span class="at">fill =</span> <span class="st">"lightgrey"</span>, </span>
+<span id="cb12-7"><a href="" aria-label="7"></a>                          <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb12-8"><a href="" aria-label="8"></a>  ggplot2<span class="sc">::</span><span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="fl">1.5</span>) <span class="sc">+</span> </span>
+<span id="cb12-9"><a href="" aria-label="9"></a>  ggplot2<span class="sc">::</span><span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>) , <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.85</span>)) <span class="sc">+</span></span>
+<span id="cb12-10"><a href="" aria-label="10"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-11-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec6/mc-histogram-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -672,7 +670,7 @@ convergence, Rhat=1).</code></pre>
 <ul>
 <li>状态转移：每一天我们的心情都会发生变化或者不变，代表一次采样，即一次状态的转移。
 <ul>
-<li>长时间跟踪这些状态，我们会得到一个 马尔可夫链:<span class="math inline">\(\left\lbrace \theta^{(1)}, \theta^{(2)}, \ldots, \theta^{(N)} \right\rbrace\)</span>,这里 <span class="math inline">\(n\)</span> 表示天数，<span class="math inline">\(\theta^{(n)}\)</span> 是第 <span class="math inline">\(n\)</span> 天的具体心情。</li>
+<li>长时间跟踪这些状态，我们会得到一个 马尔可夫链:<span class="math inline">\(\left\lbrace \theta^{(1)}, \theta^{(2)}, \ldots, \theta^{(n)} \right\rbrace\)</span>,这里 <span class="math inline">\(n\)</span> 表示天数，<span class="math inline">\(\theta^{(n)}\)</span> 是第 <span class="math inline">\(n\)</span> 天的具体心情。</li>
 </ul></li>
 <li><strong>“无记忆性”</strong>：无记忆性是马尔可夫链的关键特点,今天的心情（当前状态）只依赖于昨天的心情（前一状态），例如：
 <ul>
@@ -1283,13 +1281,12 @@ f(\mu | y=6.25) \propto f(\mu)L(\mu|y=6.25)
 <span id="cb28-20"><a href="" aria-label="20"></a>  ggplot2<span class="sc">::</span><span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="fl">1.5</span>, <span class="fl">6.5</span>)) </span>
 <span id="cb28-21"><a href="" aria-label="21"></a></span>
 <span id="cb28-22"><a href="" aria-label="22"></a><span class="co"># 将两个图并排显示</span></span>
-<span id="cb28-23"><a href="" aria-label="23"></a><span class="fu">options</span>(<span class="at">repr.plot.width=</span><span class="dv">16</span>, <span class="at">repr.plot.height=</span><span class="dv">7</span>) </span>
-<span id="cb28-24"><a href="" aria-label="24"></a>density_plot <span class="sc">+</span> trace_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb28-23"><a href="" aria-label="23"></a>density_plot <span class="sc">+</span> trace_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-19-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec6/mh-plots-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -1319,7 +1316,7 @@ f(\mu | y=6.25) \propto f(\mu)L(\mu|y=6.25)
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-20-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec6/mh-bayesplot-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -1468,7 +1465,7 @@ f(\mu | y=6.25) \propto f(\mu)L(\mu|y=6.25)
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-22-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec6/mh-sigma-1-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -1589,7 +1586,7 @@ f(\mu | y=6.25) \propto f(\mu)L(\mu|y=6.25)
 </ul>
 <p><span class="math display">\[  
 \begin{equation}  
-\pi \sim \text{Beta}(\alpha, \beta)  
+\pi \sim \mathrm{Beta}(\alpha, \beta)  
 \end{equation}  
 \]</span></p>
 <ul>
@@ -1607,7 +1604,7 @@ Y \sim \text{Binomial}(n, \pi)
 <p><strong>模型设定</strong></p>
 <p>在这个例子中，可使用Beta-Binomial 模型来表示：</p>
 <blockquote>
-<p>先验分布为：<span class="math inline">\(\pi    \sim \text{Beta}(2, 2)\)</span><br>
+<p>先验分布为：<span class="math inline">\(\pi    \sim \mathrm{Beta}(2, 2)\)</span><br>
 似然函数为：<span class="math inline">\(Y|\pi  \sim \text{Bin}(10, \pi)\)</span><br>
 总试验数为10，成功次数为9 <span class="math inline">\((Y = 9)\)</span></p>
 </blockquote>
@@ -1718,8 +1715,8 @@ Y \sim \text{Binomial}(n, \pi)
 <pre><code>
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
 Chain 1: 
-Chain 1: Gradient evaluation took 3e-06 seconds
-Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.03 seconds.
+Chain 1: Gradient evaluation took 4e-06 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.04 seconds.
 Chain 1: Adjust your expectations accordingly!
 Chain 1: 
 Chain 1: 
@@ -1743,8 +1740,8 @@ Chain 1:
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
 Chain 2: 
-Chain 2: Gradient evaluation took 0 seconds
-Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0 seconds.
+Chain 2: Gradient evaluation took 1e-06 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.01 seconds.
 Chain 2: Adjust your expectations accordingly!
 Chain 2: 
 Chain 2: 
@@ -1762,8 +1759,8 @@ Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 2: 
 Chain 2:  Elapsed Time: 0.003 seconds (Warm-up)
-Chain 2:                0.004 seconds (Sampling)
-Chain 2:                0.007 seconds (Total)
+Chain 2:                0.003 seconds (Sampling)
+Chain 2:                0.006 seconds (Total)
 Chain 2: </code></pre>
 </div>
 </div>
@@ -1799,7 +1796,7 @@ Chain 2: </code></pre>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-26-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec6/plot-beta-diagnostic-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -1821,20 +1818,19 @@ Chain 2: </code></pre>
 <span id="cb38-5"><a href="" aria-label="5"></a>sample_pi_200 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">pi =</span> pi_warm[<span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>, <span class="dv">1</span>])</span>
 <span id="cb38-6"><a href="" aria-label="6"></a></span>
 <span id="cb38-7"><a href="" aria-label="7"></a><span class="co"># 绘图</span></span>
-<span id="cb38-8"><a href="" aria-label="8"></a><span class="fu">options</span>(<span class="at">repr.plot.width=</span><span class="dv">16</span>, <span class="at">repr.plot.height=</span><span class="dv">5</span>) </span>
-<span id="cb38-9"><a href="" aria-label="9"></a><span class="co">#前20</span></span>
-<span id="cb38-10"><a href="" aria-label="10"></a>dens_20 <span class="ot">&lt;-</span> bayesplot<span class="sc">::</span><span class="fu">mcmc_dens</span>(sample_pi_20) <span class="sc">+</span>    </span>
-<span id="cb38-11"><a href="" aria-label="11"></a>        ggplot2<span class="sc">::</span><span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"pi"</span>, <span class="at">y =</span> <span class="st">"density"</span>) <span class="sc">+</span></span>
-<span id="cb38-12"><a href="" aria-label="12"></a>        papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
-<span id="cb38-13"><a href="" aria-label="13"></a>trace_20 <span class="ot">&lt;-</span> bayesplot<span class="sc">::</span><span class="fu">mcmc_trace</span>(sample_pi_20) <span class="sc">+</span>  </span>
-<span id="cb38-14"><a href="" aria-label="14"></a>        ggplot2<span class="sc">::</span><span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"pi"</span>, <span class="at">y =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
-<span id="cb38-15"><a href="" aria-label="15"></a>        papaja<span class="sc">::</span><span class="fu">theme_apa</span>() </span>
-<span id="cb38-16"><a href="" aria-label="16"></a>dens_20 <span class="sc">+</span> trace_20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb38-8"><a href="" aria-label="8"></a><span class="co">#前20</span></span>
+<span id="cb38-9"><a href="" aria-label="9"></a>dens_20 <span class="ot">&lt;-</span> bayesplot<span class="sc">::</span><span class="fu">mcmc_dens</span>(sample_pi_20) <span class="sc">+</span>    </span>
+<span id="cb38-10"><a href="" aria-label="10"></a>        ggplot2<span class="sc">::</span><span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"pi"</span>, <span class="at">y =</span> <span class="st">"density"</span>) <span class="sc">+</span></span>
+<span id="cb38-11"><a href="" aria-label="11"></a>        papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
+<span id="cb38-12"><a href="" aria-label="12"></a>trace_20 <span class="ot">&lt;-</span> bayesplot<span class="sc">::</span><span class="fu">mcmc_trace</span>(sample_pi_20) <span class="sc">+</span>  </span>
+<span id="cb38-13"><a href="" aria-label="13"></a>        ggplot2<span class="sc">::</span><span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"pi"</span>, <span class="at">y =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb38-14"><a href="" aria-label="14"></a>        papaja<span class="sc">::</span><span class="fu">theme_apa</span>() </span>
+<span id="cb38-15"><a href="" aria-label="15"></a>dens_20 <span class="sc">+</span> trace_20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-27-1.png" style="width:90.0%"></p>
+<p><img data-src="assets/figs/lec6/warmup-20-1.png" style="width:90.0%"></p>
 </figure>
 </div>
 </div>
@@ -1857,7 +1853,7 @@ Chain 2: </code></pre>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-28-1.png" style="width:90.0%"></p>
+<p><img data-src="assets/figs/lec6/warmup-200-1.png" style="width:90.0%"></p>
 </figure>
 </div>
 </div>
@@ -1919,7 +1915,7 @@ Chain 2: </code></pre>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-30-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec6/posterior-vs-analytic-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -1998,7 +1994,7 @@ Y_i|\mu &amp; \stackrel{ind}{\sim} \text{Normal}(\mu, \sigma^2) \\
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="" aria-label="1"></a><span class="co">#===========================================================================</span></span>
-<span id="cb43-2"><a href="" aria-label="2"></a><span class="co">#                            block1: 请修改 ... 中的值。</span></span>
+<span id="cb43-2"><a href="" aria-label="2"></a><span class="co">#                     block1: 请尝试修改下面的数值，观察后验如何变化。</span></span>
 <span id="cb43-3"><a href="" aria-label="3"></a><span class="co">#===========================================================================</span></span>
 <span id="cb43-4"><a href="" aria-label="4"></a></span>
 <span id="cb43-5"><a href="" aria-label="5"></a><span class="co">#构建模型</span></span>
@@ -2030,7 +2026,7 @@ Y_i|\mu &amp; \stackrel{ind}{\sim} \text{Normal}(\mu, \sigma^2) \\
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="" aria-label="1"></a><span class="co">#===========================================================================</span></span>
-<span id="cb44-2"><a href="" aria-label="2"></a><span class="co">#                            block2: 请修改 ... 中的值。</span></span>
+<span id="cb44-2"><a href="" aria-label="2"></a><span class="co">#                     block2: 请尝试修改下面的数值，观察后验如何变化。</span></span>
 <span id="cb44-3"><a href="" aria-label="3"></a><span class="co">#===========================================================================</span></span>
 <span id="cb44-4"><a href="" aria-label="4"></a><span class="co">#准备数据</span></span>
 <span id="cb44-5"><a href="" aria-label="5"></a>data_list <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
@@ -2051,8 +2047,8 @@ Y_i|\mu &amp; \stackrel{ind}{\sim} \text{Normal}(\mu, \sigma^2) \\
 <pre><code>
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
 Chain 1: 
-Chain 1: Gradient evaluation took 3e-06 seconds
-Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.03 seconds.
+Chain 1: Gradient evaluation took 5e-06 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.05 seconds.
 Chain 1: Adjust your expectations accordingly!
 Chain 1: 
 Chain 1: 
@@ -2126,8 +2122,8 @@ Chain 3:
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
 Chain 4: 
-Chain 4: Gradient evaluation took 1e-06 seconds
-Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.01 seconds.
+Chain 4: Gradient evaluation took 0 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0 seconds.
 Chain 4: Adjust your expectations accordingly!
 Chain 4: 
 Chain 4: 
@@ -2181,7 +2177,7 @@ Chain 4: </code></pre>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-34-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec6/exercise-plot-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -2251,13 +2247,12 @@ Chain 4: </code></pre>
 <span id="cb52-14"><a href="" aria-label="14"></a>  ggplot2<span class="sc">::</span><span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"mu"</span>, <span class="at">y =</span> <span class="st">"density"</span>) <span class="sc">+</span></span>
 <span id="cb52-15"><a href="" aria-label="15"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
 <span id="cb52-16"><a href="" aria-label="16"></a></span>
-<span id="cb52-17"><a href="" aria-label="17"></a><span class="fu">options</span>(<span class="at">repr.plot.width=</span><span class="dv">16</span>, <span class="at">repr.plot.height=</span><span class="dv">6</span>) </span>
-<span id="cb52-18"><a href="" aria-label="18"></a>hist_mu <span class="sc">+</span> dens_mu_mix</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb52-17"><a href="" aria-label="17"></a>hist_mu <span class="sc">+</span> dens_mu_mix</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-36-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec6/exercise-compare-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -2400,7 +2395,7 @@ Chain 4: </code></pre>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec6/unnamed-chunk-37-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec6/detailed-balance-diagram-1.png" width="1728"></p>
 </figure>
 </div>
 </div>

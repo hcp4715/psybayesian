@@ -24,6 +24,7 @@ execute:
 ---
 
 ```{r}
+#| label: setup
 #| include: false
 knitr::opts_chunk$set(fig.path = "assets/figs/lec6/", fig.width = 12, fig.height = 5, dpi = 144)
 ```
@@ -71,20 +72,20 @@ knitr::opts_chunk$set(fig.path = "assets/figs/lec6/", fig.width = 12, fig.height
 在第五课中，提示过Normal-Normal为共轭先验，因此其后验分布可直接计算：  
 
 $$  
-\mu|\vec{y} \sim N\left(\frac{\theta\sigma^2 + \bar{y}n\tau^2}{n\tau^2 + \sigma^2}, \frac{\tau^2\sigma^2}{n\tau^2 + \sigma^2}\right)  
+\mu|\vec{y} \sim N\left(\frac{\mu_0\sigma^2 + \bar{y}n\tau^2}{n\tau^2 + \sigma^2}, \frac{\tau^2\sigma^2}{n\tau^2 + \sigma^2}\right)  
 $$  
 
 其中：  
 
 - $\bar{y}$ 是样本的均值（观测到的数据, $Y=6.25$），  
-- $\sigma^2$ 是数据的方差（此处用已知正态分布的方差0.75替代），  
+- $\sigma^2$ 是数据的方差（本例数据标准差已知为 0.75，故 $\sigma^2 = 0.75^2 = 0.5625$），  
 - $\tau^2$ 是先验的方差（$\sigma^2_{prior} = 1$）。
 
 ---
 
 ## 后验均值：代入计算
 
-- **后验均值**：后验均值是先验均值 $\theta$ 和样本均值 $\bar{y}$ 的加权平均：  
+- **后验均值**：后验均值是先验均值 $\mu_0$ 和样本均值 $\bar{y}$ 的加权平均：  
 
   $$  
   \text{posterior mean} = \frac{0 \times 0.75^2 + 6.25 \times 1^2}{1^2 + 0.75^2} = \frac{6.25}{1.5625} = 4  
@@ -110,8 +111,8 @@ $$
 我们可以通过`stan`来建立贝叶斯模型并且让其帮助我们完成从后验中采样的过程
 
 ```{r}
+#| label: load-packages
 pacman::p_load(rstan, tidyverse, papaja, bayesplot, patchwork, gridExtra)
-options(warn = -1)
 ```
 
 ---
@@ -119,14 +120,7 @@ options(warn = -1)
 ### Step 1：准备观测数据
 
 ```{r}
-#| collapsed: false
-#| jupyter: {outputs_hidden: false}
-#| notebookId: 68d7f5f0641ee0c1d9bb01cc
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
+#| label: data
 
 # 生成模拟数据
 y <- 6.25
@@ -140,14 +134,7 @@ y <- 6.25
 其中 $\mu$ 是需要估计的均值参数。
 
 ```{r}
-#| collapsed: false
-#| jupyter: {}
-#| notebookId: 68d7f5f0641ee0c1d9bb01cc
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
+#| label: stan-model-normal
 
 # 使用Stan语法建构模型
 stan_model_code <- "
@@ -176,13 +163,7 @@ model {
 这一步把 R 中的数据传给 Stan，并使用多条马尔可夫链进行后验采样。
 
 ```{r}
-#| notebookId: 68d7f5f0641ee0c1d9bb01cc
-#| jupyter: {}
-#| collapsed: false
-#| scrolled: false
-#| tags: []
-#| slideshow: {slide_type: slide}
-#| trusted: true
+#| label: fit-normal
 
 # 准备数据
 stan_data <- list(
@@ -207,14 +188,7 @@ fit <- stan(
 这一步查看模型采样后的结果摘要，包括参数估计、后验区间和收敛诊断信息。
 
 ```{r}
-#| collapsed: false
-#| jupyter: {}
-#| notebookId: 68d7f5f0641ee0c1d9bb01cc
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
+#| label: print-fit-normal
 
 # 显示采样结果
 print(fit)
@@ -227,6 +201,7 @@ print(fit)
 `summary(fit)` 给出的 `n_eff`、`Rhat` 是**数值**诊断；看图（trace plot）是最直观的第一步：横轴为迭代次数，纵轴为采样值，Stan 默认把 4 条链画在一起。
 
 ```{r}
+#| label: trace-plot
 #| fig.height: 4
 
 # 提取 μ 的样本（4 条链、已去掉 warmup）用于 trace 图
@@ -246,14 +221,7 @@ bayesplot::mcmc_trace(mu_draws) +
 这一步从 Stan 模型中提取参数 $\mu$ 的后验样本，并画出后验密度曲线。
 
 ```{r}
-#| collapsed: false
-#| jupyter: {}
-#| notebookId: 68d7f5f0641ee0c1d9bb01cc
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
+#| label: posterior-hist-normal
 
 # 绘制后验分布
 idata <- rstan::extract(fit)
@@ -270,17 +238,10 @@ bayesplot::mcmc_hist(posterior_df, bins = 50) +
 ### Step 6：与共轭后验进行对比
 
 这一步把 Stan 抽样得到的后验分布，与 Normal-Normal 共轭公式得到的理论后验放在一起比较。  
-同时标出后验均值和 94% HDI。
+同时标出后验均值和 95% HDI。
 
 ```{r}
-#| collapsed: false
-#| jupyter: {}
-#| notebookId: 68d7f5f0641ee0c1d9bb01cc
-#| scrolled: false
-#| slideshow: {slide_type: slide}
-#| tags: []
-#| trusted: true
-#| vscode: {languageId: r}
+#| label: compare-conjugate
 
 # 方法1 已推导的共轭后验：N(4, 0.6^2)
 post_mean <- 4
@@ -293,8 +254,8 @@ posterior_samples <- posterior_df
 x <- seq(post_mean - 4 * post_sd, post_mean + 4 * post_sd, length.out = 1000)
 theoretical <- data.frame(x = x, density = stats::dnorm(x, post_mean, post_sd))
 
-# 计算 94% HDI 与后验均值
-hdi     <- bayestestR::hdi(posterior_samples$mu, ci = 0.94)
+# 计算 95% HDI 与后验均值
+hdi     <- bayestestR::hdi(posterior_samples$mu, ci = 0.95)
 mean_mu <- mean(posterior_samples$mu)
 
 # 叠加 Stan 采样密度与理论后验
@@ -315,7 +276,7 @@ p <- ggplot2::ggplot() +
   ) +
   ggplot2::annotate("text",
     x = mean_mu, y = 0.02,
-    label = paste0("94% HDI; mean=", round(mean_mu, 2)),
+    label = paste0("95% HDI; mean=", round(mean_mu, 2)),
     size = 3.5, color = "black"
   ) +
   ggplot2::labs(
@@ -392,6 +353,7 @@ print(p)
 ---
 
 ```{r}
+#| label: simulate-posterior
 # 设置 x 的范围为 [2, 7]
 x_range <- seq(2, 7, length.out = 1000)
 
@@ -408,8 +370,8 @@ cat("前 10 个样本值：", head(samples, 10))
 ---
 
 ```{r}
+#| label: mc-histogram
 # 绘制图像
-options(repr.plot.width=10, repr.plot.height=6) 
 df <- data.frame(x = x_range, y = y_norm)
 ggplot2::ggplot(df, aes(x = x, y = y)) +
   ggplot2::geom_histogram(aes(x = samples, y = after_stat(density)),  
@@ -488,7 +450,7 @@ Markov Chain的特点：
 ## Markov Chain示例：心情状态的转移
 
 - 状态转移：每一天我们的心情都会发生变化或者不变，代表一次采样，即一次状态的转移。  
-   - 长时间跟踪这些状态，我们会得到一个 马尔可夫链:$\left\lbrace \theta^{(1)}, \theta^{(2)}, \ldots, \theta^{(N)} \right\rbrace$,这里 $n$ 表示天数，$\theta^{(n)}$ 是第 $n$ 天的具体心情。  
+   - 长时间跟踪这些状态，我们会得到一个 马尔可夫链:$\left\lbrace \theta^{(1)}, \theta^{(2)}, \ldots, \theta^{(n)} \right\rbrace$,这里 $n$ 表示天数，$\theta^{(n)}$ 是第 $n$ 天的具体心情。  
 
 - **“无记忆性”**：无记忆性是马尔可夫链的关键特点,今天的心情（当前状态）只依赖于昨天的心情（前一状态），例如：  
    - 如果前一天是“开心” $\theta_1$，那么今天仍然保持“开心”的概率是 0.5，  
@@ -827,6 +789,7 @@ MH 算法包含两个关键思想和两个关键步骤：
 ---
 
 ```{r}
+#| label: mh-one-step
 set.seed(2024)
 
 current <- 3                                  # 假设theta^n为3
@@ -846,6 +809,7 @@ cat("从建议分布中新采样 θ(n+1)为：", proposal)
 ---
 
 ```{r}
+#| label: mh-alpha
 # 先验为N(0,1)，在此先验下计算两个参数样本的条件概率
 proposal_prior <- dnorm(proposal, mean = 0, sd = 1) 
 current_prior <- dnorm(current, mean = 0, sd = 1)
@@ -876,6 +840,7 @@ cat("后验比为：", proposal_posterior / current_posterior, ", alpha为:", al
 ---
 
 ```{r}
+#| label: mh-accept
 # 根据接受概率α进行抽样，抽样内容为建议位置和当前位置
 next_stop <- sample(c(proposal, current), 1, prob = c(alpha, 1 - alpha))
 
@@ -893,6 +858,7 @@ cat("下一个位置的值为:", next_stop, "\n")
 ---
 
 ```{r}
+#| label: mh-function
 one_mh_iteration <- function(current, sigma = 1) {
   
   # 提议值:从均值为current，方差为sigma（默认值为1）的正态分布中抽样
@@ -939,6 +905,7 @@ print(results, row.names = FALSE)
 ---
 
 ```{r}
+#| label: mh-function-seed83
 # 变换不同的随机数种子，将生成不同的建议值
 set.seed(83)
 
@@ -958,6 +925,7 @@ print(round(results, digits = 4), row.names = FALSE)  # 用round对数据框内�
 基于新的当前样本，再次建议并决定是否接受建议值，不断重复这个过程。
 
 ```{r}
+#| label: mh-tour-function
 mh_tour <- function(N, sigma = 1) {
   current <- 3
   mu <- numeric(N)  # 创建一个长度为 N 的零向量
@@ -981,6 +949,7 @@ mh_tour <- function(N, sigma = 1) {
 **采样结果图示**
 
 ```{r}
+#| label: mh-run
 # 调用定义好的函数，将采样次数设为5000
 set.seed(84735)
 mh_simulation <- mh_tour(N=5000)
@@ -990,6 +959,7 @@ tail(mh_simulation, n = 5)
 ---
 
 ```{r}
+#| label: mh-plots
 # 绘制密度图
 density_plot <- ggplot2::ggplot(mh_simulation, aes(x = mu)) +
   ggplot2::geom_histogram(aes(y = after_stat(density)), 
@@ -1012,7 +982,6 @@ trace_plot <- ggplot2::ggplot(mh_simulation, aes(x = iteration, y = mu)) +
   ggplot2::scale_y_continuous(limits = c(1.5, 6.5)) 
 
 # 将两个图并排显示
-options(repr.plot.width=16, repr.plot.height=7) 
 density_plot + trace_plot
 ```
 
@@ -1021,6 +990,7 @@ density_plot + trace_plot
 我们可以使用 bayesplot包简化这个绘图的过程
 
 ```{r}
+#| label: mh-bayesplot
 #创建绘图数据框
 sample <- as.data.frame(mh_simulation$mu)
 
@@ -1097,6 +1067,7 @@ ggplot() +
 可以结合以下完整的代码进行判断
 
 ```{r}
+#| label: mh-function-repeat
 one_mh_iteration <- function(current, sigma = 1) {
   
   # 提议值:从均值为current，方差为sigma（默认值为1）的正态分布中抽样
@@ -1153,6 +1124,7 @@ mh_tour <- function(N, sigma = 1) {
 ---
 
 ```{r}
+#| label: mh-sigma-1
 #===========================================================================
 #                            请修改 sigma 的值。
 #===========================================================================
@@ -1178,6 +1150,7 @@ dens_x + trace_x
 ---
 
 ```{r}
+#| label: mh-sigma-exercise
 #| eval: false
 #===========================================================================
 #                            可以自行复制代码多试几次
@@ -1298,7 +1271,7 @@ Metropolis-Hastings 利用Markov Chain的特征，利用当前与建议的参数
 
 $$  
 \begin{equation}  
-\pi \sim \text{Beta}(\alpha, \beta)  
+\pi \sim \mathrm{Beta}(\alpha, \beta)  
 \end{equation}  
 $$  
 
@@ -1318,7 +1291,7 @@ $$
 
 在这个例子中，可使用Beta-Binomial 模型来表示：  
 
-> 先验分布为：$\pi    \sim \text{Beta}(2, 2)$  
+> 先验分布为：$\pi    \sim \mathrm{Beta}(2, 2)$  
 > 似然函数为：$Y|\pi  \sim \text{Bin}(10, \pi)$  
 > 总试验数为10，成功次数为9 $(Y = 9)$  
 
@@ -1327,6 +1300,7 @@ $$
 ---
 
 ```{r}
+#| label: stan-model-beta
 # 使用Stan语法建构模型
 stan_model_code <- "
 data {  //数据块
@@ -1401,6 +1375,7 @@ model {  //模型块
 ---
 
 ```{r}
+#| label: fit-beta
 # 准备数据
 stan_data <- list(n = 10,Y = 9)
 
@@ -1425,6 +1400,7 @@ trace <- rstan::stan(
 ---
 
 ```{r}
+#| label: plot-beta-diagnostic
 # 创建绘图数据框
 idata <- rstan::extract(trace)       # 提取后验数据
 sample_pi <- as.data.frame(idata$pi)
@@ -1451,6 +1427,7 @@ dens_pi + trace_pi
 ## 采样进程：前20个结果
 
 ```{r}
+#| label: warmup-20
 #| out-width: 90%
 # 含 warmup 的样本：取第一条链的前 20 次与前 200 次迭代（热身阶段）
 # 注意：inc_warmup 只在 permuted = FALSE 时生效（此时 第1维=迭代、第2维=链）
@@ -1459,7 +1436,6 @@ sample_pi_20 <- data.frame(pi = pi_warm[1:20, 1])
 sample_pi_200 <- data.frame(pi = pi_warm[1:200, 1])
 
 # 绘图
-options(repr.plot.width=16, repr.plot.height=5) 
 #前20
 dens_20 <- bayesplot::mcmc_dens(sample_pi_20) +    
         ggplot2::labs(x = "pi", y = "density") +
@@ -1475,6 +1451,7 @@ dens_20 + trace_20
 ## 采样进程：前200个结果
 
 ```{r}
+#| label: warmup-200
 #| out-width: 90%
 #前200
 dens_200 <- bayesplot::mcmc_dens(sample_pi_200) +    
@@ -1489,6 +1466,7 @@ dens_200 + trace_200
 ---
 
 ```{r}
+#| label: samples-head-tail
 rbind(head(sample_pi, 5), tail(sample_pi, 5))
 ```
 
@@ -1503,6 +1481,7 @@ rbind(head(sample_pi, 5), tail(sample_pi, 5))
 ---
 
 ```{r}
+#| label: posterior-vs-analytic
 x <- seq(0.2, 1, length.out = 10000)
 
 # 真实的后验分布 beta（alpha + y, beta + n - y）
@@ -1590,8 +1569,9 @@ $$
 ---
 
 ```{r}
+#| label: exercise-stan-model
 #===========================================================================
-#                            block1: 请修改 ... 中的值。
+#                     block1: 请尝试修改下面的数值，观察后验如何变化。
 #===========================================================================
 
 #构建模型
@@ -1619,8 +1599,9 @@ model {
 ---
 
 ```{r}
+#| label: exercise-fit
 #===========================================================================
-#                            block2: 请修改 ... 中的值。
+#                     block2: 请尝试修改下面的数值，观察后验如何变化。
 #===========================================================================
 #准备数据
 data_list <- list(
@@ -1641,12 +1622,14 @@ trace <- rstan::stan(
 ---
 
 ```{r}
+#| label: exercise-packages
 pacman::p_load(patchwork,tidyverse,rstan)
 ```
 
 ---
 
 ```{r}
+#| label: exercise-plot
 #创建绘图数据框
 idata <- rstan::extract(trace)
 sample_mu <- as.data.frame(idata$mu)
@@ -1664,6 +1647,7 @@ dens_mu + trace_mu
 ---
 
 ```{r}
+#| label: exercise-conjugate
 #===========================================================================
 #                            为了和真实的后验分布进行比较，计算真实的后验分布。
 #===========================================================================
@@ -1695,6 +1679,7 @@ cat("后验分布的标准差:", posterior_std)
 ---
 
 ```{r}
+#| label: exercise-compare
 # 计算真实的后验分布
 x <- seq(200, 400, length.out = 5000)                     # 创建从200到400的序列
 y <- dnorm(x, mean = posterior_mean, sd = posterior_std)  # 计算后验分布的概率密度
@@ -1711,7 +1696,6 @@ dens_mu_mix <- bayesplot::mcmc_dens(sample_mu) +  #采样结果
   ggplot2::labs(x = "mu", y = "density") +
   papaja::theme_apa()
 
-options(repr.plot.width=16, repr.plot.height=6) 
 hist_mu + dens_mu_mix
 ```
 
@@ -1792,6 +1776,7 @@ hist_mu + dens_mu_mix
 下图把 MH 的构造画成一条流水线：一个"提议"要经过接受率 $\alpha$ 的筛选，才真正构成状态的转移。
 
 ```{r}
+#| label: detailed-balance-diagram
 #| fig.height: 2.6
 
 # 用方框图示意：建议分布 × 接受率 = 转移核

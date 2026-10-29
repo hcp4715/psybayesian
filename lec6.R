@@ -62,13 +62,13 @@ bayesplot::mcmc_trace(mu_draws) +
   ggplot2::labs(x = "iteration", y = "mu") +
   papaja::theme_apa()
 
-#--------------- 与共轭后验对比（含 94% HDI） ---------------
+#--------------- 与共轭后验对比（含 95% HDI） ---------------
 # 理论后验密度曲线
 x <- seq(post_mean - 4 * post_sd, post_mean + 4 * post_sd, length.out = 1000)
 theoretical <- data.frame(x = x, density = stats::dnorm(x, post_mean, post_sd))
 
-# 计算 94% HDI 与后验均值
-hdi     <- bayestestR::hdi(mu_draws$mu, ci = 0.94)
+# 计算 95% HDI 与后验均值
+hdi     <- bayestestR::hdi(mu_draws$mu, ci = 0.95)
 mean_mu <- mean(mu_draws$mu)
 
 # 叠加 Stan 采样密度与理论后验
@@ -89,7 +89,7 @@ p_nn <- ggplot2::ggplot() +
   ) +
   ggplot2::annotate("text",
     x = mean_mu, y = 0.02,
-    label = paste0("94% HDI; mean=", round(mean_mu, 2)),
+    label = paste0("95% HDI; mean=", round(mean_mu, 2)),
     size = 3.5, color = "black"
   ) +
   ggplot2::labs(
@@ -533,7 +533,7 @@ hist_pi + dens_pi_mix
 
 ##练习（完整代码）
 #===========================================================================
-#                            请修改 ... 中的值。
+#                     block1: 请尝试修改下面的数值，观察后验如何变化。
 #===========================================================================
 
 #准备数据
@@ -563,7 +563,7 @@ model {
 }
 "
 #===========================================================================
-#                            请修改 ... 中的值。
+#                     block2: 请尝试修改下面的数值，观察后验如何变化。
 #===========================================================================
 trace <- rstan::stan(
   model_code = stan_code,            # 定义的模型或模型文件路径
