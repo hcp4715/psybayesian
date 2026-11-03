@@ -6,11 +6,7 @@ if (!requireNamespace('pacman', quietly = TRUE)) {
 pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja", "patchwork","bayesplot","rstan","brms")
 
 # 加载数据
-tryCatch({
-  df_raw <- read_csv("/home/mw/input/bayes3797/Kolvoort_2020_HBM_Exp1_Clean.csv")
-}, error = function(e) {
-  df_raw <- read_csv("2024/data/Kolvoort_2020_HBM_Exp1_Clean.csv")
-})
+df_raw <- utils::read.csv(file.path("data", "Kolvoort_2020_HBM_Exp1_Clean.csv"))
 
 # 显示数据前几行
 head(df_raw)
@@ -178,6 +174,7 @@ cat("预测值 μ:", mu, "\n")
 # 绘制回归线（完善练习部分）
 #===========================
 # 准备绘图数据（将x和对应的mu值组合成数据框）
+if (FALSE) { # 与 qmd 的 eval: false 对应，待完成练习
 plot_data <- data.frame(
   x_axis = ...,
   y_axis = ...
@@ -196,6 +193,7 @@ ggplot2::ggplot(plot_data, aes(x = x_axis, y = y_axis)) +
     panel.grid.major = element_blank(),
     axis.line = element_line(color = "black")
   )
+}
 
 # 设置实验条件的取值范围，self=0，other=1
 x_sim <- c(0, 1)
@@ -319,7 +317,7 @@ prior_predictive_plot()
 #     请完善代码中...的部分，设置3个参数的值，使先验分布更符合实际情况
 #===============================================================
 # 调用函数并设置符合实际情况的先验参数
-prior_predictive_plot(
+if (FALSE) prior_predictive_plot( # 与 qmd 的 eval: false 对应
   beta0_mean = ...,    # beta0的均值
   beta0_sd = ...,      # beta0的标准差
   beta1_mean = ...,    # beta1的均值
@@ -381,11 +379,11 @@ lm1_fit <- rstan::stan(
 print(lm1_fit, pars = c("beta0", "beta1", "sigma"))
 
 par_post <- rstan::extract(lm1_fit)
-lm1_fit
+names(par_post)
 
 # 查看后验分布（对应trace.posterior）
 par_post <- rstan::extract(lm1_fit)
-print(head(par_post))
+str(par_post, max.level = 1)
 
 # 提取beta_0的后验样本（对应trace.posterior['beta_0']）
 beta0_posterior <- par_post$beta0
@@ -393,7 +391,7 @@ print("beta_0的后验样本（前10个）：")
 print(head(beta0_posterior, 10))
 
 # 提取第1条链的第11个样本（R索引从1开始，对应Python的[0,10]）
-# 注：brms默认将所有链的样本合并，按顺序排列
+# rstan::extract 默认合并各链，并丢弃热身样本
 chain1_sample11 <- beta0_posterior[11]  # 第1条链的第11个样本（前1000个是warmup，已自动丢弃）
 cat(sprintf("第1条链的第11个beta_0样本值：%.4f\n", chain1_sample11))
 
@@ -575,7 +573,7 @@ par_post$y_new <- NA
 X_i <- 1
 set.seed(84735)
 
-# 循环计算均值并生成预测值（共20000次，与后验样本数量一致）
+# 循环计算均值并生成预测值（次数由后验样本数量决定）
 for (row_i in 1:nrow(par_post)) {
   # 计算均值mu_i
   mu_i <- par_post$beta0[row_i] + par_post$beta1[row_i] * X_i
@@ -650,7 +648,8 @@ p1+p2
 # 基于模型和后验样本生成后验预测分布
 ppc_data <- rstan::extract(lm1_fit, par=c("y_rep"))
 # 查看后验预测结果
-ppc_data
+dim(ppc_data$y_rep)
+ppc_data$y_rep[1:5, 1:5]
 
 pp_samples <- data.frame(rstan::extract(lm1_fit,par="y_rep"))
 nrow(pp_samples)
@@ -660,7 +659,7 @@ color_scheme_set("brightblue")
 
 y <- df$RT_sec # observed data
 
-ppc_plpt <- bayesplot::pp_check(
+ppc_plot <- bayesplot::pp_check(
   y,
   yrep=data.matrix(pp_samples[1:100,]),
   ppc_dens_overlay
@@ -703,29 +702,35 @@ ppc_plot +
 
 summary(lm1_fit,par=c("beta0","beta1","sigma"))$summary
 
-rope_res <- bayestestR::rope(par_post$beta1,range = c(-0.05, 0.05))
+hdi_beta1 <- bayestestR::hdi(par_post$beta1, ci = 0.95)
+rope_res <- bayestestR::rope(par_post$beta1, range = c(-0.05, 0.05), ci = 1)
+hdi_beta1
 rope_res
 
 plot(rope_res, rope_color = "grey70") + papaja::theme_apa()
 
 # 更简单的方法来构建贝叶斯线性模型
+dir.create("tmpdata", showWarnings = FALSE)
 lm1_fit <- brms::brm(
-  formula = RT_sec ~ Label,  # 公式：RT_sec ~ beta0 + beta1*Label
+  formula = RT_sec ~ 0 + Intercept + Label,  # 截距对应 self 条件的 beta0
   data = df,                 # 数据框（包含Label和RT_sec列）
   family = gaussian(),       # 似然函数：正态分布
   
   # 定义先验分布（对应PyMC的先验设置）
   prior = c(
-    prior(normal(5, 2), class = Intercept),  # beta0：截距项，对应Normal(mu=5, sigma=2)
-    prior(normal(0, 1), class = b),          # beta1：Label的系数，对应Normal(mu=0, sigma=1)
-    prior(exponential(3), class = sigma)     # sigma：误差项，对应Exponential(3)
+    prior(normal(5, 2), class = b, coef = Intercept),
+    prior(normal(0, 1), class = b, coef = Label),
+    prior(exponential(0.3), class = sigma)
   ),
   
   # MCMC采样参数
-  iter = 2000,               # 总迭代次数（draws + tune = 5000 + 1000）
+  iter = 2000,               # 每链保留 1000 次；4 链共 4000 次
   warmup = 1000,             # 调参迭代次数（对应tune）
   chains = 4,                # 马尔可夫链数量
   cores = 4,                 # 并行计算核心数（加速采样）
   seed = 84735,              # 随机种子，确保结果可重复
-  refresh = 0                # 不输出采样过程信息
+  refresh = 0,               # 不输出采样过程信息
+  file = "tmpdata/lec9_brms_fit",
+  file_refit = "on_change"
 )
+print(lm1_fit)

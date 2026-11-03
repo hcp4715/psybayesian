@@ -7,16 +7,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import xarray as xr
 import pandas as pd
+from pathlib import Path
 
 # 忽略不必要的警告
 import warnings
 warnings.filterwarnings("ignore")
 
-# 通过 pd.read_csv 加载数据 Kolvoort_2020_HBM_Exp1_Clean.csv
-try:
-  df_raw = pd.read_csv('/home/mw/input/bayes3797/Kolvoort_2020_HBM_Exp1_Clean.csv')
-except:
-  df_raw = pd.read_csv('2024/data/Kolvoort_2020_HBM_Exp1_Clean.csv')
+# 与课件读取同一份项目数据。
+df_raw = pd.read_csv(Path("data") / "Kolvoort_2020_HBM_Exp1_Clean.csv")
 
 df_raw.head()
 
@@ -154,7 +152,7 @@ print(f"获取的第一组采样参数值，beta_0:{beta_0:.2f}, beta_1:{beta_1:
 
 #===========================
 #     根据回归公式 $\mu = \beta_0 + \beta_1 X$ 预测$\mu$ 的值。
-#     已知：自变量（标签），self = 1, other = 2
+#     课件练习暂用 self = 1、other = 2；正式数据使用 0、1。
 #===========================
 x_sim = np.array([1, 2])
 mu = beta_0 + beta_1 * x_sim
@@ -163,12 +161,13 @@ print("预测值 μ:", mu)
 #===========================
 #     绘制回归线，请设置x轴和y轴的变量
 #===========================
-x_axis = ...
-y_axis = ...
-
-plt.plot(x_axis,y_axis)
-plt.xlabel("Label Condition")
-plt.ylabel("RT (sec)")  
+# 练习留空，填写 x_axis/y_axis 后再运行。
+if False:
+    x_axis = ...
+    y_axis = ...
+    plt.plot(x_axis, y_axis)
+    plt.xlabel("Label Condition")
+    plt.ylabel("RT (sec)")
 sns.despine()
 
 # 通过 np.array 设置实验条件的取值范围，self=0，other=1
@@ -264,13 +263,11 @@ import seaborn as sns
 #     请完善代码中...的部分，设置3个参数的值，使先验分布更符合实际情况
 #=====================================================
 
-prior_predictive_plot(beta0_mean=...,  # beta 0 的均值
-                      beta0_sd=...,    # beta 0 的标准差
-                      beta1_mean=...,  # beta 1 的标准差
-                      beta1_sd=...,    # beta 1 的标准差
-                      sigma_rate=...,  # 控制sigma的指数分布率参数（lambda = 1/scale）
-                      samples=200,
-                      seed=84735)
+# 练习留空，填写参数后再运行。
+if False:
+    prior_predictive_plot(beta0_mean=..., beta0_sd=...,
+                          beta1_mean=..., beta1_sd=...,
+                          sigma_rate=..., samples=200, seed=84735)
 
 import pymc as pm
 
@@ -279,10 +276,10 @@ with pm.Model() as linear_model:
     # 定义先验分布参数
     beta_0 = pm.Normal("beta_0", mu=5, sigma=2)        
     beta_1 = pm.Normal("beta_1", mu=0, sigma=1)      
-    sigma = pm.Exponential("sigma", 3)                    
+    sigma = pm.Exponential("sigma", 0.3)
 
     # 定义自变量 x
-    x = pm.MutableData("x", df['Label'])         
+    x = pm.Data("x", df['Label'].to_numpy())
 
     # 定义 mu，将自变量与先验结合
     mu = beta_0 + beta_1 * x
@@ -294,7 +291,7 @@ with pm.Model() as linear_model:
 #     注意！！！以下代码可能需要运行1-2分钟左右
 #===========================
 with linear_model:
-    trace = pm.sample(draws=5000,                   # 使用mcmc方法进行采样，draws为采样次数
+    trace = pm.sample(draws=1000,                   # 4 链各保留 1000 次，共 4000 次
                       tune=1000,                    # tune为调整采样策略的次数，可以决定这些结果是否要被保留
                       chains=4,                     # 链数
                       discard_tuned_samples=True,  # tune的结果将在采样结束后被丢弃
@@ -320,18 +317,18 @@ az.summary(trace, kind="diagnostics")
 x_sim = np.array([0, 1])
 
 # 选取一组参数来作为预测
-beta_0 = trace.posterior["beta_0"].stack(sample=("chain", "draw"))[:2]
-beta_1 = trace.posterior["beta_1"].stack(sample=("chain", "draw"))[:2]
+beta_0 = trace.posterior["beta_0"].stack(sample=("chain", "draw")).values[:2]
+beta_1 = trace.posterior["beta_1"].stack(sample=("chain", "draw")).values[:2]
 
-# 生成20000条回归线
-y_sim_re = beta_0 + beta_1 * x_sim
+# 两组后验参数各生成一条均值回归线。
+y_sim_re = beta_0[:, None] + beta_1[:, None] * x_sim[None, :]
 
 # 绘制真实数据的散点图
-plt.scatter(trace.constant_data.x, trace.observed_data.y_est,c="r", label="observed data")
+plt.scatter(df["Label"], df["RT_sec"], c="r", label="observed data")
 
 # 绘制回归线条
-plt.plot(x_sim, y_sim_re, c="grey", label = "Predicted Mean")
-plt.scatter(x_sim, y_sim_re, color="black", s=50)
+plt.plot(x_sim, y_sim_re.T, c="grey", label="Predicted Mean")
+plt.scatter(np.tile(x_sim, 2), y_sim_re.ravel(), color="black", s=50)
 
 
 # 设置标题等
@@ -374,7 +371,7 @@ sns.despine()
 # 采样得到的参数后验分布都储存在 trace.posterior中，我们进行一些提取操作
 pos_sample = trace.posterior.stack(sample=("chain", "draw"))
 
-# 将每个参数的20000次采样结果存储在数据框中
+# 将 4000 个后验样本存储在数据框中。
 df_pos_sample = pd.DataFrame({"beta_0": pos_sample["beta_0"].values,
                               "beta_1": pos_sample["beta_1"].values,
                               "sigma": pos_sample["sigma"].values})
@@ -403,13 +400,13 @@ df_pos_sample['y_new'] = np.nan
 X_i = 1
 np.random.seed(84735)
 
-# 将之前的操作重复20000次
+# 对每个后验样本重复预测。
 for row_i in range(len(df_pos_sample)):
     mu_i = df_pos_sample.beta_0[row_i] + df_pos_sample.beta_1[row_i] * X_i
-    df_pos_sample["mu"][row_i] = mu_i
-    df_pos_sample["y_new"][row_i] = np.random.normal(loc = mu_i,
-                                            scale= df_pos_sample.sigma[row_i],
-                                            size=1)
+    df_pos_sample.loc[row_i, "mu"] = mu_i
+    df_pos_sample.loc[row_i, "y_new"] = np.random.normal(
+        loc=mu_i, scale=df_pos_sample.sigma[row_i]
+    )
 
 df_pos_sample
 
@@ -440,16 +437,17 @@ with linear_model:
 
 ppc_data
 
-# num_pp_samples 参数代表从总的采样(20000)选取多少采样(这里是1000)进行后验预测计算
+# 从 4000 个后验样本中选 1000 个进行后验预测检查。
 az.plot_ppc(ppc_data, num_pp_samples=1000) 
 
 # 筛选编号为“205”的被试的数据
 df_new = df_raw[(df_raw["Subject"] == "205") & (df_raw["Matching"] == "Matching")]
 
 # 选择需要的两列
-df_new  = df[["Label", "RT_sec"]]
+df_new = df_new[["Label", "RT_sec"]].copy()
+df_new["Label"] = df_new["Label"].map({1: 0, 2: 1, 3: 1})
 
-#设置索引
+# 设置索引。
 df_new["index"] = range(len(df_new))
 df_new = df_new.set_index("index")
 
@@ -526,6 +524,10 @@ import arviz as az
 
 # 定义 ROPE 区间，根据研究的需要指定实际等效范围
 rope_interval = [-0.05, 0.05]
+beta1_draws = trace.posterior["beta_1"].values.ravel()
+print("95% HDI:", az.hdi(beta1_draws, hdi_prob=0.95))
+print("ROPE 样本占比:", np.mean((beta1_draws >= rope_interval[0]) &
+                              (beta1_draws <= rope_interval[1])))
 
 # 绘制后验分布，显示 HDI 和 ROPE
 az.plot_posterior(
@@ -547,12 +549,12 @@ beta_1 = bmb.Prior("Normal", mu=0, sigma=1)
 sigma = bmb.Prior("Exponential", lam = 0.3)         
 
 # 将三个参数的先验定义在字典prior中
-priors = {"beta_0": beta_0, 
-          "beta_1": beta_1,
+priors = {"Intercept": beta_0,
+          "Label": beta_1,
           "sigma": sigma}
 
 #定义关系式，传入数据
-model = bmb.Model('RT_sec ~ Label', 
+model = bmb.Model('RT_sec ~ Label',
                   data=df,
                   priors=priors,
                   dropna=True)
@@ -563,7 +565,7 @@ model
 #      MCMC采样过程
 #      注意！！！以下代码可能需要运行几分钟
 #===========================
-trace = model.fit(draws=5000,                   # 使用mcmc方法进行采样，draws为采样次数
+trace = model.fit(draws=1000,                   # 4 链各保留 1000 次，共 4000 次
                   tune=1000,                    # tune为调整采样策略的次数，可以决定这些结果是否要被保留
                   chains=4,
                   random_seed=84735)
