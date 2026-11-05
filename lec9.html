@@ -201,7 +201,7 @@
 
 <section id="title-slide" class="quarto-title-block center">
   <h1 class="title">高级心理统计 · 第9讲</h1>
-  <p class="subtitle">使用 brms 构建简单线性回归模型</p>
+  <p class="subtitle">使用 rstan 构建简单线性回归模型</p>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -228,7 +228,7 @@
 <p>在本节课，以下如下问题作为一个开始： “自我作为人类独特的心理概念，是否会促进认知加工的表现？”</p>
 <p>具体而言，我们通过知觉匹配任务来探索一下：<strong>自我和他人条件下，人们在知觉匹配任务上的表现是否有差异，尤其是在反应时间上的表现。</strong></p>
 <blockquote>
-<p>探究自我加工的优势通畅使用匹配范式任务中”自我（self）“和”他人（other）“的认知匹配之间的关系 (Sui et al., 2012)。</p>
+<p>探究自我加工的优势通常使用匹配范式任务中”自我（self）“和”他人（other）“的认知匹配之间的关系 (Sui et al., 2012)。</p>
 <ul>
 <li><p>在自我匹配任务中，被试首先学习几何图形和身份标签的关系。例如，三角形代表自我；圆形代表他人。在随后的知觉匹配判断任务中，需要判断所呈现的几何图形和文字标签是否与之前学习的关系相匹配。</p></li>
 <li><p>想象一下你在完成自我匹配任务时，面对不同的刺激：有时你可能会觉得某个”自我”相关的图像比”他人”相关的更具吸引力，或许这反映了你对自己本身具有更多的关注。</p></li>
@@ -346,7 +346,7 @@
 <span id="cb4-8"><a href="" aria-label="8"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">Label =</span> <span class="fu">case_when</span>(</span>
 <span id="cb4-9"><a href="" aria-label="9"></a>    Label <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="dv">0</span>,</span>
 <span id="cb4-10"><a href="" aria-label="10"></a>    Label <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
-<span id="cb4-11"><a href="" aria-label="11"></a>    Label <span class="sc">==</span> <span class="dv">3</span> <span class="sc">~</span> <span class="dv">1</span></span>
+<span id="cb4-11"><a href="" aria-label="11"></a>    Label <span class="sc">==</span> <span class="dv">3</span> <span class="sc">~</span> <span class="dv">1</span>, <span class="at">.default =</span> <span class="cn">NA</span></span>
 <span id="cb4-12"><a href="" aria-label="12"></a>  )) <span class="sc">%&gt;%</span></span>
 <span id="cb4-13"><a href="" aria-label="13"></a>  <span class="co"># 设置索引</span></span>
 <span id="cb4-14"><a href="" aria-label="14"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">index =</span> <span class="fu">row_number</span>()) <span class="sc">%&gt;%</span></span>
@@ -370,7 +370,7 @@
 
 <p>进一步可视化数据情况</p>
 <ul>
-<li><p>我们使用 <code>gglot</code> 方法来进行可视化。</p></li>
+<li><p>我们使用 <code>ggplot2</code> 方法来进行可视化。</p></li>
 <li><p>其中横轴为Label <code>x="Label"</code>，纵轴为反应时间 <code>y="RT_sec"</code>。</p></li>
 </ul>
 </section>
@@ -432,25 +432,25 @@
 <ol type="1">
 <li><strong>构建贝叶斯模型</strong>：确定模型及其参数<span class="math inline">\(\beta_0\)</span>和<span class="math inline">\(\beta_1\)</span>，并形成贝叶斯模型的三个部分：似然函数、先验分布与数据：</li>
 </ol>
-<p><span class="math display">\[ RT_{sec} \sim \mathcal{N}(\beta_0 + \beta_1 \cdot Label, \sigma^2) \]</span></p>
-<p><span class="math display">\[ \beta_1 \sim \mathcal{N}(\mu_1, \sigma_1^2) \]</span></p>
-<p><span class="math display">\[ \beta_0 \sim \mathcal{N}(\mu_0, \sigma_0^2) \]</span></p>
-<p><span class="math display">\[ Data \]</span></p>
+<p><span class="math display">\[ RT_{sec} \sim N(\beta_0 + \beta_1 \cdot Label, \sigma^2) \]</span></p>
+<p><span class="math display">\[ \beta_0 \sim N(\mu_0, \sigma_0^2) \]</span></p>
+<p><span class="math display">\[ \beta_1 \sim N(\mu_1, \sigma_1^2) \]</span></p>
+<p><span class="math display">\[ \sigma \sim \mathrm{Exp}(\lambda) \]</span> <span class="math display">\[ \text{Data}: \text{被试的真实数据} \]</span></p>
 </section>
 <section class="slide level2">
 
 <ol start="2" type="1">
-<li><p><strong>获得后验分布</strong>：使用贝叶斯推断方法（如 MCMC 采样）得到<span class="math inline">\(\beta_1\)</span>（和<span class="math inline">\(\beta_0\)</span>） 的后验分布。</p></li>
+<li><p><strong>获得后验分布</strong>：使用贝叶斯推断方法（如 MCMC 采样）得到<span class="math inline">\(\beta_1\)</span>（和<span class="math inline">\(\beta_0\)</span> 与<span class="math inline">\(\sigma\)</span>） 的后验分布。</p></li>
 <li><p><strong>模型诊断</strong>：诊断后验分布的近似结果是否可信。</p></li>
-<li><p><strong>统计推断</strong>：通过后验分布检验<span class="math inline">\(\beta_1\)</span>，例如计算<span class="math inline">\(\beta_1 &gt; 0\)</span>或<span class="math inline">\(\beta_1 &lt; 0\)</span>的概率，或计算最高密度区间（HDI）。如果 95% HDI 不包含 0，可以认为自我条件和他人条件在反应时间上的差异是显著的。</p></li>
-<li><p><strong>结果解释</strong>：在贝叶斯框架下，不仅可以观察参数的点估计（如<span class="math inline">\(\beta_1\)</span>的均值），还可以通过后验分布和 HDI 提供更加直观的置信水平解释。</p></li>
+<li><p><strong>统计推断</strong>：通过后验分布描述<span class="math inline">\(\beta_1\)</span>——报告后验均值、95% 区间与 <span class="math inline">\(P(\beta_1&gt;0)\)</span>；<strong>是否具有实际意义</strong>用 ROPE 判断（见后文），而不是只看区间是否跨过 0。</p></li>
+<li><p><strong>结果解释</strong>：在贝叶斯框架下，参数的后验分布直接给出”哪些取值更可信”，用可信度（credibility）而不是置信水平（confidence level）来表述。</p></li>
 </ol>
 </section>
 <section class="slide level2">
 
 <p><strong>⭐回归模型的可视化表达</strong></p>
 <ul>
-<li><p>预测值<span class="math inline">\(\mu_i\)</span>(即直线上橙色的点)可以写为：<span class="math inline">\(\mu_i = \beta_0 + \beta_1 X_i(1)\)</span></p></li>
+<li><p>预测值<span class="math inline">\(\mu_i\)</span>(即直线上橙色的点)可以写为：<span class="math inline">\(\mu_i = \beta_0 + \beta_1 X_i\)</span></p></li>
 <li><p>从图上可以看到预测值和实际值 (即灰色的散点)之间存在出入，实际值会在预测值附近波动。那么实际值可以看作服从以<span class="math inline">\(\mu_i\)</span>为均值，标准差为<span class="math inline">\(\sigma\)</span>的正态分布，即：<span class="math inline">\(Y_i \sim N(\mu_i, \sigma ^ 2)\)</span></p></li>
 </ul>
 <div class="quarto-figure quarto-figure-center">
@@ -459,21 +459,22 @@
 <figcaption>回归模型的正态似然示意</figcaption>
 </figure>
 </div>
-<p><em>(改编自：https: // saylordotorg.github.io/text_introductory-statistics/s14-03-modelling-linear-relationships.html)</em></p>
+<p><em>(改编自：https://saylordotorg.github.io/text_introductory-statistics/s14-03-modelling-linear-relationships.html)</em></p>
 </section>
 <section class="slide level2">
 
 <p><strong>贝叶斯回归模型的数学表达式</strong></p>
-<p><span class="math display">\[ \begin{align*} \beta_0 &amp;\sim N\left(\mu_0, \sigma_0^2 \right) \\ \beta_1 &amp;\sim N\left(\mu_1, \sigma_1^2 \right) \\ \sigma &amp;\sim \text{Exp}(\lambda) \\ &amp;\Downarrow \\ \mu_i &amp;= \beta_0 + \beta_1 X_i + \sigma \\ &amp;\Downarrow \\ Y_i | \beta_0, \beta_1, \sigma &amp;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right). \\ \end{align*} \]</span></p>
+<p><span class="math display">\[ \begin{align*} \beta_0 &amp;\sim N\left(\mu_0, \sigma_0^2 \right) \\ \beta_1 &amp;\sim N\left(\mu_1, \sigma_1^2 \right) \\ \sigma &amp;\sim \text{Exp}(\lambda) \\ &amp;\Downarrow \\ \mu_i &amp;= \beta_0 + \beta_1 X_i \\ &amp;\Downarrow \\ Y_i | \beta_0, \beta_1, \sigma &amp;\stackrel{ind}{\sim} N\left(\mu_i, \sigma^2\right). \\ \end{align*} \]</span></p>
 </section>
 <section class="slide level2">
 
 <ul>
 <li><p>回归模型需满足如下假设：</p>
 <ol type="1">
-<li><p>独立观测假设:每个观测值<span class="math inline">\(Y_i\)</span>是相互独立的，即一个被试的反应时间不受其他被试的影响。</p></li>
+<li><p>独立观测假设：同一被试的不同试次之间相互独立（本讲只分析被试 201，暂不对试次顺序效应建模）。</p></li>
 <li><p>线性关系假设: 预测值<span class="math inline">\(\mu_i\)</span>和自变量<span class="math inline">\(X_i\)</span>之间可以用线性关系来描述，即：<span class="math inline">\(\mu_i = \beta_0 + \beta_1 X_i\)</span></p></li>
-<li><p>方差同质性假设： 在任意自变量的取值下，观测值<span class="math inline">\(Y_i\)</span>都会以<span class="math inline">\(\mu_i\)</span>为中心，同样的标准差<span class="math inline">\(\sigma\)</span>呈正态分布变化（<span class="math inline">\(\sigma\)</span>is consistent）</p></li>
+<li><p>方差同质性假设：在任意自变量取值下，观测值 <span class="math inline">\(Y_i\)</span> 都以 <span class="math inline">\(\mu_i\)</span> 为中心、以相同的标准差 <span class="math inline">\(\sigma\)</span> 波动（homoscedasticity）。</p></li>
+<li><p>正态性假设：给定 <span class="math inline">\(\mu_i\)</span>，<span class="math inline">\(Y_i\)</span> 服从正态分布。反应时通常右偏，正态似然是本讲的简化；必要时可对反应时取 log，或改用对数正态。</p></li>
 </ol></li>
 </ul>
 </section>
@@ -484,8 +485,8 @@
 <p>因此，我们需要对每个未知的参数定义先验分布。</p>
 <p><span class="math display">\[
 \begin{aligned}
-\beta_0 &amp;\sim N\left(m_0, s_0^2\right) \\
-\beta_1 &amp;\sim N\left(m_1, s_1^2\right) \\
+\beta_0 &amp;\sim N\left(\mu_0, \sigma_0^2\right) \\
+\beta_1 &amp;\sim N\left(\mu_1, \sigma_1^2\right) \\
 \sigma &amp;\sim \mathrm{Exp}(\lambda)
 \end{aligned}
 \]</span></p>
@@ -498,17 +499,17 @@
 <li><p>参数的前提假设(assumptions):</p>
 <p>-<span class="math inline">\(\beta_0, \beta_1, \sigma\)</span>之间相互独立</p></li>
 <li><p>此外，规定<span class="math inline">\(\sigma\)</span>服从指数分布，以限定其值恒为正数</p></li>
-<li><p>其中，<span class="math inline">\(\mu_0, \sigma_0, \mu_1, \sigma_1\)</span>为超参数</p>
+<li><p>其中，<span class="math inline">\(\mu_0, \sigma_0, \mu_1, \sigma_1, \lambda\)</span> 为超参数</p>
 <ul>
-<li><p>我们需要根据我们对<span class="math inline">\(\beta_0\)</span>和<span class="math inline">\(\beta_1\)</span>的先验理解来选择超参数的范围</p></li>
-<li><p>比如，<span class="math inline">\(\beta_1\)</span>反映了标签从 self 切换到 other 时，反应时间的平均变化值；<span class="math inline">\(\beta_0\)</span>反映了在 other 条件下的基础反应时间</p></li>
+<li><p>我们需要根据我们对 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 的先验理解来选择超参数的范围</p></li>
+<li><p>比如，<span class="math inline">\(\beta_1\)</span>反映了标签从 self 切换到 other 时，反应时间的平均变化值；<span class="math inline">\(\beta_0\)</span>反映了在 self 条件下的基础反应时间</p></li>
 </ul></li>
 </ul>
 
 </blockquote>
 </section>
-<section id="定义先验-1" class="slide level2">
-<h2>定义先验</h2>
+<section id="设定先验的超参数" class="slide level2">
+<h2>设定先验的超参数</h2>
 <p><span class="math display">\[
 \begin{aligned}
 Y_i \mid \beta_0, \beta_1, \sigma
@@ -524,7 +525,7 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <li><p>其次，我们假设<span class="math inline">\(\beta_0\)</span>服从均值为 5，标准差为 2 的正态分布,代表：</p>
 <ul>
 <li><p>当实验条件为 self（编码为 0）时，反应时间的平均值大约为 5 秒。</p></li>
-<li><p>截距值可能在 3 ± 7 秒 的范围内波动，反映了在 self 条件下的反应时间预估</p></li>
+<li><p>截距值可能在 3–7 秒（即 5 ± 2 秒）的范围内波动，反映了在 self 条件下的反应时间预估</p></li>
 </ul></li>
 </ul>
 </section>
@@ -533,15 +534,15 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <ul>
 <li><p>我们假设<span class="math inline">\(\beta_1\)</span>服从均值为 0，标准差为 1 的正态分布，代表：</p>
 <ul>
-<li><p>(斜率)将其均值指定为 1，表示我们预期在 self 和 other 条件下的反应时间差异较小。</p>
+<li><p>(斜率)将其均值指定为 0，表示我们预期在 self 和 other 条件下的反应时间差异较小。</p>
 <ul>
-<li>这个影响的量是变化的，范围大概在 -1 ± 1。</li>
+<li>这个影响的量是变化的，范围大概在 0 ± 1，即 <span class="math inline">\([-1, 1]\)</span>。</li>
 </ul></li>
 </ul></li>
 <li><p>最后，我们假设<span class="math inline">\(\sigma\)</span>服从指数分布，其参数为0.3。</p>
 <ul>
-<li><p>参数0.3 意味着标准差通常集中在较小的正数范围内，使反应时间在预测值<span class="math inline">\(\mu_i\)</span>附近波动。</p></li>
-<li><p>这一设置允许较小到中等的波动，但大部分数据应集中在 0 到 10 秒的合理反应时间范围内。</p></li>
+<li><p>但对指数分布而言，率参数 0.3 对应的均值是 <span class="math inline">\(1/0.3 \approx 3.3\)</span> 秒：这意味着单次观测在预测值<span class="math inline">\(\mu_i\)</span>附近的波动可达数秒，并不是一个小噪声。</p></li>
+<li><p>这组先验是否合适，正是后面的先验预测检验要回答的问题；若发现预测范围过大，就应收紧到与反应时同尺度。</p></li>
 </ul></li>
 </ul>
 </section>
@@ -643,11 +644,11 @@ Y_i \mid \beta_0, \beta_1, \sigma
 
 <p><strong>先验预测检验的大致思路</strong></p>
 <ol type="1">
-<li>在先验中随机抽取200组<span class="math inline">\(\beta_0, \beta_1\)</span>值<br>
+<li>在先验中随机抽取200组 <span class="math inline">\(\beta_0\)</span>, <span class="math inline">\(\beta_1\)</span> 值<br>
 </li>
 <li>生成假数据自变量X<br>
 </li>
-<li>生成200条<span class="math inline">\(\beta_0 + \beta_1 X\)</span>生成预测的反应时间数据<br>
+<li>根据 200 组 <span class="math inline">\(\beta_0\)</span>、<span class="math inline">\(\beta_1\)</span> 生成 200 条预测线 <span class="math inline">\(\mu = \beta_0 + \beta_1 X\)</span><br>
 </li>
 <li>观察生成的反应时间数据是否在合理范围内，评估先验假设的合适性</li>
 </ol>
@@ -692,11 +693,11 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <section class="slide level2">
 
 <ol start="2" type="1">
-<li>生成假数据自变量X</li>
-</ol>
+<li><p>生成假数据自变量X</p>
 <ul>
 <li>这里我们根据现实情况来定义X的取值范围</li>
-</ul>
+</ul></li>
+</ol>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -714,10 +715,10 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <section class="slide level2">
 
 <ol start="3" type="1">
-<li>根据公式<span class="math inline">\(\mu = \beta_0 + \beta_1 X\)</span>生成200条回归线, 观察其中的<span class="math inline">\(\mu\)</span>是否处在合理的范围内</li>
+<li>根据公式 <span class="math inline">\(\mu = \beta_0 + \beta_1 X\)</span> 生成200条回归线, 观察其中的 <span class="math inline">\(\mu\)</span> 是否处在合理的范围内</li>
 </ol>
 <ul>
-<li><p>我们有200次采样，每次采样都有三个参数 beta_0, beta_1, sigma。</p></li>
+<li><p>我们有200次采样，每次采样都有三个参数 <span class="math inline">\(beta_0\)</span>, <span class="math inline">\(beta_1\)</span>, <span class="math inline">\(sigma\)</span>。</p></li>
 <li><p>结合每次采样的结果，和自变量X，我们可以生成一条直线</p></li>
 <li><p>重复这个过程200次，我们就能生成200条直线</p></li>
 </ul>
@@ -727,14 +728,27 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <blockquote>
 <p><strong>我们通过一次采样来理解这个过程</strong></p>
 </blockquote>
-<p><img data-src="figs/lec9/prior-samples-and-regression-line.png" alt="先验参数抽样与对应回归线"><br>
-- <strong>左侧图表</strong>显示了 200 组随机抽取的参数 beta_0, beta_1, sigma 的值。<br>
-- 这帮助我们直观地看到参数在各自先验分布下的取值范围。<br>
-- <strong>右侧图表</strong>展示了基于抽取的一个特定参数组合绘制的回归线<span class="math inline">\(Y = \beta_0 + \beta_1 X\)</span> - 红色的点表示预测的反应时间在两个条件下的值，蓝色线是连接这两个预测值的回归线。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="figs/lec9/prior-samples-and-regression-line.png"></p>
+<figcaption>先验参数抽样与对应回归线</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>左侧图表</strong>显示了 200 组随机抽取的参数 beta_0, beta_1, sigma 的值。
+<ul>
+<li>可以直观地看到参数在各自先验分布下的取值范围。<br>
+</li>
+</ul></li>
+<li><strong>右侧图表</strong>展示了基于抽取的一个特定参数组合绘制的回归线<span class="math inline">\(Y = \beta_0 + \beta_1 X\)</span>
+<ul>
+<li>红色的点表示预测的反应时间在两个条件下的值，蓝色线是连接这两个预测值的回归线。</li>
+</ul></li>
+</ul>
 </section>
-<section id="练习1先验预测" class="slide level2">
-<h2>🎯练习1：先验预测</h2>
-<p>根据获取的第一条MCMC链的第一组采样参数，结合自变量X的范围，预测<span class="math inline">\(\mu\)</span>的值。</p>
+<section id="练习1先验预测的均值线" class="slide level2">
+<h2>🎯练习1：先验预测的均值线</h2>
+<p>根据从先验分布中抽取的第一组参数（200 组中的第 1 组），结合自变量 <span class="math inline">\(X\)</span> 的取值，预测 <span class="math inline">\(\mu\)</span> 的值。</p>
 <ol type="1">
 <li>根据回归公式<span class="math inline">\(\mu = \beta_0 + \beta_1 X\)</span>预测<span class="math inline">\(\mu\)</span>的值。<br>
 </li>
@@ -781,15 +795,15 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="" aria-label="1"></a><span class="co">#===========================</span></span>
-<span id="cb14-2"><a href="" aria-label="2"></a><span class="co"># 根据回归公式 μ = β₀ + β₁X 预测μ的值</span></span>
-<span id="cb14-3"><a href="" aria-label="3"></a><span class="co"># 已知：自变量（标签），self = 1, other = 2</span></span>
+<span id="cb14-2"><a href="" aria-label="2"></a><span class="co"># 根据回归公式 mu = beta0 + beta1 * X 预测 mu 的值</span></span>
+<span id="cb14-3"><a href="" aria-label="3"></a><span class="co"># 已知：自变量 X 取 0（self）与 1（other）</span></span>
 <span id="cb14-4"><a href="" aria-label="4"></a><span class="co">#===========================</span></span>
-<span id="cb14-5"><a href="" aria-label="5"></a>x_sim <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>)</span>
+<span id="cb14-5"><a href="" aria-label="5"></a>x_sim <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
 <span id="cb14-6"><a href="" aria-label="6"></a>mu <span class="ot">&lt;-</span> beta_0 <span class="sc">+</span> beta_1 <span class="sc">*</span> x_sim</span>
 <span id="cb14-7"><a href="" aria-label="7"></a><span class="fu">cat</span>(<span class="st">"预测值 μ:"</span>, mu, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>预测值 μ: 6.73475 5.682677 </code></pre>
+<pre><code>预测值 μ: 7.786822 6.73475 </code></pre>
 </div>
 </div>
 </section>
@@ -835,7 +849,7 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <li><p>从这些抽样中可观察到 Self 和 Other 条件下的反应时间如何变化。</p></li>
 <li><p>如果先验设置不合理（如过于宽泛的分布），可能导致预测结果在合理范围之外。</p>
 <ul>
-<li><p>例如，如果我们将 beta_1 设得过大，可能导致预测的 other 条件下的反应时间显著增加或减少，不符合现实生活的情况。</p></li>
+<li><p>例如，如果我们将 <span class="math inline">\(\beta_1\)</span> 设得过大，可能导致预测的 Other 条件下的反应时间大幅增加或减少，不符合现实生活的情况。</p></li>
 <li><p>因此，通过合理的先验设定，可得到更符合现实的预测结果，这有助于模型对真实数据的拟合。</p></li>
 </ul></li>
 </ul>
@@ -902,11 +916,11 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <p>重新聚焦于研究问题：<strong>在知觉匹配任务中，自我相关信息是否会促进认知加工？</strong> 具体而言，我们探讨自我和他人条件下的认知加工差异，尤其是在反应时间上的表现。</p>
 <p>变量定义：</p>
 <ul>
-<li><p>𝑋：标签（Label）</p>
+<li><p><span class="math inline">\(X\)</span>：标签（Label）</p>
 <ul>
 <li>在自我匹配范式任务中，标签分为 self 和 other 两种，分别编码为 0 和 1。这些条件用于观察在自我相关和非自我相关条件下的反应时间差异。</li>
 </ul></li>
-<li><p>𝑌：反应时间（RT）</p>
+<li><p><span class="math inline">\(Y\)</span>：反应时间（RT）</p>
 <ul>
 <li>表示在 self 或 other 条件下参与者的平均反应时间，通常以秒为单位。我们的目标是通过模型预测 self 和 other 条件下反应时间的差异，并观察其随实验条件的变化。</li>
 </ul></li>
@@ -918,9 +932,9 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="" aria-label="1"></a>prior_predictive_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">beta0_mean =</span> <span class="fl">0.5</span>, <span class="at">beta0_sd =</span> <span class="fl">0.3</span>, </span>
-<span id="cb18-2"><a href="" aria-label="2"></a>                                  <span class="at">beta1_mean =</span> <span class="sc">-</span><span class="fl">0.1</span>, <span class="at">beta1_sd =</span> <span class="fl">0.04</span>, </span>
-<span id="cb18-3"><a href="" aria-label="3"></a>                                  <span class="at">sigma_rate =</span> <span class="fl">0.2</span>, <span class="at">samples =</span> <span class="dv">200</span>, <span class="at">seed =</span> <span class="dv">84735</span>) {</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="" aria-label="1"></a>prior_predictive_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">beta0_mean =</span> <span class="dv">5</span>, <span class="at">beta0_sd =</span> <span class="dv">2</span>, </span>
+<span id="cb18-2"><a href="" aria-label="2"></a>                                  <span class="at">beta1_mean =</span> <span class="dv">0</span>, <span class="at">beta1_sd =</span> <span class="dv">1</span>, </span>
+<span id="cb18-3"><a href="" aria-label="3"></a>                                  <span class="at">sigma_rate =</span> <span class="fl">0.3</span>, <span class="at">samples =</span> <span class="dv">200</span>, <span class="at">seed =</span> <span class="dv">84735</span>) {</span>
 <span id="cb18-4"><a href="" aria-label="4"></a>  <span class="co"># 生成先验预测图。</span></span>
 <span id="cb18-5"><a href="" aria-label="5"></a>  <span class="co"># </span></span>
 <span id="cb18-6"><a href="" aria-label="6"></a>  <span class="co"># 参数：</span></span>
@@ -976,7 +990,7 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <span id="cb18-56"><a href="" aria-label="56"></a>  )</span>
 <span id="cb18-57"><a href="" aria-label="57"></a>  </span>
 <span id="cb18-58"><a href="" aria-label="58"></a>  <span class="co"># 绘图</span></span>
-<span id="cb18-59"><a href="" aria-label="59"></a>  <span class="fu">ggplot</span>(plot_data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">group =</span> line_id)) <span class="sc">+</span></span>
+<span id="cb18-59"><a href="" aria-label="59"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(plot_data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">group =</span> line_id)) <span class="sc">+</span></span>
 <span id="cb18-60"><a href="" aria-label="60"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">color =</span> line_id), <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
 <span id="cb18-61"><a href="" aria-label="61"></a>    <span class="fu">scale_color_manual</span>(<span class="at">values =</span> colors) <span class="sc">+</span></span>
 <span id="cb18-62"><a href="" aria-label="62"></a>    <span class="fu">ggtitle</span>(<span class="st">"Prior Predictive Check"</span>) <span class="sc">+</span></span>
@@ -988,11 +1002,11 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <span id="cb18-68"><a href="" aria-label="68"></a>      <span class="at">legend.position =</span> <span class="st">"none"</span></span>
 <span id="cb18-69"><a href="" aria-label="69"></a>    )</span>
 <span id="cb18-70"><a href="" aria-label="70"></a>  </span>
-<span id="cb18-71"><a href="" aria-label="71"></a>  <span class="co"># 显示图形</span></span>
-<span id="cb18-72"><a href="" aria-label="72"></a>  <span class="fu">print</span>(<span class="fu">last_plot</span>())</span>
+<span id="cb18-71"><a href="" aria-label="71"></a>  <span class="co"># 返回图形对象（不在函数内 print，否则可能取到上一张图）</span></span>
+<span id="cb18-72"><a href="" aria-label="72"></a>  p</span>
 <span id="cb18-73"><a href="" aria-label="73"></a>}</span>
 <span id="cb18-74"><a href="" aria-label="74"></a></span>
-<span id="cb18-75"><a href="" aria-label="75"></a><span class="co"># 使用示例</span></span>
+<span id="cb18-75"><a href="" aria-label="75"></a><span class="co"># 使用示例（与上一页的 200 条先验线相同，只是封装成了函数）</span></span>
 <span id="cb18-76"><a href="" aria-label="76"></a><span class="fu">prior_predictive_plot</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
@@ -1004,8 +1018,8 @@ Y_i \mid \beta_0, \beta_1, \sigma
 </div>
 </div>
 </section>
-<section id="练习2先验预测" class="slide level2">
-<h2>🎯练习2：先验预测</h2>
+<section id="练习2先验预测的合理性判断" class="slide level2">
+<h2>🎯练习2：先验预测的合理性判断</h2>
 <p>🤔请大家判断，下图的先验预测合理吗？</p>
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -1016,9 +1030,9 @@ Y_i \mid \beta_0, \beta_1, \sigma
 </section>
 <section class="slide level2">
 
-<p>根据生活的经验，可知被试的反应时间（RT）不会小于0秒。</p>
-<p>当前模型的先验预测图中可能会包含一些小于0的反应时间，这显得不符合逻辑.</p>
-<p>通过以下练习,你可以尝试对三个参数的先验分布进行设置，观察它们对反应时间预测的影响。</p>
+<p>根据生活经验，被试的反应时间（RT）不会小于 0 秒。</p>
+<p>更值得注意的其实是<strong>range</strong>：当前先验把 <span class="math inline">\(\beta_0\)</span> 的均值设在 5 秒，<span class="math inline">\(\beta_0\)</span> 自身的 95% 区间就跨 1–9 秒；再叠加均值为 <span class="math inline">\(1/0.3\approx 3.3\)</span> 秒的 <span class="math inline">\(\sigma\)</span>，预测值会散布到十几秒的区间，并跨过 0。</p>
+<p>通过以下练习，你可以调整三个参数的先验，观察它们对预测的影响。</p>
 </section>
 <section class="slide level2">
 
@@ -1041,6 +1055,16 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <span id="cb19-13"><a href="" aria-label="13"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
+</section>
+<section id="先验预测检验的结论" class="slide level2">
+<h2>先验预测检验的结论</h2>
+<ul>
+<li><p><strong>暴露的问题</strong>：先验把“典型反应时”设在了 5 秒量级（<span class="math inline">\(\beta_0\)</span> 的 95% 区间为 1–9 秒，再叠加均值为 <span class="math inline">\(1/0.3\approx 3.3\)</span> 秒的 <span class="math inline">\(\sigma\)</span>）。把先验预测图的纵轴与前面箱线图的纵轴对照，就能看出两者是否在同一范围。</p></li>
+<li><p><strong>“负的反应时”只是信号</strong>：<span class="math inline">\(\beta_0&lt;0\)</span> 的抽样约占 0.6%，属于极端情形；真正的问题不是会不会为负，而是整条预测线都偏离了数据的量级。</p></li>
+<li><p><strong>图上画的是 <span class="math inline">\(\mu\)</span></strong>：还要叠加 <span class="math inline">\(\sigma\)</span> 才是预测的反应时 <span class="math inline">\(Y\)</span>，其区间会更宽。</p></li>
+<li><p><strong>本讲的处理</strong>：正式模型<strong>仍然使用这组先验</strong>——① 本数据的似然远强于先验，后验几乎由数据主导（拟合后可对照后验均值与先验均值 5 秒的差距）；② 这恰好演示先验预测检验的价值：先验设得离谱时，它最先“报警”。</p></li>
+<li><p><strong>实际研究</strong>应把先验收紧到与反应时范围（如 <span class="math inline">\(\beta_0\sim N(0.5,0.3^2)\)</span>、把 <span class="math inline">\(\sigma\)</span> 的 rate 提到 5–10），并重跑先验预测检验。</p></li>
+</ul>
 </section>
 <section id="模型定义" class="slide level2">
 <h2>模型定义</h2>
@@ -1145,11 +1169,11 @@ Y_i \mid \beta_0, \beta_1, \sigma
 post-warmup draws per chain=1000, total post-warmup draws=4000.
 
       mean se_mean   sd 2.5%  25%  50%  75% 97.5% n_eff Rhat
-beta0 0.71       0 0.04 0.64 0.69 0.71 0.74  0.78  1846    1
-beta1 0.15       0 0.05 0.06 0.12 0.15 0.18  0.24  1776    1
-sigma 0.23       0 0.02 0.20 0.22 0.23 0.24  0.27  2550    1
+beta0 0.71       0 0.04 0.64 0.69 0.71 0.74  0.78  1904    1
+beta1 0.15       0 0.05 0.06 0.12 0.15 0.18  0.24  1841    1
+sigma 0.23       0 0.02 0.20 0.22 0.23 0.24  0.27  2737    1
 
-Samples were drawn using NUTS(diag_e) at Tue Nov  3 15:41:30 2026.
+Samples were drawn using NUTS(diag_e) at Thu Nov  5 17:51:21 2026.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).</code></pre>
@@ -1161,43 +1185,32 @@ convergence, Rhat=1).</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="" aria-label="1"></a>par_post <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(lm1_fit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="" aria-label="1"></a><span class="fu">names</span>(par_post)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "beta0"   "beta1"   "sigma"   "y_rep"   "log_lik" "lp__"   </code></pre>
-</div>
-</div>
 </section>
 <section class="slide level2">
 
-<ol start="2" type="1">
-<li>在采样结束之后，我们得到采样样本（对应R中<code>brms</code>/<code>rstan</code>的模型结果）</li>
-</ol>
+<p>在采样结束之后，我们得到采样样本（对应 R 中 <code>rstan</code> 的模型结果）</p>
 <ul>
-<li><p>后验样本可通过<code>posterior_samples()</code>函数提取，数据类型为数据框（data.frame）或数组（array）。</p>
+<li><p>后验样本用 <code>rstan::extract()</code> 提取，数据类型为列表、数据框或数组（brms 中对应 <code>as_draws_df()</code>）。</p>
 <ul>
 <li><p>样本按”链”和”采样”顺序排列。本例有4条链，每条链保留1000个有效样本，共4000个后验样本。</p></li>
 <li><p>包含3个变量（列），即3个参数：<code>beta0</code>（对应<span class="math inline">\(\beta_0\)</span>）、<code>beta1</code>（对应<span class="math inline">\(\beta_1\)</span>）、<code>sigma</code>。</p>
 <ul>
-<li><p>我们可以使用 <code>posterior$beta0</code> 提取后验中的<span class="math inline">\(\beta_0\)</span>参数（<code>posterior</code> 为 <code>posterior_samples()</code> 的结果）。</p></li>
-<li><p>我们可以使用 <code>posterior$beta1[11]</code> 提取第一条链中的一个有效采样值（前 <code>warmup</code> 个样本已自动丢弃）。</p></li>
+<li><p>我们可以使用 <code>par_post$beta0</code> 提取后验中的 <span class="math inline">\(\beta_0\)</span> 参数（<code>par_post</code> 为 <code>rstan::extract()</code> 的结果）。</p></li>
+<li><p>我们可以使用 <code>par_post$beta1[11]</code> 提取第一条链中的一个有效采样值（前 <code>warmup</code> 个样本已自动丢弃）。</p></li>
 </ul></li>
 </ul></li>
 </ul>
 </section>
-<section id="补充-rstanbrms-后验结果结构介绍" class="slide level2">
-<h2><strong>补充 rstan/brms 后验结果结构介绍</strong></h2>
-<p>使用 R语言进行贝叶斯推断（如 <code>brms</code> 或 <code>rstan</code>），采样结果的存储和管理方式与 PyMC 的 <code>InferenceData</code> 类似，但要根据 R的数据结构有调整，主要通过数据框、列表或数组存储，便于后续分析和可视化。以下是典型的后验结果结构和内容：</p>
+<section id="补充后验结果的数据结构" class="slide level2">
+<h2>补充：后验结果的数据结构</h2>
+<p>典型的后验结果结构和内容：</p>
 <ol type="1">
-<li><code>posterior_samples</code>（后验样本）<br>
-这是建模结果中最核心的部分，包含了每条链和每次采样的后验分布样本，对应 PyMC 中的 <code>posterior</code> 组。对于本例的线性模型，后验样本主要包括：</li>
+<li>后验样本（<code>rstan::extract()</code> 的结果）<br>
+这是建模结果中最核心的部分，包含了每条链和每次采样的后验分布样本，对应 brms 的 <code>as_draws_df()</code> 输出。对于本例的线性模型，后验样本主要包括：</li>
 </ol>
 <ul>
-<li><p><code>beta_0</code>: 对应 <code>beta_0</code>，即截距参数的后验采样值。</p></li>
-<li><p><code>beta_0</code>: 对应 <code>beta_1</code>，即斜率参数（Label 对 RT_sec 的影响）的后验采样值。</p></li>
+<li><p><code>beta_0</code>：即截距参数（<span class="math inline">\(\beta_0\)</span>）的后验采样值。</p></li>
+<li><p><code>beta_1</code>：即斜率参数（<span class="math inline">\(\beta_1\)</span>，Label 对 RT_sec 的影响）的后验采样值。</p></li>
 <li><p><code>sigma</code>: 残差标准差的后验采样值。</p></li>
 </ul>
 <p>数据结构通常为数据框或数组，每行代表一个样本，每列代表一个参数。以本例为例，4 条链各保留 1000 个样本，共 4000 个后验样本。通过这些样本可以绘制后验分布图，计算均值、中位数及可信区间，分析参数的不确定性。</p>
@@ -1208,8 +1221,8 @@ convergence, Rhat=1).</code></pre>
 <li><code>generated quantities</code>（产生的数据）<br>
 <code>y_rep</code>，预测数据，通过与 <code>observed_data</code> 对比（如绘制预测值与实际值的散点图），可评估模型的预测准确性和泛化能力。</li>
 </ol>
-<p>`log_lik`, log likelihood，用来评估模型的数据</p>
-<p>`rstan` 中产生的数据是可以自定义的，但R中有其他的贝叶斯相关的包，自动地包括了一系列用于贝叶斯推断的值，如 <code>brms</code> 。</p>
+<p><code>log_lik</code>, log likelihood，用来评估模型的数据.</p>
+<p><code>rstan</code> 中”产生的数据”是可以自定义的，但R中有其他的贝叶斯相关的包，自动地包括了一系列用于贝叶斯推断的值，如 <code>brms</code> 。</p>
 </section>
 <section class="slide level2">
 
@@ -1217,23 +1230,23 @@ convergence, Rhat=1).</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="" aria-label="1"></a><span class="co"># 查看后验分布（对应trace.posterior）</span></span>
-<span id="cb27-2"><a href="" aria-label="2"></a>par_post <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(lm1_fit)</span>
-<span id="cb27-3"><a href="" aria-label="3"></a><span class="fu">str</span>(par_post, <span class="at">max.level =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="" aria-label="1"></a><span class="co"># 查看后验分布的数据结构</span></span>
+<span id="cb25-2"><a href="" aria-label="2"></a>par_post <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(lm1_fit)</span>
+<span id="cb25-3"><a href="" aria-label="3"></a><span class="fu">str</span>(par_post, <span class="at">max.level =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>List of 6
- $ beta0  : num [1:4000(1d)] 0.716 0.725 0.663 0.74 0.667 ...
+ $ beta0  : num [1:4000(1d)] 0.702 0.683 0.691 0.702 0.658 ...
   ..- attr(*, "dimnames")=List of 1
- $ beta1  : num [1:4000(1d)] 0.132 0.115 0.211 0.101 0.179 ...
+ $ beta1  : num [1:4000(1d)] 0.142 0.186 0.138 0.123 0.246 ...
   ..- attr(*, "dimnames")=List of 1
- $ sigma  : num [1:4000(1d)] 0.214 0.203 0.208 0.216 0.222 ...
+ $ sigma  : num [1:4000(1d)] 0.234 0.201 0.225 0.231 0.27 ...
   ..- attr(*, "dimnames")=List of 1
- $ y_rep  : num [1:4000, 1:105] 1.023 0.618 1.226 1.034 0.622 ...
+ $ y_rep  : num [1:4000, 1:105] 0.821 0.851 0.985 0.838 1.444 ...
   ..- attr(*, "dimnames")=List of 2
- $ log_lik: num [1:4000, 1:105] 0.523 0.583 0.482 0.529 0.5 ...
+ $ log_lik: num [1:4000, 1:105] 0.459 0.518 0.516 0.498 0.235 ...
   ..- attr(*, "dimnames")=List of 2
- $ lp__   : num [1:4000(1d)] 98.8 97.4 97.1 98.4 98.2 ...
+ $ lp__   : num [1:4000(1d)] 99.1 97 98.5 98.5 95 ...
   ..- attr(*, "dimnames")=List of 1</code></pre>
 </div>
 </div>
@@ -1244,20 +1257,20 @@ convergence, Rhat=1).</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="" aria-label="1"></a><span class="co"># 提取beta_0的后验样本（对应trace.posterior['beta_0']）</span></span>
-<span id="cb29-2"><a href="" aria-label="2"></a>beta0_posterior <span class="ot">&lt;-</span> par_post<span class="sc">$</span>beta0</span>
-<span id="cb29-3"><a href="" aria-label="3"></a><span class="fu">print</span>(<span class="st">"beta_0的后验样本（前10个）："</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="" aria-label="1"></a><span class="co"># 提取 beta_0 的后验样本</span></span>
+<span id="cb27-2"><a href="" aria-label="2"></a>beta0_posterior <span class="ot">&lt;-</span> par_post<span class="sc">$</span>beta0</span>
+<span id="cb27-3"><a href="" aria-label="3"></a><span class="fu">print</span>(<span class="st">"beta_0的后验样本（前10个）："</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "beta_0的后验样本（前10个）："</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="" aria-label="1"></a><span class="fu">print</span>(<span class="fu">head</span>(beta0_posterior, <span class="dv">10</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="" aria-label="1"></a><span class="fu">print</span>(<span class="fu">head</span>(beta0_posterior, <span class="dv">10</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 0.7162317 0.7248332 0.6629528 0.7402238 0.6665294 0.7092868 0.6556285
- [8] 0.7033530 0.6342100 0.6553220</code></pre>
+<pre><code> [1] 0.7024687 0.6832927 0.6914895 0.7019135 0.6578911 0.6952372 0.7070355
+ [8] 0.7300385 0.7454411 0.6573702</code></pre>
 </div>
 </div>
 </section>
@@ -1267,38 +1280,35 @@ convergence, Rhat=1).</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="" aria-label="1"></a><span class="co"># 提取第1条链的第11个样本（R索引从1开始，对应Python的[0,10]）</span></span>
-<span id="cb33-2"><a href="" aria-label="2"></a><span class="co"># 注：brms默认将所有链的样本合并，按顺序排列</span></span>
-<span id="cb33-3"><a href="" aria-label="3"></a>chain1_sample11 <span class="ot">&lt;-</span> beta0_posterior[<span class="dv">11</span>]  <span class="co"># 第1条链的第11个样本（前1000个是warmup，已自动丢弃）</span></span>
-<span id="cb33-4"><a href="" aria-label="4"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"第1条链的第11个beta_0样本值：%.4f</span><span class="sc">\n</span><span class="st">"</span>, chain1_sample11))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="" aria-label="1"></a><span class="co"># 提取第 1 条链的第 11 个样本（R 索引从 1 开始）</span></span>
+<span id="cb31-2"><a href="" aria-label="2"></a><span class="co"># 注：rstan 将所有链的样本按顺序拼接</span></span>
+<span id="cb31-3"><a href="" aria-label="3"></a>chain1_sample11 <span class="ot">&lt;-</span> beta0_posterior[<span class="dv">11</span>]  <span class="co"># 第1条链的第11个样本（前1000个是warmup，已自动丢弃）</span></span>
+<span id="cb31-4"><a href="" aria-label="4"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"第1条链的第11个beta_0样本值：%.4f</span><span class="sc">\n</span><span class="st">"</span>, chain1_sample11))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>第1条链的第11个beta_0样本值：0.7332</code></pre>
+<pre><code>第1条链的第11个beta_0样本值：0.6824</code></pre>
 </div>
 </div>
 </section>
 <section class="slide level2">
 
 <h3 id="mcmc-诊断">MCMC 诊断</h3>
-<p>使用 ` mcmc_trace() ` 可视化参数的后验分布</p>
-</section>
-<section class="slide level2">
-
+<p>使用 <code>mcmc_trace()</code> 可视化参数的后验分布</p>
 <p>用轨迹图和密度图检查采样链。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="" aria-label="1"></a>par_trace <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">traceplot</span>(lm1_fit, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">"beta0"</span>, <span class="st">"beta1"</span>, <span class="st">"sigma"</span>))</span>
-<span id="cb35-2"><a href="" aria-label="2"></a>par_dist <span class="ot">&lt;-</span> bayesplot<span class="sc">::</span><span class="fu">mcmc_dens_overlay</span>(lm1_fit, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">"beta0"</span>, <span class="st">"beta1"</span>, <span class="st">"sigma"</span>))</span>
-<span id="cb35-3"><a href="" aria-label="3"></a>par_trace <span class="ot">&lt;-</span> par_trace <span class="sc">+</span> papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
-<span id="cb35-4"><a href="" aria-label="4"></a>par_dist <span class="ot">&lt;-</span> par_dist <span class="sc">+</span> papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
-<span id="cb35-5"><a href="" aria-label="5"></a></span>
-<span id="cb35-6"><a href="" aria-label="6"></a>par_trace <span class="sc">+</span> par_dist <span class="sc">+</span> <span class="fu">plot_layout</span>(<span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="" aria-label="1"></a>par_trace <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">traceplot</span>(lm1_fit, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">"beta0"</span>, <span class="st">"beta1"</span>, <span class="st">"sigma"</span>))</span>
+<span id="cb33-2"><a href="" aria-label="2"></a>par_dist <span class="ot">&lt;-</span> bayesplot<span class="sc">::</span><span class="fu">mcmc_dens_overlay</span>(lm1_fit, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">"beta0"</span>, <span class="st">"beta1"</span>, <span class="st">"sigma"</span>))</span>
+<span id="cb33-3"><a href="" aria-label="3"></a>par_trace <span class="ot">&lt;-</span> par_trace <span class="sc">+</span> papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
+<span id="cb33-4"><a href="" aria-label="4"></a>par_dist <span class="ot">&lt;-</span> par_dist <span class="sc">+</span> papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
+<span id="cb33-5"><a href="" aria-label="5"></a></span>
+<span id="cb33-6"><a href="" aria-label="6"></a>par_trace <span class="sc">+</span> par_dist <span class="sc">+</span> <span class="fu">plot_layout</span>(<span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec9/unnamed-chunk-22-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/unnamed-chunk-21-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -1306,29 +1316,26 @@ convergence, Rhat=1).</code></pre>
 </section>
 <section class="slide level2">
 
-<p>对于模型的诊断信息 ess_bulk 和 r_hat (当然你可以结合可视化进行诊断)。</p>
+<p>对于模型的诊断信息 <code>n_eff</code> 和 <code>Rhat</code>（当然可以结合可视化进行诊断）。</p>
 <ul>
-<li><p>其中，各参数的 r_hat 均接近于 1。</p></li>
-<li><p>有效样本量占比可用 Bulk_ESS / 4000 计算；具体数值应以本次拟合输出为准。</p></li>
+<li><p>其中，各参数的 <code>Rhat</code> 均接近于 1。</p></li>
+<li><p>有效样本量占比可用 <code>n_eff</code> / 4000 计算；具体数值应以本次拟合输出为准。</p></li>
 </ul>
-</section>
-<section class="slide level2">
-
 <p>查看参数估计和采样诊断的汇总表。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="" aria-label="1"></a><span class="fu">summary</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"beta0"</span>,<span class="st">"beta1"</span>,<span class="st">"sigma"</span>))<span class="sc">$</span>summary</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="" aria-label="1"></a><span class="fu">summary</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"beta0"</span>,<span class="st">"beta1"</span>,<span class="st">"sigma"</span>))<span class="sc">$</span>summary</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>           mean      se_mean         sd       2.5%       25%       50%
-beta0 0.7130661 0.0008272063 0.03554505 0.64379976 0.6895373 0.7132021
-beta1 0.1462627 0.0011004107 0.04638016 0.05634752 0.1157348 0.1453923
-sigma 0.2322861 0.0003236173 0.01634052 0.20310111 0.2207509 0.2316269
+beta0 0.7120424 0.0008150843 0.03556425 0.64370591 0.6881029 0.7118369
+beta1 0.1478831 0.0010649709 0.04569974 0.05887613 0.1164582 0.1482100
+sigma 0.2318466 0.0003041909 0.01591500 0.20372786 0.2205980 0.2309199
             75%     97.5%    n_eff      Rhat
-beta0 0.7365758 0.7809175 1846.420 1.0007014
-beta1 0.1778836 0.2379236 1776.458 1.0010709
-sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
+beta0 0.7356664 0.7838605 1903.804 1.0005392
+beta1 0.1789442 0.2380517 1841.416 1.0003730
+sigma 0.2417713 0.2672455 2737.290 0.9992968</code></pre>
 </div>
 </div>
 </section>
@@ -1338,11 +1345,11 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="" aria-label="1"></a><span class="fu">print</span>(bayesplot<span class="sc">::</span><span class="fu">rhat</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"beta0"</span>,<span class="st">"beta1"</span>,<span class="st">"sigma"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="" aria-label="1"></a><span class="fu">print</span>(bayesplot<span class="sc">::</span><span class="fu">rhat</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"beta0"</span>,<span class="st">"beta1"</span>,<span class="st">"sigma"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>    beta0     beta1     sigma 
-1.0007014 1.0010709 0.9994324 </code></pre>
+1.0005392 1.0003730 0.9992968 </code></pre>
 </div>
 </div>
 </section>
@@ -1352,11 +1359,11 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="" aria-label="1"></a><span class="fu">print</span>(bayesplot<span class="sc">::</span><span class="fu">neff_ratio</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"beta0"</span>,<span class="st">"beta1"</span>,<span class="st">"sigma"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="" aria-label="1"></a><span class="fu">print</span>(bayesplot<span class="sc">::</span><span class="fu">neff_ratio</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"beta0"</span>,<span class="st">"beta1"</span>,<span class="st">"sigma"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>    beta0     beta1     sigma 
-0.4616050 0.4441144 0.6373942 </code></pre>
+0.4759511 0.4603541 0.6843224 </code></pre>
 </div>
 </div>
 </section>
@@ -1366,19 +1373,19 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="" aria-label="1"></a>bayesplot<span class="sc">::</span><span class="fu">mcmc_acf</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"beta0"</span>,<span class="st">"beta1"</span>,<span class="st">"sigma"</span>)) <span class="sc">+</span> papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="" aria-label="1"></a>bayesplot<span class="sc">::</span><span class="fu">mcmc_acf</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"beta0"</span>,<span class="st">"beta1"</span>,<span class="st">"sigma"</span>)) <span class="sc">+</span> papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec9/unnamed-chunk-26-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/unnamed-chunk-25-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="后验预测" class="slide level2">
-<h2>后验预测</h2>
+<section id="后验预测ppc" class="slide level2">
+<h2>后验预测(PPC)</h2>
 <p>MCMC 诊断仅能显示采样过程的收敛性和采样质量，而不能直接说明模型在观测数据上的拟合效果或预测能力。为评估模型的预测能力，我们可以进行<strong>后验预测检查</strong>，通过模拟新的数据样本来比较模型生成的数据与实际观测数据的分布是否一致，从而验证模型的合理性和适用性。</p>
 <ul>
 <li><p>为了更全面地反映模型的不确定性，我们可以基于 4000 对参数值生成 4000 条回归线。</p></li>
@@ -1390,7 +1397,7 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 </section>
 <section class="slide level2">
 
-<h3 id="练习">🎯练习</h3>
+<h3 id="练习3后验预测的可视化">🎯练习3：后验预测的可视化</h3>
 <p>根据 <strong>先验预测检验可视化预测结果</strong>的思路，对于后验预测结果进行可视化。</p>
 <ol type="1">
 <li><p>使用真实数据中的自变量Label</p></li>
@@ -1404,107 +1411,91 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="" aria-label="1"></a>par_post <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(rstan<span class="sc">::</span><span class="fu">extract</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"beta0"</span>,<span class="st">"beta1"</span>,<span class="st">"sigma"</span>)))</span>
-<span id="cb43-2"><a href="" aria-label="2"></a><span class="fu">head</span>(par_post)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="" aria-label="1"></a>par_post <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(rstan<span class="sc">::</span><span class="fu">extract</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"beta0"</span>,<span class="st">"beta1"</span>,<span class="st">"sigma"</span>)))</span>
+<span id="cb41-2"><a href="" aria-label="2"></a><span class="fu">head</span>(par_post)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>      beta0     beta1     sigma
-1 0.7162317 0.1318030 0.2143290
-2 0.7248332 0.1148239 0.2033105
-3 0.6629528 0.2105684 0.2083594
-4 0.7402238 0.1014439 0.2160077
-5 0.6665294 0.1793058 0.2216580
-6 0.7092868 0.1464458 0.2155635</code></pre>
+1 0.7024687 0.1418890 0.2336402
+2 0.6832927 0.1860454 0.2008626
+3 0.6914895 0.1375028 0.2248295
+4 0.7019135 0.1231358 0.2309292
+5 0.6578911 0.2457531 0.2698802
+6 0.6952372 0.1647692 0.2356291</code></pre>
 </div>
 </div>
 </section>
 <section class="slide level2">
 
-<p>先用两组后验参数生成回归线和观测数据。</p>
+<p>先抽 200 组后验参数，生成回归线和观测数据。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="" aria-label="1"></a><span class="co"># 定义x轴代表的Label（0=Self，1=Other）</span></span>
-<span id="cb45-2"><a href="" aria-label="2"></a>x_sim <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb45-3"><a href="" aria-label="3"></a></span>
-<span id="cb45-4"><a href="" aria-label="4"></a><span class="co"># 提取后验样本并转换数据框</span></span>
-<span id="cb45-5"><a href="" aria-label="5"></a>par_post <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(rstan<span class="sc">::</span><span class="fu">extract</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"beta0"</span>,<span class="st">"beta1"</span>,<span class="st">"sigma"</span>)))</span>
-<span id="cb45-6"><a href="" aria-label="6"></a></span>
-<span id="cb45-7"><a href="" aria-label="7"></a><span class="co"># 选取前2个样本用于预测（对应Python代码的[:2]）</span></span>
-<span id="cb45-8"><a href="" aria-label="8"></a>beta_0 <span class="ot">&lt;-</span> <span class="fu">head</span>(par_post<span class="sc">$</span>beta0, <span class="dv">2</span>)</span>
-<span id="cb45-9"><a href="" aria-label="9"></a>beta_1 <span class="ot">&lt;-</span> <span class="fu">head</span>(par_post<span class="sc">$</span>beta1, <span class="dv">2</span>)</span>
-<span id="cb45-10"><a href="" aria-label="10"></a></span>
-<span id="cb45-11"><a href="" aria-label="11"></a><span class="co"># 生成回归线（每个样本对应一条线）</span></span>
-<span id="cb45-12"><a href="" aria-label="12"></a>y_sim_re <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="cf">function</span>(i) {</span>
-<span id="cb45-13"><a href="" aria-label="13"></a>  beta_0[i] <span class="sc">+</span> beta_1[i] <span class="sc">*</span> x_sim</span>
-<span id="cb45-14"><a href="" aria-label="14"></a>})</span>
-<span id="cb45-15"><a href="" aria-label="15"></a></span>
-<span id="cb45-16"><a href="" aria-label="16"></a><span class="co"># 转换为绘图数据框</span></span>
-<span id="cb45-17"><a href="" aria-label="17"></a>pred_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb45-18"><a href="" aria-label="18"></a>  <span class="at">x =</span> <span class="fu">rep</span>(x_sim, <span class="dv">2</span>),</span>
-<span id="cb45-19"><a href="" aria-label="19"></a>  <span class="at">y =</span> <span class="fu">unlist</span>(y_sim_re),</span>
-<span id="cb45-20"><a href="" aria-label="20"></a>  <span class="at">sample =</span> <span class="fu">factor</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">each =</span> <span class="fu">length</span>(x_sim)))</span>
-<span id="cb45-21"><a href="" aria-label="21"></a>)</span>
-<span id="cb45-22"><a href="" aria-label="22"></a></span>
-<span id="cb45-23"><a href="" aria-label="23"></a><span class="co"># 提取观测数据（真实数据）</span></span>
-<span id="cb45-24"><a href="" aria-label="24"></a>observed_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb45-25"><a href="" aria-label="25"></a>  <span class="at">x =</span> df<span class="sc">$</span>Label,  <span class="co"># 原始Label数据</span></span>
-<span id="cb45-26"><a href="" aria-label="26"></a>  <span class="at">y =</span> df<span class="sc">$</span>RT_sec  <span class="co"># 原始反应时间</span></span>
-<span id="cb45-27"><a href="" aria-label="27"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="" aria-label="1"></a><span class="co"># 定义x轴代表的Label（0=Self，1=Other）</span></span>
+<span id="cb43-2"><a href="" aria-label="2"></a>x_sim <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb43-3"><a href="" aria-label="3"></a></span>
+<span id="cb43-4"><a href="" aria-label="4"></a><span class="co"># 提取后验样本并转换数据框</span></span>
+<span id="cb43-5"><a href="" aria-label="5"></a>par_post <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(rstan<span class="sc">::</span><span class="fu">extract</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"beta0"</span>,<span class="st">"beta1"</span>,<span class="st">"sigma"</span>)))</span>
+<span id="cb43-6"><a href="" aria-label="6"></a></span>
+<span id="cb43-7"><a href="" aria-label="7"></a><span class="co"># 选取前 200 个样本用于预测</span></span>
+<span id="cb43-8"><a href="" aria-label="8"></a>beta_0 <span class="ot">&lt;-</span> <span class="fu">head</span>(par_post<span class="sc">$</span>beta0, <span class="dv">200</span>)</span>
+<span id="cb43-9"><a href="" aria-label="9"></a>beta_1 <span class="ot">&lt;-</span> <span class="fu">head</span>(par_post<span class="sc">$</span>beta1, <span class="dv">200</span>)</span>
+<span id="cb43-10"><a href="" aria-label="10"></a></span>
+<span id="cb43-11"><a href="" aria-label="11"></a><span class="co"># 生成回归线（每个样本对应一条线）</span></span>
+<span id="cb43-12"><a href="" aria-label="12"></a>y_sim_re <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>, <span class="cf">function</span>(i) {</span>
+<span id="cb43-13"><a href="" aria-label="13"></a>  beta_0[i] <span class="sc">+</span> beta_1[i] <span class="sc">*</span> x_sim</span>
+<span id="cb43-14"><a href="" aria-label="14"></a>})</span>
+<span id="cb43-15"><a href="" aria-label="15"></a></span>
+<span id="cb43-16"><a href="" aria-label="16"></a><span class="co"># 转换为绘图数据框</span></span>
+<span id="cb43-17"><a href="" aria-label="17"></a>pred_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb43-18"><a href="" aria-label="18"></a>  <span class="at">x =</span> <span class="fu">rep</span>(x_sim, <span class="dv">200</span>),</span>
+<span id="cb43-19"><a href="" aria-label="19"></a>  <span class="at">y =</span> <span class="fu">unlist</span>(y_sim_re),</span>
+<span id="cb43-20"><a href="" aria-label="20"></a>  <span class="at">sample =</span> <span class="fu">factor</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>, <span class="at">each =</span> <span class="fu">length</span>(x_sim)))</span>
+<span id="cb43-21"><a href="" aria-label="21"></a>)</span>
+<span id="cb43-22"><a href="" aria-label="22"></a></span>
+<span id="cb43-23"><a href="" aria-label="23"></a><span class="co"># 提取观测数据（真实数据）</span></span>
+<span id="cb43-24"><a href="" aria-label="24"></a>observed_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb43-25"><a href="" aria-label="25"></a>  <span class="at">x =</span> df<span class="sc">$</span>Label,  <span class="co"># 原始Label数据</span></span>
+<span id="cb43-26"><a href="" aria-label="26"></a>  <span class="at">y =</span> df<span class="sc">$</span>RT_sec  <span class="co"># 原始反应时间</span></span>
+<span id="cb43-27"><a href="" aria-label="27"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
 <section class="slide level2">
 
-<p>将观测反应时与两条后验回归线叠加比较。</p>
+<p>将观测反应时与 200 条后验回归线叠加比较（红点：观测值；灰线：预测回归线；黑点：每条线的两个端点）。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="" aria-label="1"></a><span class="co"># 绘制后验预测检查图</span></span>
-<span id="cb46-2"><a href="" aria-label="2"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb46-3"><a href="" aria-label="3"></a>  <span class="co"># 绘制真实数据散点图</span></span>
-<span id="cb46-4"><a href="" aria-label="4"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> observed_data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y), </span>
-<span id="cb46-5"><a href="" aria-label="5"></a>             <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">label =</span> <span class="st">"observed data"</span>,</span>
-<span id="cb46-6"><a href="" aria-label="6"></a>             <span class="at">position =</span> <span class="fu">position_jitter</span>(<span class="at">width =</span> <span class="fl">0.1</span>)) <span class="sc">+</span></span>
-<span id="cb46-7"><a href="" aria-label="7"></a>  <span class="co"># 绘制回归线</span></span>
-<span id="cb46-8"><a href="" aria-label="8"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> pred_data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">group =</span> sample), </span>
-<span id="cb46-9"><a href="" aria-label="9"></a>            <span class="at">color =</span> <span class="st">"grey50"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb46-10"><a href="" aria-label="10"></a>  <span class="co"># 绘制回归线端点</span></span>
-<span id="cb46-11"><a href="" aria-label="11"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> pred_data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y), </span>
-<span id="cb46-12"><a href="" aria-label="12"></a>             <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
-<span id="cb46-13"><a href="" aria-label="13"></a>  <span class="co"># 设置坐标轴范围和刻度</span></span>
-<span id="cb46-14"><a href="" aria-label="14"></a>  <span class="fu">xlim</span>(<span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">1.5</span>) <span class="sc">+</span></span>
-<span id="cb46-15"><a href="" aria-label="15"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb46-16"><a href="" aria-label="16"></a>  <span class="co"># 添加标题和标签</span></span>
-<span id="cb46-17"><a href="" aria-label="17"></a>  <span class="fu">ggtitle</span>(<span class="st">"posterior predictive check"</span>) <span class="sc">+</span></span>
-<span id="cb46-18"><a href="" aria-label="18"></a>  <span class="fu">xlab</span>(<span class="st">"Label"</span>) <span class="sc">+</span></span>
-<span id="cb46-19"><a href="" aria-label="19"></a>  <span class="fu">ylab</span>(<span class="st">"RT (sec)"</span>) <span class="sc">+</span></span>
-<span id="cb46-20"><a href="" aria-label="20"></a>  <span class="co"># 添加图例</span></span>
-<span id="cb46-21"><a href="" aria-label="21"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"red"</span>, <span class="st">"grey50"</span>, <span class="st">"black"</span>),</span>
-<span id="cb46-22"><a href="" aria-label="22"></a>                     <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"observed data"</span>, <span class="st">"Predicted Mean"</span>, <span class="st">""</span>)) <span class="sc">+</span></span>
-<span id="cb46-23"><a href="" aria-label="23"></a>  <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">override.aes =</span> <span class="fu">list</span>(</span>
-<span id="cb46-24"><a href="" aria-label="24"></a>    <span class="at">shape =</span> <span class="fu">c</span>(<span class="dv">16</span>, <span class="cn">NA</span>, <span class="dv">16</span>),</span>
-<span id="cb46-25"><a href="" aria-label="25"></a>    <span class="at">linetype =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
-<span id="cb46-26"><a href="" aria-label="26"></a>  ))) <span class="sc">+</span></span>
-<span id="cb46-27"><a href="" aria-label="27"></a>  <span class="co"># 美化主题</span></span>
-<span id="cb46-28"><a href="" aria-label="28"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb46-29"><a href="" aria-label="29"></a>  <span class="fu">theme</span>(</span>
-<span id="cb46-30"><a href="" aria-label="30"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb46-31"><a href="" aria-label="31"></a>    <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"black"</span>),</span>
-<span id="cb46-32"><a href="" aria-label="32"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span></span>
-<span id="cb46-33"><a href="" aria-label="33"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="" aria-label="1"></a><span class="co"># 绘制后验预测检查图</span></span>
+<span id="cb44-2"><a href="" aria-label="2"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb44-3"><a href="" aria-label="3"></a>  <span class="co"># 观测值（红点，横向抖动避免重叠）</span></span>
+<span id="cb44-4"><a href="" aria-label="4"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> observed_data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y),</span>
+<span id="cb44-5"><a href="" aria-label="5"></a>             <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>, <span class="at">size =</span> <span class="dv">2</span>,</span>
+<span id="cb44-6"><a href="" aria-label="6"></a>             <span class="at">position =</span> <span class="fu">position_jitter</span>(<span class="at">width =</span> <span class="fl">0.1</span>)) <span class="sc">+</span></span>
+<span id="cb44-7"><a href="" aria-label="7"></a>  <span class="co"># 200 条后验预测回归线</span></span>
+<span id="cb44-8"><a href="" aria-label="8"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> pred_data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">group =</span> sample),</span>
+<span id="cb44-9"><a href="" aria-label="9"></a>            <span class="at">color =</span> <span class="st">"grey50"</span>, <span class="at">linewidth =</span> <span class="fl">0.4</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb44-10"><a href="" aria-label="10"></a>  <span class="co"># 每条线的两个端点（预测均值）</span></span>
+<span id="cb44-11"><a href="" aria-label="11"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> pred_data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y),</span>
+<span id="cb44-12"><a href="" aria-label="12"></a>             <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">alpha =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb44-13"><a href="" aria-label="13"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">1.5</span>)) <span class="sc">+</span></span>
+<span id="cb44-14"><a href="" aria-label="14"></a>  <span class="fu">ggtitle</span>(<span class="st">"posterior predictive check"</span>) <span class="sc">+</span></span>
+<span id="cb44-15"><a href="" aria-label="15"></a>  <span class="fu">xlab</span>(<span class="st">"Label"</span>) <span class="sc">+</span></span>
+<span id="cb44-16"><a href="" aria-label="16"></a>  <span class="fu">ylab</span>(<span class="st">"RT (sec)"</span>) <span class="sc">+</span></span>
+<span id="cb44-17"><a href="" aria-label="17"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec9/unnamed-chunk-29-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/unnamed-chunk-28-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="" aria-label="1"></a><span class="co"># 显示图形</span></span>
-<span id="cb47-2"><a href="" aria-label="2"></a><span class="co"># print(last_plot())</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="" aria-label="1"></a><span class="co"># 显示图形</span></span>
+<span id="cb45-2"><a href="" aria-label="2"></a><span class="co"># print(last_plot())</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -1536,37 +1527,37 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="" aria-label="1"></a><span class="co"># 计算观测数据的分组均值</span></span>
-<span id="cb48-2"><a href="" aria-label="2"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
-<span id="cb48-3"><a href="" aria-label="3"></a>  <span class="fu">group_by</span>(Label) <span class="sc">%&gt;%</span></span>
-<span id="cb48-4"><a href="" aria-label="4"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">Mean RT</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">mean</span>(RT_sec)) <span class="sc">%&gt;%</span></span>
-<span id="cb48-5"><a href="" aria-label="5"></a>  <span class="fu">ungroup</span>()</span>
-<span id="cb48-6"><a href="" aria-label="6"></a></span>
-<span id="cb48-7"><a href="" aria-label="7"></a></span>
-<span id="cb48-8"><a href="" aria-label="8"></a><span class="co"># 生成y_model预测值</span></span>
-<span id="cb48-9"><a href="" aria-label="9"></a>x_values <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb48-10"><a href="" aria-label="10"></a>y_model <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(par_post), <span class="cf">function</span>(i) {</span>
-<span id="cb48-11"><a href="" aria-label="11"></a>  par_post<span class="sc">$</span>beta0[i] <span class="sc">+</span> par_post<span class="sc">$</span>beta1[i] <span class="sc">*</span> x_values</span>
-<span id="cb48-12"><a href="" aria-label="12"></a>})</span>
-<span id="cb48-13"><a href="" aria-label="13"></a></span>
-<span id="cb48-14"><a href="" aria-label="14"></a><span class="co"># 转换为数据框并计算均值和95%可信区间</span></span>
-<span id="cb48-15"><a href="" aria-label="15"></a>y_model_df <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, y_model) <span class="sc">%&gt;%</span></span>
-<span id="cb48-16"><a href="" aria-label="16"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb48-17"><a href="" aria-label="17"></a>  <span class="fu">setNames</span>(<span class="fu">paste0</span>(<span class="st">"x="</span>, x_values)) <span class="sc">%&gt;%</span></span>
-<span id="cb48-18"><a href="" aria-label="18"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">"x"</span>, <span class="at">values_to =</span> <span class="st">"y"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb48-19"><a href="" aria-label="19"></a>  <span class="fu">mutate</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">"x="</span>, <span class="st">""</span>, x))) <span class="sc">%&gt;%</span></span>
-<span id="cb48-20"><a href="" aria-label="20"></a>  <span class="fu">group_by</span>(x) <span class="sc">%&gt;%</span></span>
-<span id="cb48-21"><a href="" aria-label="21"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb48-22"><a href="" aria-label="22"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(y),</span>
-<span id="cb48-23"><a href="" aria-label="23"></a>    <span class="at">lower =</span> <span class="fu">quantile</span>(y, <span class="fl">0.025</span>),</span>
-<span id="cb48-24"><a href="" aria-label="24"></a>    <span class="at">upper =</span> <span class="fu">quantile</span>(y, <span class="fl">0.975</span>)</span>
-<span id="cb48-25"><a href="" aria-label="25"></a>  )</span>
-<span id="cb48-26"><a href="" aria-label="26"></a></span>
-<span id="cb48-27"><a href="" aria-label="27"></a><span class="co"># 提取观测均值数据</span></span>
-<span id="cb48-28"><a href="" aria-label="28"></a>observed_mean <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
-<span id="cb48-29"><a href="" aria-label="29"></a>  <span class="fu">select</span>(Label, <span class="st">`</span><span class="at">Mean RT</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb48-30"><a href="" aria-label="30"></a>  <span class="fu">distinct</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb48-31"><a href="" aria-label="31"></a>  <span class="fu">rename</span>(<span class="at">x =</span> Label, <span class="at">y =</span> <span class="st">`</span><span class="at">Mean RT</span><span class="st">`</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="" aria-label="1"></a><span class="co"># 计算观测数据的分组均值</span></span>
+<span id="cb46-2"><a href="" aria-label="2"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb46-3"><a href="" aria-label="3"></a>  <span class="fu">group_by</span>(Label) <span class="sc">%&gt;%</span></span>
+<span id="cb46-4"><a href="" aria-label="4"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">Mean RT</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">mean</span>(RT_sec)) <span class="sc">%&gt;%</span></span>
+<span id="cb46-5"><a href="" aria-label="5"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb46-6"><a href="" aria-label="6"></a></span>
+<span id="cb46-7"><a href="" aria-label="7"></a></span>
+<span id="cb46-8"><a href="" aria-label="8"></a><span class="co"># 生成y_model预测值</span></span>
+<span id="cb46-9"><a href="" aria-label="9"></a>x_values <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb46-10"><a href="" aria-label="10"></a>y_model <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(par_post), <span class="cf">function</span>(i) {</span>
+<span id="cb46-11"><a href="" aria-label="11"></a>  par_post<span class="sc">$</span>beta0[i] <span class="sc">+</span> par_post<span class="sc">$</span>beta1[i] <span class="sc">*</span> x_values</span>
+<span id="cb46-12"><a href="" aria-label="12"></a>})</span>
+<span id="cb46-13"><a href="" aria-label="13"></a></span>
+<span id="cb46-14"><a href="" aria-label="14"></a><span class="co"># 转换为数据框并计算均值和95%可信区间</span></span>
+<span id="cb46-15"><a href="" aria-label="15"></a>y_model_df <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, y_model) <span class="sc">%&gt;%</span></span>
+<span id="cb46-16"><a href="" aria-label="16"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb46-17"><a href="" aria-label="17"></a>  <span class="fu">setNames</span>(<span class="fu">paste0</span>(<span class="st">"x="</span>, x_values)) <span class="sc">%&gt;%</span></span>
+<span id="cb46-18"><a href="" aria-label="18"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">"x"</span>, <span class="at">values_to =</span> <span class="st">"y"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb46-19"><a href="" aria-label="19"></a>  <span class="fu">mutate</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">"x="</span>, <span class="st">""</span>, x))) <span class="sc">%&gt;%</span></span>
+<span id="cb46-20"><a href="" aria-label="20"></a>  <span class="fu">group_by</span>(x) <span class="sc">%&gt;%</span></span>
+<span id="cb46-21"><a href="" aria-label="21"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb46-22"><a href="" aria-label="22"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(y),</span>
+<span id="cb46-23"><a href="" aria-label="23"></a>    <span class="at">lower =</span> <span class="fu">quantile</span>(y, <span class="fl">0.025</span>),</span>
+<span id="cb46-24"><a href="" aria-label="24"></a>    <span class="at">upper =</span> <span class="fu">quantile</span>(y, <span class="fl">0.975</span>)</span>
+<span id="cb46-25"><a href="" aria-label="25"></a>  )</span>
+<span id="cb46-26"><a href="" aria-label="26"></a></span>
+<span id="cb46-27"><a href="" aria-label="27"></a><span class="co"># 提取观测均值数据</span></span>
+<span id="cb46-28"><a href="" aria-label="28"></a>observed_mean <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb46-29"><a href="" aria-label="29"></a>  <span class="fu">select</span>(Label, <span class="st">`</span><span class="at">Mean RT</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb46-30"><a href="" aria-label="30"></a>  <span class="fu">distinct</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb46-31"><a href="" aria-label="31"></a>  <span class="fu">rename</span>(<span class="at">x =</span> Label, <span class="at">y =</span> <span class="st">`</span><span class="at">Mean RT</span><span class="st">`</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -1576,55 +1567,48 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="" aria-label="1"></a><span class="co"># 绘制后验预测线性模型（修正图例设置）</span></span>
-<span id="cb49-2"><a href="" aria-label="2"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb49-3"><a href="" aria-label="3"></a>  <span class="co"># 不确定性区间</span></span>
-<span id="cb49-4"><a href="" aria-label="4"></a>  <span class="fu">geom_ribbon</span>(<span class="at">data =</span> y_model_df, </span>
-<span id="cb49-5"><a href="" aria-label="5"></a>              <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">ymin =</span> lower, <span class="at">ymax =</span> upper, <span class="at">fill =</span> <span class="st">"Uncertainty in mean"</span>), </span>
-<span id="cb49-6"><a href="" aria-label="6"></a>              <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb49-7"><a href="" aria-label="7"></a>  <span class="co"># 后验均值线</span></span>
-<span id="cb49-8"><a href="" aria-label="8"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> y_model_df, </span>
-<span id="cb49-9"><a href="" aria-label="9"></a>            <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> mean, <span class="at">color =</span> <span class="st">"Mean"</span>), </span>
-<span id="cb49-10"><a href="" aria-label="10"></a>            <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb49-11"><a href="" aria-label="11"></a>  <span class="co"># 观测均值点</span></span>
-<span id="cb49-12"><a href="" aria-label="12"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> observed_mean, </span>
-<span id="cb49-13"><a href="" aria-label="13"></a>             <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">color =</span> <span class="st">"observed mean"</span>), </span>
-<span id="cb49-14"><a href="" aria-label="14"></a>             <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
-<span id="cb49-15"><a href="" aria-label="15"></a>  <span class="co"># 坐标轴设置</span></span>
-<span id="cb49-16"><a href="" aria-label="16"></a>  <span class="fu">xlim</span>(<span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">1.5</span>) <span class="sc">+</span></span>
-<span id="cb49-17"><a href="" aria-label="17"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb49-18"><a href="" aria-label="18"></a>  <span class="fu">xlab</span>(<span class="st">"Label"</span>) <span class="sc">+</span></span>
-<span id="cb49-19"><a href="" aria-label="19"></a>  <span class="fu">ylab</span>(<span class="st">"RT (sec)"</span>) <span class="sc">+</span></span>
-<span id="cb49-20"><a href="" aria-label="20"></a>  <span class="co"># 图例样式设置（修正order参数错误）</span></span>
-<span id="cb49-21"><a href="" aria-label="21"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="st">"grey70"</span>, <span class="at">name =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
-<span id="cb49-22"><a href="" aria-label="22"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"black"</span>), <span class="at">name =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
-<span id="cb49-23"><a href="" aria-label="23"></a>  <span class="fu">guides</span>(</span>
-<span id="cb49-24"><a href="" aria-label="24"></a>    <span class="at">fill =</span> <span class="fu">guide_legend</span>(<span class="at">order =</span> <span class="dv">2</span>),</span>
-<span id="cb49-25"><a href="" aria-label="25"></a>    <span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">order =</span> <span class="dv">1</span>,  <span class="co"># 单个order值，解决尺寸错误</span></span>
-<span id="cb49-26"><a href="" aria-label="26"></a>                        <span class="at">override.aes =</span> <span class="fu">list</span>(</span>
-<span id="cb49-27"><a href="" aria-label="27"></a>                          <span class="at">shape =</span> <span class="fu">c</span>(<span class="dv">16</span>, <span class="cn">NA</span>),  <span class="co"># 观测点为圆点，线为无形状</span></span>
-<span id="cb49-28"><a href="" aria-label="28"></a>                          <span class="at">linetype =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)  <span class="co"># 观测点无线条，线为实线</span></span>
-<span id="cb49-29"><a href="" aria-label="29"></a>                        ))</span>
-<span id="cb49-30"><a href="" aria-label="30"></a>  ) <span class="sc">+</span></span>
-<span id="cb49-31"><a href="" aria-label="31"></a>  <span class="co"># 主题设置</span></span>
-<span id="cb49-32"><a href="" aria-label="32"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb49-33"><a href="" aria-label="33"></a>  <span class="fu">theme</span>(</span>
-<span id="cb49-34"><a href="" aria-label="34"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb49-35"><a href="" aria-label="35"></a>    <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"black"</span>),</span>
-<span id="cb49-36"><a href="" aria-label="36"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span>,</span>
-<span id="cb49-37"><a href="" aria-label="37"></a>    <span class="at">text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">16</span>)</span>
-<span id="cb49-38"><a href="" aria-label="38"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="" aria-label="1"></a><span class="co"># 绘制后验预测线性模型（修正图例设置）</span></span>
+<span id="cb47-2"><a href="" aria-label="2"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb47-3"><a href="" aria-label="3"></a>  <span class="co"># 不确定性区间</span></span>
+<span id="cb47-4"><a href="" aria-label="4"></a>  <span class="fu">geom_ribbon</span>(<span class="at">data =</span> y_model_df, </span>
+<span id="cb47-5"><a href="" aria-label="5"></a>              <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">ymin =</span> lower, <span class="at">ymax =</span> upper, <span class="at">fill =</span> <span class="st">"Uncertainty in mean"</span>), </span>
+<span id="cb47-6"><a href="" aria-label="6"></a>              <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb47-7"><a href="" aria-label="7"></a>  <span class="co"># 后验均值线</span></span>
+<span id="cb47-8"><a href="" aria-label="8"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> y_model_df, </span>
+<span id="cb47-9"><a href="" aria-label="9"></a>            <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> mean, <span class="at">color =</span> <span class="st">"Mean"</span>), </span>
+<span id="cb47-10"><a href="" aria-label="10"></a>            <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb47-11"><a href="" aria-label="11"></a>  <span class="co"># 观测均值点</span></span>
+<span id="cb47-12"><a href="" aria-label="12"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> observed_mean, </span>
+<span id="cb47-13"><a href="" aria-label="13"></a>             <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">color =</span> <span class="st">"observed mean"</span>), </span>
+<span id="cb47-14"><a href="" aria-label="14"></a>             <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb47-15"><a href="" aria-label="15"></a>  <span class="co"># 坐标轴设置</span></span>
+<span id="cb47-16"><a href="" aria-label="16"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">1.5</span>)) <span class="sc">+</span></span>
+<span id="cb47-17"><a href="" aria-label="17"></a>  <span class="fu">xlab</span>(<span class="st">"Label"</span>) <span class="sc">+</span></span>
+<span id="cb47-18"><a href="" aria-label="18"></a>  <span class="fu">ylab</span>(<span class="st">"RT (sec)"</span>) <span class="sc">+</span></span>
+<span id="cb47-19"><a href="" aria-label="19"></a>  <span class="co"># 图例样式设置（修正order参数错误）</span></span>
+<span id="cb47-20"><a href="" aria-label="20"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="st">"grey70"</span>, <span class="at">name =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb47-21"><a href="" aria-label="21"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"black"</span>), <span class="at">name =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb47-22"><a href="" aria-label="22"></a>  <span class="fu">guides</span>(</span>
+<span id="cb47-23"><a href="" aria-label="23"></a>    <span class="at">fill =</span> <span class="fu">guide_legend</span>(<span class="at">order =</span> <span class="dv">2</span>),</span>
+<span id="cb47-24"><a href="" aria-label="24"></a>    <span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">order =</span> <span class="dv">1</span>,  <span class="co"># 单个order值，解决尺寸错误</span></span>
+<span id="cb47-25"><a href="" aria-label="25"></a>                        <span class="at">override.aes =</span> <span class="fu">list</span>(</span>
+<span id="cb47-26"><a href="" aria-label="26"></a>                          <span class="at">shape =</span> <span class="fu">c</span>(<span class="dv">16</span>, <span class="cn">NA</span>),  <span class="co"># 观测点为圆点，线为无形状</span></span>
+<span id="cb47-27"><a href="" aria-label="27"></a>                          <span class="at">linetype =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)  <span class="co"># 观测点无线条，线为实线</span></span>
+<span id="cb47-28"><a href="" aria-label="28"></a>                        ))</span>
+<span id="cb47-29"><a href="" aria-label="29"></a>  ) <span class="sc">+</span></span>
+<span id="cb47-30"><a href="" aria-label="30"></a>  <span class="co"># 主题设置</span></span>
+<span id="cb47-31"><a href="" aria-label="31"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec9/unnamed-chunk-31-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/unnamed-chunk-30-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="" aria-label="1"></a><span class="co"># print(last_plot())</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="" aria-label="1"></a><span class="co"># print(last_plot())</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -1632,7 +1616,7 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 
 <h3 id="通过mcmc采样值理解后验预测分布">通过MCMC采样值理解后验预测分布</h3>
 <ul>
-<li><p>通过 MCMC 采样，三个参数各获得 4000 个采样值<span class="math inline">\(\left(\beta_0^{(i)},\beta_1^{(i)},\sigma^{(i)}\right)\)</span></p></li>
+<li><p>通过 MCMC 采样，三个参数各获得 4000 个采样值 <span class="math inline">\(\left(\beta_0^{(i)},\beta_1^{(i)},\sigma^{(i)}\right)\)</span></p></li>
 <li><p>根据 4000 组参数值<span class="math inline">\(\beta_0\)</span>和<span class="math inline">\(\beta_1\)</span>，可以得到 4000 个均值<span class="math inline">\(\mu\)</span>的可能值。然后再根据<span class="math inline">\(\mu\)</span>生成预测值<span class="math inline">\(Y_{\text{new}}\)</span>。<br>
 </p></li>
 <li><p>4000 个均值<span class="math inline">\(\mu\)</span>构成了预测的均值分布：</p></li>
@@ -1660,7 +1644,7 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <section class="slide level2">
 
 <ul>
-<li>为了模拟这个过程，我们首先从后验分布中提取采样结果，并生成每个采样值对应的预测均值<span class="math inline">\(\mu\)</span>。每个均值<span class="math inline">\(\mu^{(i)}\)</span>可以通过以下公式计算：</li>
+<li>为了模拟这个过程，我们首先从后验分布中提取采样结果，并生成每个采样值对应的预测均值 <span class="math inline">\(\mu\)</span>。每个均值 <span class="math inline">\(\mu^{(i)}\)</span> 可以通过以下公式计算：</li>
 </ul>
 <p><span class="math display">\[  
 \mu^{(i)} = \beta_0^{(i)} + \beta_1^{(i)} X  
@@ -1669,10 +1653,10 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <li>然后，在每个均值<span class="math inline">\(\mu^{(i)}\)</span>的基础上，加入噪声项<span class="math inline">\(\epsilon\)</span>来生成<span class="math inline">\(Y_{\text{new}}^{(i)}\)</span>：</li>
 </ul>
 <p><span class="math display">\[  
-Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim \mathcal{N}(0, \sigma^{(i)})  
+Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\left(0, \left(\sigma^{(i)}\right)^2\right)  
 \]</span></p>
 <ul>
-<li>这里，<span class="math inline">\(\epsilon^{(i)}\)</span>是服从均值为 0，方差为<span class="math inline">\(\sigma^{(i)}\)</span>的正态分布。</li>
+<li>这里，<span class="math inline">\(\epsilon^{(i)}\)</span>是服从均值为 0，方差为<span class="math inline">\(\left(\sigma^{(i)}\right)^2\)</span>的正态分布。</li>
 </ul>
 </section>
 <section class="slide level2">
@@ -1697,22 +1681,22 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim \ma
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="" aria-label="1"></a><span class="co"># 抽取第一组参数组合（R索引从1开始，对应Python的row_i=0）</span></span>
-<span id="cb51-2"><a href="" aria-label="2"></a>row_i <span class="ot">&lt;-</span> <span class="dv">1</span>  </span>
-<span id="cb51-3"><a href="" aria-label="3"></a>X_i <span class="ot">&lt;-</span> <span class="dv">1</span>   </span>
-<span id="cb51-4"><a href="" aria-label="4"></a></span>
-<span id="cb51-5"><a href="" aria-label="5"></a><span class="co"># 计算正态分布的均值mu_i</span></span>
-<span id="cb51-6"><a href="" aria-label="6"></a>mu_i <span class="ot">&lt;-</span> par_post<span class="sc">$</span>beta0[row_i] <span class="sc">+</span> par_post<span class="sc">$</span>beta1[row_i] <span class="sc">*</span> X_i           </span>
-<span id="cb51-7"><a href="" aria-label="7"></a>sigma_i <span class="ot">&lt;-</span> par_post<span class="sc">$</span>sigma[row_i]</span>
-<span id="cb51-8"><a href="" aria-label="8"></a></span>
-<span id="cb51-9"><a href="" aria-label="9"></a><span class="co"># 从正态分布中随机抽取一个值，作为预测值</span></span>
-<span id="cb51-10"><a href="" aria-label="10"></a>prediction_i <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="at">n =</span> <span class="dv">1</span>, <span class="at">mean =</span> mu_i, <span class="at">sd =</span> sigma_i)</span>
-<span id="cb51-11"><a href="" aria-label="11"></a></span>
-<span id="cb51-12"><a href="" aria-label="12"></a><span class="co"># 打印结果（可多次运行，观察相同参数下的预测值变化）</span></span>
-<span id="cb51-13"><a href="" aria-label="13"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"mu_i: %.2f, 预测值：%.2f</span><span class="sc">\n</span><span class="st">"</span>, mu_i, prediction_i))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="" aria-label="1"></a><span class="co"># 抽取第一组参数组合</span></span>
+<span id="cb49-2"><a href="" aria-label="2"></a>row_i <span class="ot">&lt;-</span> <span class="dv">1</span>  </span>
+<span id="cb49-3"><a href="" aria-label="3"></a>X_i <span class="ot">&lt;-</span> <span class="dv">1</span>   </span>
+<span id="cb49-4"><a href="" aria-label="4"></a></span>
+<span id="cb49-5"><a href="" aria-label="5"></a><span class="co"># 计算正态分布的均值mu_i</span></span>
+<span id="cb49-6"><a href="" aria-label="6"></a>mu_i <span class="ot">&lt;-</span> par_post<span class="sc">$</span>beta0[row_i] <span class="sc">+</span> par_post<span class="sc">$</span>beta1[row_i] <span class="sc">*</span> X_i           </span>
+<span id="cb49-7"><a href="" aria-label="7"></a>sigma_i <span class="ot">&lt;-</span> par_post<span class="sc">$</span>sigma[row_i]</span>
+<span id="cb49-8"><a href="" aria-label="8"></a></span>
+<span id="cb49-9"><a href="" aria-label="9"></a><span class="co"># 从正态分布中随机抽取一个值，作为预测值</span></span>
+<span id="cb49-10"><a href="" aria-label="10"></a>prediction_i <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="at">n =</span> <span class="dv">1</span>, <span class="at">mean =</span> mu_i, <span class="at">sd =</span> sigma_i)</span>
+<span id="cb49-11"><a href="" aria-label="11"></a></span>
+<span id="cb49-12"><a href="" aria-label="12"></a><span class="co"># 打印结果（可多次运行，观察相同参数下的预测值变化）</span></span>
+<span id="cb49-13"><a href="" aria-label="13"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"mu_i: %.2f, 预测值：%.2f</span><span class="sc">\n</span><span class="st">"</span>, mu_i, prediction_i))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>mu_i: 0.85, 预测值：0.75</code></pre>
+<pre><code>mu_i: 0.84, 预测值：0.74</code></pre>
 </div>
 </div>
 </section>
@@ -1731,39 +1715,39 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim \ma
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="" aria-label="1"></a><span class="co"># 生成两个空列，用于储存均值mu和预测值y_new</span></span>
-<span id="cb53-2"><a href="" aria-label="2"></a>par_post<span class="sc">$</span>mu <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
-<span id="cb53-3"><a href="" aria-label="3"></a>par_post<span class="sc">$</span>y_new <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
-<span id="cb53-4"><a href="" aria-label="4"></a></span>
-<span id="cb53-5"><a href="" aria-label="5"></a><span class="co"># 设置X_i的值和随机种子（保持与原代码一致）</span></span>
-<span id="cb53-6"><a href="" aria-label="6"></a>X_i <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb53-7"><a href="" aria-label="7"></a><span class="fu">set.seed</span>(<span class="dv">84735</span>)</span>
-<span id="cb53-8"><a href="" aria-label="8"></a></span>
-<span id="cb53-9"><a href="" aria-label="9"></a><span class="co"># 循环计算均值并生成预测值（次数由后验样本数量决定）</span></span>
-<span id="cb53-10"><a href="" aria-label="10"></a><span class="cf">for</span> (row_i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(par_post)) {</span>
-<span id="cb53-11"><a href="" aria-label="11"></a>  <span class="co"># 计算均值mu_i</span></span>
-<span id="cb53-12"><a href="" aria-label="12"></a>  mu_i <span class="ot">&lt;-</span> par_post<span class="sc">$</span>beta0[row_i] <span class="sc">+</span> par_post<span class="sc">$</span>beta1[row_i] <span class="sc">*</span> X_i</span>
-<span id="cb53-13"><a href="" aria-label="13"></a>  par_post<span class="sc">$</span>mu[row_i] <span class="ot">&lt;-</span> mu_i</span>
-<span id="cb53-14"><a href="" aria-label="14"></a>  </span>
-<span id="cb53-15"><a href="" aria-label="15"></a>  <span class="co"># 从正态分布中抽取预测值y_new</span></span>
-<span id="cb53-16"><a href="" aria-label="16"></a>  par_post<span class="sc">$</span>y_new[row_i] <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(</span>
-<span id="cb53-17"><a href="" aria-label="17"></a>    <span class="at">n =</span> <span class="dv">1</span>,</span>
-<span id="cb53-18"><a href="" aria-label="18"></a>    <span class="at">mean =</span> mu_i,</span>
-<span id="cb53-19"><a href="" aria-label="19"></a>    <span class="at">sd =</span> par_post<span class="sc">$</span>sigma[row_i]</span>
-<span id="cb53-20"><a href="" aria-label="20"></a>  )</span>
-<span id="cb53-21"><a href="" aria-label="21"></a>}</span>
-<span id="cb53-22"><a href="" aria-label="22"></a></span>
-<span id="cb53-23"><a href="" aria-label="23"></a><span class="co"># 查看结果（可选）</span></span>
-<span id="cb53-24"><a href="" aria-label="24"></a><span class="fu">head</span>(par_post)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="" aria-label="1"></a><span class="co"># 生成两个空列，用于储存均值mu和预测值y_new</span></span>
+<span id="cb51-2"><a href="" aria-label="2"></a>par_post<span class="sc">$</span>mu <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb51-3"><a href="" aria-label="3"></a>par_post<span class="sc">$</span>y_new <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb51-4"><a href="" aria-label="4"></a></span>
+<span id="cb51-5"><a href="" aria-label="5"></a><span class="co"># 设置X_i的值和随机种子（保持与原代码一致）</span></span>
+<span id="cb51-6"><a href="" aria-label="6"></a>X_i <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb51-7"><a href="" aria-label="7"></a><span class="fu">set.seed</span>(<span class="dv">84735</span>)</span>
+<span id="cb51-8"><a href="" aria-label="8"></a></span>
+<span id="cb51-9"><a href="" aria-label="9"></a><span class="co"># 循环计算均值并生成预测值（次数由后验样本数量决定）</span></span>
+<span id="cb51-10"><a href="" aria-label="10"></a><span class="cf">for</span> (row_i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(par_post)) {</span>
+<span id="cb51-11"><a href="" aria-label="11"></a>  <span class="co"># 计算均值mu_i</span></span>
+<span id="cb51-12"><a href="" aria-label="12"></a>  mu_i <span class="ot">&lt;-</span> par_post<span class="sc">$</span>beta0[row_i] <span class="sc">+</span> par_post<span class="sc">$</span>beta1[row_i] <span class="sc">*</span> X_i</span>
+<span id="cb51-13"><a href="" aria-label="13"></a>  par_post<span class="sc">$</span>mu[row_i] <span class="ot">&lt;-</span> mu_i</span>
+<span id="cb51-14"><a href="" aria-label="14"></a>  </span>
+<span id="cb51-15"><a href="" aria-label="15"></a>  <span class="co"># 从正态分布中抽取预测值y_new</span></span>
+<span id="cb51-16"><a href="" aria-label="16"></a>  par_post<span class="sc">$</span>y_new[row_i] <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(</span>
+<span id="cb51-17"><a href="" aria-label="17"></a>    <span class="at">n =</span> <span class="dv">1</span>,</span>
+<span id="cb51-18"><a href="" aria-label="18"></a>    <span class="at">mean =</span> mu_i,</span>
+<span id="cb51-19"><a href="" aria-label="19"></a>    <span class="at">sd =</span> par_post<span class="sc">$</span>sigma[row_i]</span>
+<span id="cb51-20"><a href="" aria-label="20"></a>  )</span>
+<span id="cb51-21"><a href="" aria-label="21"></a>}</span>
+<span id="cb51-22"><a href="" aria-label="22"></a></span>
+<span id="cb51-23"><a href="" aria-label="23"></a><span class="co"># 查看结果（可选）</span></span>
+<span id="cb51-24"><a href="" aria-label="24"></a><span class="fu">head</span>(par_post)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>      beta0     beta1     sigma        mu     y_new
-1 0.7162317 0.1318030 0.2143290 0.8480347 0.9910420
-2 0.7248332 0.1148239 0.2033105 0.8396571 0.8144791
-3 0.6629528 0.2105684 0.2083594 0.8735212 1.0362223
-4 0.7402238 0.1014439 0.2160077 0.8416678 0.8928439
-5 0.6665294 0.1793058 0.2216580 0.8458352 1.0223882
-6 0.7092868 0.1464458 0.2155635 0.8557326 1.1970230</code></pre>
+1 0.7024687 0.1418890 0.2336402 0.8443577 1.0002501
+2 0.6832927 0.1860454 0.2008626 0.8693381 0.8444633
+3 0.6914895 0.1375028 0.2248295 0.8289923 1.0045544
+4 0.7019135 0.1231358 0.2309292 0.8250494 0.8797607
+5 0.6578911 0.2457531 0.2698802 0.9036441 1.1186067
+6 0.6952372 0.1647692 0.2356291 0.8600064 1.2330656</code></pre>
 </div>
 </div>
 </section>
@@ -1778,27 +1762,22 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim \ma
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="" aria-label="1"></a><span class="co"># 复制数据框</span></span>
-<span id="cb55-2"><a href="" aria-label="2"></a>df2 <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
-<span id="cb55-3"><a href="" aria-label="3"></a>  <span class="fu">filter</span>(Label <span class="sc">==</span> <span class="dv">1</span>)      <span class="co"># 筛选Label=1的行</span></span>
-<span id="cb55-4"><a href="" aria-label="4"></a></span>
-<span id="cb55-5"><a href="" aria-label="5"></a><span class="co"># 查看x=1时y的取值</span></span>
-<span id="cb55-6"><a href="" aria-label="6"></a><span class="fu">cat</span>(<span class="st">"x=1时y的取值有:"</span>, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="" aria-label="1"></a><span class="co"># 复制数据框</span></span>
+<span id="cb53-2"><a href="" aria-label="2"></a>df2 <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb53-3"><a href="" aria-label="3"></a>  <span class="fu">filter</span>(Label <span class="sc">==</span> <span class="dv">1</span>)      <span class="co"># 筛选Label=1的行</span></span>
+<span id="cb53-4"><a href="" aria-label="4"></a></span>
+<span id="cb53-5"><a href="" aria-label="5"></a><span class="co"># 查看x=1时y的取值</span></span>
+<span id="cb53-6"><a href="" aria-label="6"></a><span class="fu">cat</span>(<span class="st">"x=1时y的取值有:"</span>, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>x=1时y的取值有: </code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="" aria-label="1"></a><span class="fu">print</span>(df2<span class="sc">$</span>RT_sec)  <span class="co"># 输出Label=1对应的RT_sec值</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="" aria-label="1"></a><span class="fu">head</span>(df2<span class="sc">$</span>RT_sec, <span class="dv">10</span>)  <span class="co"># 只显示前 10 个，避免刷屏</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 0.753 0.818 0.917 0.717 0.988 0.950 0.657 0.829 1.143 0.756 0.665 0.846
-[13] 0.839 0.914 0.712 1.330 0.786 0.626 0.912 0.725 0.956 0.485 1.417 0.604
-[25] 0.789 1.327 1.357 0.635 0.871 1.287 0.739 1.331 0.907 1.015 1.125 0.868
-[37] 0.582 1.233 1.030 0.791 1.028 0.918 0.793 0.909 0.646 0.467 0.843 0.610
-[49] 0.972 0.851 1.208 0.473 0.407 1.416 1.164 0.605 1.071 0.425 0.634 0.393
-[61] 1.020 0.414 0.698</code></pre>
+<pre><code> [1] 0.753 0.818 0.917 0.717 0.988 0.950 0.657 0.829 1.143 0.756</code></pre>
 </div>
 </div>
 </section>
@@ -1808,57 +1787,54 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim \ma
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="" aria-label="1"></a><span class="co"># 计算X轴全局范围（覆盖mu和y_new）</span></span>
-<span id="cb59-2"><a href="" aria-label="2"></a>x_min <span class="ot">&lt;-</span> <span class="fu">min</span>(par_post<span class="sc">$</span>mu, par_post<span class="sc">$</span>y_new)</span>
-<span id="cb59-3"><a href="" aria-label="3"></a>x_max <span class="ot">&lt;-</span> <span class="fu">max</span>(par_post<span class="sc">$</span>mu, par_post<span class="sc">$</span>y_new)</span>
-<span id="cb59-4"><a href="" aria-label="4"></a></span>
-<span id="cb59-5"><a href="" aria-label="5"></a><span class="co"># 计算Y轴全局范围（覆盖两个分布的密度最大值）</span></span>
-<span id="cb59-6"><a href="" aria-label="6"></a><span class="co"># 先分别计算两个分布的密度值</span></span>
-<span id="cb59-7"><a href="" aria-label="7"></a>density_mu <span class="ot">&lt;-</span> <span class="fu">density</span>(par_post<span class="sc">$</span>mu)</span>
-<span id="cb59-8"><a href="" aria-label="8"></a>density_ynew <span class="ot">&lt;-</span> <span class="fu">density</span>(par_post<span class="sc">$</span>y_new)</span>
-<span id="cb59-9"><a href="" aria-label="9"></a>y_max <span class="ot">&lt;-</span> <span class="fu">max</span>(density_mu<span class="sc">$</span>y, density_ynew<span class="sc">$</span>y)  <span class="co"># 取密度最大值</span></span>
-<span id="cb59-10"><a href="" aria-label="10"></a>y_min <span class="ot">&lt;-</span> <span class="dv">0</span>  <span class="co"># 密度从0开始</span></span>
-<span id="cb59-11"><a href="" aria-label="11"></a></span>
-<span id="cb59-12"><a href="" aria-label="12"></a><span class="co"># 设置图形布局（1行2列）</span></span>
-<span id="cb59-13"><a href="" aria-label="13"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
-<span id="cb59-14"><a href="" aria-label="14"></a></span>
-<span id="cb59-15"><a href="" aria-label="15"></a><span class="co"># 第一个图：mu的分布（统一X和Y轴范围）</span></span>
-<span id="cb59-16"><a href="" aria-label="16"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(par_post, <span class="fu">aes</span>(<span class="at">x =</span> mu)) <span class="sc">+</span></span>
-<span id="cb59-17"><a href="" aria-label="17"></a>  <span class="fu">geom_density</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"grey80"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb59-18"><a href="" aria-label="18"></a>  <span class="fu">xlim</span>(x_min, x_max) <span class="sc">+</span>  <span class="co"># 统一X轴</span></span>
-<span id="cb59-19"><a href="" aria-label="19"></a>  <span class="fu">ylim</span>(y_min, y_max) <span class="sc">+</span>  <span class="co"># 统一Y轴</span></span>
-<span id="cb59-20"><a href="" aria-label="20"></a>  <span class="fu">ggtitle</span>(<span class="st">"mu distribution"</span>) <span class="sc">+</span></span>
-<span id="cb59-21"><a href="" aria-label="21"></a>  <span class="fu">xlab</span>(<span class="st">"Value"</span>) <span class="sc">+</span></span>
-<span id="cb59-22"><a href="" aria-label="22"></a>  <span class="fu">ylab</span>(<span class="st">"Density"</span>) <span class="sc">+</span></span>
-<span id="cb59-23"><a href="" aria-label="23"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb59-24"><a href="" aria-label="24"></a>  <span class="fu">theme</span>(</span>
-<span id="cb59-25"><a href="" aria-label="25"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
-<span id="cb59-26"><a href="" aria-label="26"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb59-27"><a href="" aria-label="27"></a>    <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"black"</span>)</span>
-<span id="cb59-28"><a href="" aria-label="28"></a>  )</span>
-<span id="cb59-29"><a href="" aria-label="29"></a></span>
-<span id="cb59-30"><a href="" aria-label="30"></a><span class="co"># 第二个图：y_new的分布（完全一致的轴范围）</span></span>
-<span id="cb59-31"><a href="" aria-label="31"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(par_post, <span class="fu">aes</span>(<span class="at">x =</span> y_new)) <span class="sc">+</span></span>
-<span id="cb59-32"><a href="" aria-label="32"></a>  <span class="fu">geom_density</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"grey80"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb59-33"><a href="" aria-label="33"></a>  <span class="fu">xlim</span>(x_min, x_max) <span class="sc">+</span>  <span class="co"># 与第一个图X轴一致</span></span>
-<span id="cb59-34"><a href="" aria-label="34"></a>  <span class="fu">ylim</span>(y_min, y_max) <span class="sc">+</span>  <span class="co"># 与第一个图Y轴一致</span></span>
-<span id="cb59-35"><a href="" aria-label="35"></a>  <span class="fu">ggtitle</span>(<span class="st">"y_new distribution"</span>) <span class="sc">+</span></span>
-<span id="cb59-36"><a href="" aria-label="36"></a>  <span class="fu">xlab</span>(<span class="st">"Value"</span>) <span class="sc">+</span></span>
-<span id="cb59-37"><a href="" aria-label="37"></a>  <span class="fu">ylab</span>(<span class="st">"Density"</span>) <span class="sc">+</span></span>
-<span id="cb59-38"><a href="" aria-label="38"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb59-39"><a href="" aria-label="39"></a>  <span class="fu">theme</span>(</span>
-<span id="cb59-40"><a href="" aria-label="40"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
-<span id="cb59-41"><a href="" aria-label="41"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb59-42"><a href="" aria-label="42"></a>    <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"black"</span>)</span>
-<span id="cb59-43"><a href="" aria-label="43"></a>  )</span>
-<span id="cb59-44"><a href="" aria-label="44"></a></span>
-<span id="cb59-45"><a href="" aria-label="45"></a><span class="co"># 显示图形</span></span>
-<span id="cb59-46"><a href="" aria-label="46"></a>p1<span class="sc">+</span>p2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="" aria-label="1"></a><span class="co"># 计算X轴全局范围（覆盖mu和y_new）</span></span>
+<span id="cb57-2"><a href="" aria-label="2"></a>x_min <span class="ot">&lt;-</span> <span class="fu">min</span>(par_post<span class="sc">$</span>mu, par_post<span class="sc">$</span>y_new)</span>
+<span id="cb57-3"><a href="" aria-label="3"></a>x_max <span class="ot">&lt;-</span> <span class="fu">max</span>(par_post<span class="sc">$</span>mu, par_post<span class="sc">$</span>y_new)</span>
+<span id="cb57-4"><a href="" aria-label="4"></a></span>
+<span id="cb57-5"><a href="" aria-label="5"></a><span class="co"># 计算Y轴全局范围（覆盖两个分布的密度最大值）</span></span>
+<span id="cb57-6"><a href="" aria-label="6"></a><span class="co"># 先分别计算两个分布的密度值</span></span>
+<span id="cb57-7"><a href="" aria-label="7"></a>density_mu <span class="ot">&lt;-</span> <span class="fu">density</span>(par_post<span class="sc">$</span>mu)</span>
+<span id="cb57-8"><a href="" aria-label="8"></a>density_ynew <span class="ot">&lt;-</span> <span class="fu">density</span>(par_post<span class="sc">$</span>y_new)</span>
+<span id="cb57-9"><a href="" aria-label="9"></a>y_max <span class="ot">&lt;-</span> <span class="fu">max</span>(density_mu<span class="sc">$</span>y, density_ynew<span class="sc">$</span>y)  <span class="co"># 取密度最大值</span></span>
+<span id="cb57-10"><a href="" aria-label="10"></a>y_min <span class="ot">&lt;-</span> <span class="dv">0</span>  <span class="co"># 密度从0开始</span></span>
+<span id="cb57-11"><a href="" aria-label="11"></a></span>
+<span id="cb57-12"><a href="" aria-label="12"></a><span class="co"># 第一个图：mu的分布（统一X和Y轴范围）</span></span>
+<span id="cb57-13"><a href="" aria-label="13"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(par_post, <span class="fu">aes</span>(<span class="at">x =</span> mu)) <span class="sc">+</span></span>
+<span id="cb57-14"><a href="" aria-label="14"></a>  <span class="fu">geom_density</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"grey80"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb57-15"><a href="" aria-label="15"></a>  <span class="fu">xlim</span>(x_min, x_max) <span class="sc">+</span>  <span class="co"># 统一X轴</span></span>
+<span id="cb57-16"><a href="" aria-label="16"></a>  <span class="fu">ylim</span>(y_min, y_max) <span class="sc">+</span>  <span class="co"># 统一Y轴</span></span>
+<span id="cb57-17"><a href="" aria-label="17"></a>  <span class="fu">ggtitle</span>(<span class="st">"mu distribution"</span>) <span class="sc">+</span></span>
+<span id="cb57-18"><a href="" aria-label="18"></a>  <span class="fu">xlab</span>(<span class="st">"Value"</span>) <span class="sc">+</span></span>
+<span id="cb57-19"><a href="" aria-label="19"></a>  <span class="fu">ylab</span>(<span class="st">"Density"</span>) <span class="sc">+</span></span>
+<span id="cb57-20"><a href="" aria-label="20"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>() <span class="sc">+</span></span>
+<span id="cb57-21"><a href="" aria-label="21"></a>  <span class="fu">theme</span>(</span>
+<span id="cb57-22"><a href="" aria-label="22"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
+<span id="cb57-23"><a href="" aria-label="23"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb57-24"><a href="" aria-label="24"></a>    <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"black"</span>)</span>
+<span id="cb57-25"><a href="" aria-label="25"></a>  )</span>
+<span id="cb57-26"><a href="" aria-label="26"></a></span>
+<span id="cb57-27"><a href="" aria-label="27"></a><span class="co"># 第二个图：y_new的分布（完全一致的轴范围）</span></span>
+<span id="cb57-28"><a href="" aria-label="28"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(par_post, <span class="fu">aes</span>(<span class="at">x =</span> y_new)) <span class="sc">+</span></span>
+<span id="cb57-29"><a href="" aria-label="29"></a>  <span class="fu">geom_density</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"grey80"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb57-30"><a href="" aria-label="30"></a>  <span class="fu">xlim</span>(x_min, x_max) <span class="sc">+</span>  <span class="co"># 与第一个图X轴一致</span></span>
+<span id="cb57-31"><a href="" aria-label="31"></a>  <span class="fu">ylim</span>(y_min, y_max) <span class="sc">+</span>  <span class="co"># 与第一个图Y轴一致</span></span>
+<span id="cb57-32"><a href="" aria-label="32"></a>  <span class="fu">ggtitle</span>(<span class="st">"y_new distribution"</span>) <span class="sc">+</span></span>
+<span id="cb57-33"><a href="" aria-label="33"></a>  <span class="fu">xlab</span>(<span class="st">"Value"</span>) <span class="sc">+</span></span>
+<span id="cb57-34"><a href="" aria-label="34"></a>  <span class="fu">ylab</span>(<span class="st">"Density"</span>) <span class="sc">+</span></span>
+<span id="cb57-35"><a href="" aria-label="35"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>() <span class="sc">+</span></span>
+<span id="cb57-36"><a href="" aria-label="36"></a>  <span class="fu">theme</span>(</span>
+<span id="cb57-37"><a href="" aria-label="37"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
+<span id="cb57-38"><a href="" aria-label="38"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb57-39"><a href="" aria-label="39"></a>    <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"black"</span>)</span>
+<span id="cb57-40"><a href="" aria-label="40"></a>  )</span>
+<span id="cb57-41"><a href="" aria-label="41"></a></span>
+<span id="cb57-42"><a href="" aria-label="42"></a><span class="co"># 显示图形</span></span>
+<span id="cb57-43"><a href="" aria-label="43"></a>p1<span class="sc">+</span>p2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="assets/figs/lec9/unnamed-chunk-35-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/unnamed-chunk-34-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -1866,13 +1842,13 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim \ma
 </section>
 <section class="slide level2">
 
-<p>从上图可以看到，<span class="math inline">\(Y_{new}\)</span>分布的不确定性远大于<span class="math inline">\(\mu\)</span>分布的不确定性：</p>
-<p>-<span class="math inline">\(\mu\)</span>分布窄且集中，反映了模型的稳定预测中心；<br>
-- 而<span class="math inline">\(Y_{new}\)</span>分布较宽，反映了模型的不确定性。</p>
+<p>从上图可以看到，<span class="math inline">\(Y_{new}\)</span> 分布的不确定性远大于 <span class="math inline">\(\mu\)</span> 分布的不确定性：</p>
+<p>-<span class="math inline">\(\mu\)</span> 分布窄且集中，反映了模型的稳定预测中心；<br>
+- 而 <span class="math inline">\(Y_{new}\)</span> 分布较宽，反映了模型的不确定性。</p>
 <blockquote>
 <p>正如之前提到那样，生成的预测值受到两种变异的影响：<br>
-* 一是参数估计的不确定性（即<span class="math inline">\(\beta_0\)</span>和<span class="math inline">\(\beta_1\)</span>的后验分布带来的变异），导致不同样本的均值<span class="math inline">\(\mu\)</span>具有差异；<br>
-* 二是从分布到数据中，另一个参数<span class="math inline">\(\sigma\)</span>的影响，进一步放大了预测值<span class="math inline">\(Y_{\text{new}}\)</span>的不确定性。这两种变异共同决定了最终预测值的后验预测分布。</p>
+* 一是参数估计的不确定性（即 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 的后验分布带来的变异），导致不同样本的均值 <span class="math inline">\(\mu\)</span> 具有差异；<br>
+* 二是从分布到数据中，另一个参数 <span class="math inline">\(\sigma\)</span> 的影响，进一步放大了预测值 <span class="math inline">\(Y_{\text{new}}\)</span> 的不确定性。这两种变异共同决定了最终预测值的后验预测分布。</p>
 </blockquote>
 </section>
 <section class="slide level2">
@@ -1889,36 +1865,38 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim \ma
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="" aria-label="1"></a><span class="co"># 基于模型和后验样本生成后验预测分布</span></span>
-<span id="cb60-2"><a href="" aria-label="2"></a>ppc_data <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"y_rep"</span>))</span>
-<span id="cb60-3"><a href="" aria-label="3"></a><span class="co"># 查看后验预测矩阵的维度及前五次抽样的前五个观测值</span></span>
-<span id="cb60-4"><a href="" aria-label="4"></a><span class="fu">dim</span>(ppc_data<span class="sc">$</span>y_rep)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="" aria-label="1"></a><span class="co"># 基于模型和后验样本生成后验预测分布</span></span>
+<span id="cb58-2"><a href="" aria-label="2"></a>ppc_data <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(lm1_fit, <span class="at">par=</span><span class="fu">c</span>(<span class="st">"y_rep"</span>))</span>
+<span id="cb58-3"><a href="" aria-label="3"></a><span class="co"># 查看后验预测矩阵的维度及前五次抽样的前五个观测值</span></span>
+<span id="cb58-4"><a href="" aria-label="4"></a><span class="fu">dim</span>(ppc_data<span class="sc">$</span>y_rep)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 4000  105</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="" aria-label="1"></a>ppc_data<span class="sc">$</span>y_rep[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="" aria-label="1"></a>ppc_data<span class="sc">$</span>y_rep[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>          
 iterations      [,1]      [,2]      [,3]      [,4]      [,5]
-      [1,] 1.0230093 0.7709149 0.7815701 0.4098067 0.4197748
-      [2,] 0.6183617 1.0888935 1.0154343 1.0502469 0.7766278
-      [3,] 1.2257384 1.2489554 0.5698926 0.8345012 0.8473553
-      [4,] 1.0339368 0.9258788 0.9323376 1.0015631 0.6436045
-      [5,] 0.6219857 0.9568263 0.6178388 1.1039633 0.8197403</code></pre>
+      [1,] 0.8208968 0.6852010 0.9912925 1.0645908 0.7865035
+      [2,] 0.8513878 0.8925647 0.9016370 0.9426931 1.0944478
+      [3,] 0.9851390 0.8781846 0.4714236 1.2600183 1.1822575
+      [4,] 0.8376857 1.1236251 0.8235936 0.6870586 0.7141624
+      [5,] 1.4435000 0.4806048 1.0154071 1.3200804 0.4803788</code></pre>
 </div>
 </div>
 </section>
 <section class="slide level2">
 
-<p>输出说明：返回一个矩阵，行对应后验样本（本例共 4000 个），列对应原始数据的每个观测值；每个元素表示该观测在某一后验样本下的预测值。<br>
-接着，我们可以使用 brms 提供的后验预测检查函数 pp_check() 来绘制结果：<br>
-- 黑色线条代表观测值（RT_sec）的总体分布情况。<br>
-- 蓝色线条代表所选 100 个后验预测样本各自的分布情况。</p>
-<p>- 橙色线条代表后验预测的均值的分布情况。</p>
+<p>输出说明：返回一个矩阵，行对应后验样本（本例共 4000 个），列对应原始数据的每个观测值；每个元素表示该观测在某一后验样本下的预测值。</p>
+<p>接着，我们用 <code>bayesplot</code> 的后验预测检查函数 <code>pp_check()</code> 把观测密度与预测密度画在一起：</p>
+<ul>
+<li>黑色线条：观测值（<code>RT_sec</code>）的总体密度。</li>
+<li>蓝色线条：所选 100 组后验预测样本各自的密度。</li>
+<li>橙色虚线（下一页叠加）：这 100 条预测密度的逐点平均，用来与黑色观测密度对比，看模型是否系统性高估或低估某些区间。</li>
+</ul>
 </section>
 <section class="slide level2">
 
@@ -1926,15 +1904,15 @@ iterations      [,1]      [,2]      [,3]      [,4]      [,5]
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="" aria-label="1"></a>pp_samples <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(rstan<span class="sc">::</span><span class="fu">extract</span>(lm1_fit,<span class="at">par=</span><span class="st">"y_rep"</span>))</span>
-<span id="cb64-2"><a href="" aria-label="2"></a><span class="fu">nrow</span>(pp_samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="" aria-label="1"></a>pp_samples <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(rstan<span class="sc">::</span><span class="fu">extract</span>(lm1_fit,<span class="at">par=</span><span class="st">"y_rep"</span>))</span>
+<span id="cb62-2"><a href="" aria-label="2"></a><span class="fu">nrow</span>(pp_samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 4000</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="" aria-label="1"></a><span class="fu">ncol</span>(pp_samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="" aria-label="1"></a><span class="fu">ncol</span>(pp_samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 105</code></pre>
@@ -1947,18 +1925,63 @@ iterations      [,1]      [,2]      [,3]      [,4]      [,5]
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="" aria-label="1"></a><span class="fu">color_scheme_set</span>(<span class="st">"brightblue"</span>)</span>
-<span id="cb68-2"><a href="" aria-label="2"></a></span>
-<span id="cb68-3"><a href="" aria-label="3"></a>y <span class="ot">&lt;-</span> df<span class="sc">$</span>RT_sec <span class="co"># observed data</span></span>
-<span id="cb68-4"><a href="" aria-label="4"></a></span>
-<span id="cb68-5"><a href="" aria-label="5"></a>ppc_plot <span class="ot">&lt;-</span> bayesplot<span class="sc">::</span><span class="fu">pp_check</span>(</span>
-<span id="cb68-6"><a href="" aria-label="6"></a>  y,</span>
-<span id="cb68-7"><a href="" aria-label="7"></a>  <span class="at">yrep=</span><span class="fu">data.matrix</span>(pp_samples[<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>,]),</span>
-<span id="cb68-8"><a href="" aria-label="8"></a>  ppc_dens_overlay</span>
-<span id="cb68-9"><a href="" aria-label="9"></a>) <span class="sc">+</span></span>
-<span id="cb68-10"><a href="" aria-label="10"></a>papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
-<span id="cb68-11"><a href="" aria-label="11"></a></span>
-<span id="cb68-12"><a href="" aria-label="12"></a>ppc_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="" aria-label="1"></a><span class="fu">color_scheme_set</span>(<span class="st">"brightblue"</span>)</span>
+<span id="cb66-2"><a href="" aria-label="2"></a></span>
+<span id="cb66-3"><a href="" aria-label="3"></a>y <span class="ot">&lt;-</span> df<span class="sc">$</span>RT_sec <span class="co"># observed data</span></span>
+<span id="cb66-4"><a href="" aria-label="4"></a></span>
+<span id="cb66-5"><a href="" aria-label="5"></a>ppc_plot <span class="ot">&lt;-</span> bayesplot<span class="sc">::</span><span class="fu">pp_check</span>(</span>
+<span id="cb66-6"><a href="" aria-label="6"></a>  y,</span>
+<span id="cb66-7"><a href="" aria-label="7"></a>  <span class="at">yrep=</span><span class="fu">data.matrix</span>(pp_samples[<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>,]),</span>
+<span id="cb66-8"><a href="" aria-label="8"></a>  ppc_dens_overlay</span>
+<span id="cb66-9"><a href="" aria-label="9"></a>) <span class="sc">+</span></span>
+<span id="cb66-10"><a href="" aria-label="10"></a>papaja<span class="sc">::</span><span class="fu">theme_apa</span>()</span>
+<span id="cb66-11"><a href="" aria-label="11"></a></span>
+<span id="cb66-12"><a href="" aria-label="12"></a>ppc_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="assets/figs/lec9/unnamed-chunk-37-1.png" width="1728"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section class="slide level2">
+
+<p>在预测检查图上叠加平均预测密度。</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb67"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="" aria-label="1"></a><span class="co">#-------------------------------------------------------</span></span>
+<span id="cb67-2"><a href="" aria-label="2"></a><span class="co"># 计算“平均 posterior predictive density”</span></span>
+<span id="cb67-3"><a href="" aria-label="3"></a><span class="co">#   对每个 draw 单独跑 density，然后对 y 值取 average</span></span>
+<span id="cb67-4"><a href="" aria-label="4"></a><span class="co">#-------------------------------------------------------</span></span>
+<span id="cb67-5"><a href="" aria-label="5"></a><span class="co"># 在统一网格上计算每条 draw 的密度，再逐点平均</span></span>
+<span id="cb67-6"><a href="" aria-label="6"></a>rng <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">as.matrix</span>(pp_samples))</span>
+<span id="cb67-7"><a href="" aria-label="7"></a>x_vals <span class="ot">&lt;-</span> <span class="fu">seq</span>(rng[<span class="dv">1</span>], rng[<span class="dv">2</span>], <span class="at">length.out =</span> <span class="dv">512</span>)</span>
+<span id="cb67-8"><a href="" aria-label="8"></a>dens_mat <span class="ot">&lt;-</span> <span class="fu">vapply</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(pp_samples)), <span class="cf">function</span>(i) {</span>
+<span id="cb67-9"><a href="" aria-label="9"></a>  <span class="fu">density</span>(<span class="fu">unlist</span>(pp_samples[i, ]), <span class="at">from =</span> rng[<span class="dv">1</span>], <span class="at">to =</span> rng[<span class="dv">2</span>], <span class="at">n =</span> <span class="dv">512</span>)<span class="sc">$</span>y</span>
+<span id="cb67-10"><a href="" aria-label="10"></a>}, <span class="fu">numeric</span>(<span class="dv">512</span>))</span>
+<span id="cb67-11"><a href="" aria-label="11"></a>y_vals <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(dens_mat)</span>
+<span id="cb67-12"><a href="" aria-label="12"></a>df_avg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> x_vals, <span class="at">y =</span> y_vals)</span>
+<span id="cb67-13"><a href="" aria-label="13"></a></span>
+<span id="cb67-14"><a href="" aria-label="14"></a><span class="co">#-------------------------------------------------------</span></span>
+<span id="cb67-15"><a href="" aria-label="15"></a><span class="co"># 把橙色虚线的“平均 posterior predictive density”叠加到 pp_check 图上</span></span>
+<span id="cb67-16"><a href="" aria-label="16"></a><span class="co">#-------------------------------------------------------</span></span>
+<span id="cb67-17"><a href="" aria-label="17"></a>ppc_plot <span class="sc">+</span></span>
+<span id="cb67-18"><a href="" aria-label="18"></a>  <span class="fu">geom_line</span>(</span>
+<span id="cb67-19"><a href="" aria-label="19"></a>    <span class="at">data =</span> df_avg,</span>
+<span id="cb67-20"><a href="" aria-label="20"></a>    <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y),</span>
+<span id="cb67-21"><a href="" aria-label="21"></a>    <span class="at">color =</span> <span class="st">"orange"</span>,</span>
+<span id="cb67-22"><a href="" aria-label="22"></a>    <span class="at">linetype =</span> <span class="st">"dashed"</span>,</span>
+<span id="cb67-23"><a href="" aria-label="23"></a>    <span class="at">linewidth =</span> <span class="dv">1</span></span>
+<span id="cb67-24"><a href="" aria-label="24"></a>  ) <span class="sc">+</span></span>
+<span id="cb67-25"><a href="" aria-label="25"></a>  <span class="fu">labs</span>(</span>
+<span id="cb67-26"><a href="" aria-label="26"></a>    <span class="at">title =</span> <span class="st">"Posterior Predictive Check with Mean Predictive Density"</span>,</span>
+<span id="cb67-27"><a href="" aria-label="27"></a>    <span class="at">x =</span> <span class="st">"RT"</span>,</span>
+<span id="cb67-28"><a href="" aria-label="28"></a>    <span class="at">y =</span> <span class="st">"Density"</span></span>
+<span id="cb67-29"><a href="" aria-label="29"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1971,56 +1994,46 @@ iterations      [,1]      [,2]      [,3]      [,4]      [,5]
 </section>
 <section class="slide level2">
 
-<p>在预测检查图上叠加平均预测密度。</p>
+<p>计算两项后验预测 <span class="math inline">\(p\)</span> 值。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb69"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="" aria-label="1"></a><span class="co">#-------------------------------------------------------</span></span>
-<span id="cb69-2"><a href="" aria-label="2"></a><span class="co"># 计算“平均 posterior predictive density”</span></span>
-<span id="cb69-3"><a href="" aria-label="3"></a><span class="co">#   对每个 draw 单独跑 density，然后对 y 值取 average</span></span>
-<span id="cb69-4"><a href="" aria-label="4"></a><span class="co">#-------------------------------------------------------</span></span>
-<span id="cb69-5"><a href="" aria-label="5"></a>dens_list <span class="ot">&lt;-</span> <span class="fu">apply</span>(pp_samples, <span class="dv">1</span>, density)</span>
-<span id="cb69-6"><a href="" aria-label="6"></a></span>
-<span id="cb69-7"><a href="" aria-label="7"></a><span class="co"># x 轴来自第一条 density（所有 density 的 x 都一致）</span></span>
-<span id="cb69-8"><a href="" aria-label="8"></a>x_vals <span class="ot">&lt;-</span> dens_list[[<span class="dv">1</span>]]<span class="sc">$</span>x</span>
-<span id="cb69-9"><a href="" aria-label="9"></a></span>
-<span id="cb69-10"><a href="" aria-label="10"></a><span class="co"># y 轴为所有 density 的平均</span></span>
-<span id="cb69-11"><a href="" aria-label="11"></a>y_vals <span class="ot">&lt;-</span> <span class="fu">Reduce</span>(<span class="st">"+"</span>, <span class="fu">lapply</span>(dens_list, <span class="cf">function</span>(d) d<span class="sc">$</span>y)) <span class="sc">/</span> <span class="fu">length</span>(dens_list)</span>
-<span id="cb69-12"><a href="" aria-label="12"></a></span>
-<span id="cb69-13"><a href="" aria-label="13"></a>df_avg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> x_vals, <span class="at">y =</span> y_vals)</span>
-<span id="cb69-14"><a href="" aria-label="14"></a></span>
-<span id="cb69-15"><a href="" aria-label="15"></a><span class="co">#-------------------------------------------------------</span></span>
-<span id="cb69-16"><a href="" aria-label="16"></a><span class="co"># 把橙色虚线的“平均 posterior predictive density”叠加到 pp_check 图上</span></span>
-<span id="cb69-17"><a href="" aria-label="17"></a><span class="co">#-------------------------------------------------------</span></span>
-<span id="cb69-18"><a href="" aria-label="18"></a>ppc_plot <span class="sc">+</span></span>
-<span id="cb69-19"><a href="" aria-label="19"></a>  <span class="fu">geom_line</span>(</span>
-<span id="cb69-20"><a href="" aria-label="20"></a>    <span class="at">data =</span> df_avg,</span>
-<span id="cb69-21"><a href="" aria-label="21"></a>    <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y),</span>
-<span id="cb69-22"><a href="" aria-label="22"></a>    <span class="at">color =</span> <span class="st">"orange"</span>,</span>
-<span id="cb69-23"><a href="" aria-label="23"></a>    <span class="at">linetype =</span> <span class="st">"dashed"</span>,</span>
-<span id="cb69-24"><a href="" aria-label="24"></a>    <span class="at">linewidth =</span> <span class="dv">1</span></span>
-<span id="cb69-25"><a href="" aria-label="25"></a>  ) <span class="sc">+</span></span>
-<span id="cb69-26"><a href="" aria-label="26"></a>  <span class="fu">labs</span>(</span>
-<span id="cb69-27"><a href="" aria-label="27"></a>    <span class="at">title =</span> <span class="st">"Posterior Predictive Check with Mean Predictive Density"</span>,</span>
-<span id="cb69-28"><a href="" aria-label="28"></a>    <span class="at">x =</span> <span class="st">"RT"</span>,</span>
-<span id="cb69-29"><a href="" aria-label="29"></a>    <span class="at">y =</span> <span class="st">"Density"</span></span>
-<span id="cb69-30"><a href="" aria-label="30"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="" aria-label="1"></a><span class="co"># 观测值与后验预测的检验统计量</span></span>
+<span id="cb68-2"><a href="" aria-label="2"></a>T_mean_obs <span class="ot">&lt;-</span> <span class="fu">mean</span>(y)</span>
+<span id="cb68-3"><a href="" aria-label="3"></a>T_q95_obs  <span class="ot">&lt;-</span> <span class="fu">unname</span>(<span class="fu">quantile</span>(y, <span class="fl">0.95</span>))</span>
+<span id="cb68-4"><a href="" aria-label="4"></a></span>
+<span id="cb68-5"><a href="" aria-label="5"></a>T_mean_rep <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(<span class="fu">as.matrix</span>(pp_samples))</span>
+<span id="cb68-6"><a href="" aria-label="6"></a>T_q95_rep  <span class="ot">&lt;-</span> <span class="fu">apply</span>(pp_samples, <span class="dv">1</span>, quantile, <span class="at">probs =</span> <span class="fl">0.95</span>)</span>
+<span id="cb68-7"><a href="" aria-label="7"></a></span>
+<span id="cb68-8"><a href="" aria-label="8"></a>ppp_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(T_mean_rep <span class="sc">&gt;=</span> T_mean_obs)</span>
+<span id="cb68-9"><a href="" aria-label="9"></a>ppp_q95  <span class="ot">&lt;-</span> <span class="fu">mean</span>(T_q95_rep  <span class="sc">&gt;=</span> T_q95_obs)</span>
+<span id="cb68-10"><a href="" aria-label="10"></a></span>
+<span id="cb68-11"><a href="" aria-label="11"></a><span class="fu">c</span>(<span class="at">mean =</span> ppp_mean, <span class="at">q95 =</span> ppp_q95)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure>
-<p><img data-src="assets/figs/lec9/unnamed-chunk-39-1.png" width="1728"></p>
-</figure>
-</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   mean     q95 
+0.49825 0.02100 </code></pre>
 </div>
 </div>
 </section>
+<section id="后验预测检查的结论模型可以接受吗" class="slide level2">
+<h2>后验预测检查的结论：模型可以接受吗？</h2>
+<ul>
+<li><p><strong>判据</strong>：把观测的检验统计量放进后验预测分布看它落在哪里——与 ROPE 是同一套逻辑，只是从参数空间换到数据空间。后验预测 <span class="math inline">\(p\)</span> 值在 0.5 附近表示拟合良好，接近 0 或 1 表示系统偏离；它不是假设检验。</p></li>
+<li><p><strong>结果</strong>：均值的后验预测 <span class="math inline">\(p\)</span> 值为 0.50，95% 分位点为 0.02。</p></li>
+<li><p><strong>判断</strong>：至少一项落在 0.05–0.95 之外：模型在中心或尾部系统性偏离观测数据，正态似然只是一个近似。</p></li>
+<li><p><strong>对后面的影响</strong>：若模型只是近似，<span class="math inline">\(\beta_1\)</span> 的后验、HDI 与 ROPE 比例都<strong>条件于这个模型</strong>；方向可以读，幅度与”实际意义”要保守。</p></li>
+</ul>
+</section>
 <section id="后验推断" class="slide level2">
 <h2>后验推断</h2>
+<blockquote>
+<p><strong>前提</strong>：以下推断都<strong>条件于</strong>上一节被检验的模型。若 PPC 判断拟合尚可，结论可直接用；若判断有系统偏离，则方向可读、幅度与”实际意义”需谨慎。</p>
+</blockquote>
 <p>我们共得到 4000 对<span class="math inline">\(\beta_0\)</span>和<span class="math inline">\(\beta_1\)</span>值，可以通过<code>summary()</code>总结参数的基本信息</p>
 <ul>
-<li><p>此表包含了模型的诊断信息，例如参数的均值、标准差和有效样本大小（Bulk_ESS 和 Tail_ESS）。</p></li>
-<li><p>还提供了每个参数的 95% 最高密度区间（HDI），用于展示参数的不确定性范围。</p></li>
+<li><p>此表包含模型的诊断信息：参数的均值、标准差，以及有效样本量 <code>n_eff</code> 与 <code>Rhat</code>。</p></li>
+<li><p>还提供了每个参数的 95% 等尾分位区间（2.5% 与 97.5% 分位点），用于展示参数的不确定性范围；最高密度区间（HDI）需用 <code>bayestestR::hdi()</code> 另行计算。</p></li>
 </ul>
 </section>
 <section class="slide level2">
@@ -2033,13 +2046,13 @@ iterations      [,1]      [,2]      [,3]      [,4]      [,5]
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>           mean      se_mean         sd       2.5%       25%       50%
-beta0 0.7130661 0.0008272063 0.03554505 0.64379976 0.6895373 0.7132021
-beta1 0.1462627 0.0011004107 0.04638016 0.05634752 0.1157348 0.1453923
-sigma 0.2322861 0.0003236173 0.01634052 0.20310111 0.2207509 0.2316269
+beta0 0.7120424 0.0008150843 0.03556425 0.64370591 0.6881029 0.7118369
+beta1 0.1478831 0.0010649709 0.04569974 0.05887613 0.1164582 0.1482100
+sigma 0.2318466 0.0003041909 0.01591500 0.20372786 0.2205980 0.2309199
             75%     97.5%    n_eff      Rhat
-beta0 0.7365758 0.7809175 1846.420 1.0007014
-beta1 0.1778836 0.2379236 1776.458 1.0010709
-sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
+beta0 0.7356664 0.7838605 1903.804 1.0005392
+beta1 0.1789442 0.2380517 1841.416 1.0003730
+sigma 0.2417713 0.2672455 2737.290 0.9992968</code></pre>
 </div>
 </div>
 </section>
@@ -2048,29 +2061,30 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <ul>
 <li><p>我们可以使用均值来理解生成的后验分布，通过上表我们知道</p>
 <ul>
-<li><p><span class="math inline">\(\beta_0\)</span> 表示 self 条件下的基准反应时间；其后验均值为 0.713 秒。</p></li>
+<li><p><span class="math inline">\(\beta_0\)</span> 表示 self 条件下的基准反应时间；其后验均值为 0.712 秒。</p></li>
 <li><p><span class="math inline">\(\beta_1\)</span> 表示 self 和 other 条件下的反应时间差异；其大小和不确定性以本次拟合输出为准。</p></li>
 </ul></li>
 <li><p>注意：尽管表中显示了参数的均值，但这些均值只是后验分布的一个概要信息。</p>
 <ul>
-<li>我们还可以从 HDI 和标准差中观察到后验分布的广泛性，反映了模型的内在不确定性。<br>
+<li>我们还可以从 95% 分位区间和标准差中观察到后验分布的广泛性，反映了模型的内在不确定性。<br>
 </li>
 <li>因此，仅使用均值生成的回归线并不足以充分展示后验分布的复杂性和不确定性。</li>
 </ul></li>
+<li><p>别忘了对照先验：<span class="math inline">\(\beta_0\)</span> 的先验均值是 5 秒，而后验均值为 0.71 秒——两者的差距就是数据“拉动”先验的幅度。</p></li>
 </ul>
 </section>
 <section class="slide level2">
 
-<p>上节课我们学习了使用 HDI + ROPE 进行检验。在这里我们假设 (<span class="math inline">\(\beta_1\)</span>) 的值在<span class="math inline">\([-0.05, 0.05]\)</span>范围内可以视为实用等效，</p>
-<p>即如果<span class="math inline">\(\beta_1\)</span>落在这个范围内，说明 self 和 other 条件之间的反应时间差异可以忽略不计，从而在实践上认为两者无显著差异。</p>
+<p>上节课我们学习了使用 HDI + ROPE 做判断。在这里我们假设 <span class="math inline">\(\beta_1\)</span> 的值在 <span class="math inline">\([-0.05, 0.05]\)</span> 范围内可以视为实用等效，</p>
+<p>即如果 <span class="math inline">\(\beta_1\)</span> 落在这个范围内，说明 self 和 other 条件之间的反应时间差异在实际效果上可以忽略。</p>
 <ol type="1">
-<li><p><strong>ROPE 区间</strong>：我们设定<span class="math inline">\([-0.05, 0.05]\)</span>为 ROPE 区间，表示 self 和 other 条件下的反应时间差异在此范围内被视为无显著差异。该范围表示了对“等效零效应”的假设，即认为微小的差异在实践中可以忽略。</p></li>
+<li><p><strong>ROPE 区间</strong>：我们设定 <span class="math inline">\([-0.05, 0.05]\)</span> 为 ROPE，表示 self 和 other 之间的反应时间差异落在该范围内时，在实际效果上可视为“等效零”。这个范围就是对“等效零效应”的显式声明。</p></li>
 <li><p><strong>HDI (Highest Density Interval)</strong>：后验分布的 95% 最高密度区间（HDI）显示了<span class="math inline">\(\beta_1\)</span>的不确定性范围，帮助我们了解后验分布中最可信的值区域。</p></li>
-<li><p><strong>结果解读</strong>：</p>
+<li><p><strong>结果解读</strong>（看 95% HDI 与 ROPE 的相对位置，而不是看比例大不大）：</p>
 <ul>
-<li>如果<span class="math inline">\(\beta_1\)</span>的后验分布大部分位于 ROPE 区间内，我们可以认为 self 和 other 条件下的反应时间差异在实用上无显著意义，即这两种条件在反应时间上几乎等同。<br>
+<li>95% HDI 完全落在 ROPE <strong>之内</strong> → 可判定两者在实际效果上等效；完全落在 <strong>之外</strong> → 可判定两者不等效。<br>
 </li>
-<li>如果后验分布的很大一部分超出了 ROPE 区间，则表明 self 和 other 条件之间的差异在实用上具有显著性，值得进一步关注。</li>
+<li>95% HDI 与 ROPE <strong>部分重叠</strong> → 证据不足以判定，需要更多数据；此时报告后验落在 ROPE 内的比例。</li>
 </ul></li>
 </ol>
 </section>
@@ -2097,7 +2111,7 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 
 Inside ROPE
 -----------
-1.77 %     </code></pre>
+1.55 %     </code></pre>
 </div>
 </div>
 </section>
@@ -2120,9 +2134,76 @@ Inside ROPE
 </section>
 <section class="slide level2">
 
-<p>我们可以看到<span class="math inline">\(\beta_1\)</span>的后验分布主要集中在正值区域，其均值约为 0.15。</p>
-<p>95% 最高密度区间（HDI）的下界为 0.056，上界为 0.238；1.8% 的后验样本位于 ROPE 区间<span class="math inline">\([-0.05, 0.05]\)</span>内。</p>
-<p>这表明 self 和 other 条件下的反应时间差异在实践上具有显著性，即<span class="math inline">\(\beta_1\)</span>的值足够大，可以排除两者在反应时间上的实用等效性。因此，self 和 other 条件之间的差异值得关注。</p>
+<p><span class="math inline">\(\beta_1\)</span> 的后验均值为 0.148 秒，95% HDI 为 [0.063, 0.241]，<span class="math inline">\(P(\beta_1&gt;0)=\)</span> 0.999。</p>
+<p>有 1.6% 的后验样本落在 ROPE <span class="math inline">\([-0.05, 0.05]\)</span> 内，其余 98.5% 落在等效区间之外。</p>
+<p>按 HDI + ROPE 的判据：整个 95% HDI 落在 ROPE 之外，可判定两者不等效——差异在实际效果上值得关注。。</p>
+</section>
+<section id="回到研究问题自我加工优势成立吗" class="slide level2">
+<h2>回到研究问题：自我加工优势成立吗？</h2>
+<ul>
+<li><p><strong>假设</strong>（见研究示例）：与 other 条件相比，self 条件下的反应时更短，即 <span class="math inline">\(\beta_1=\mu_{\mathrm{other}}-\mu_{\mathrm{self}}&gt;0\)</span>。</p></li>
+<li><p><strong>后验</strong>：<span class="math inline">\(\beta_1\)</span> 的后验均值为 0.148 秒，95% HDI 为 [0.063, 0.241]，<span class="math inline">\(P(\beta_1&gt;0)=\)</span> 0.999。</p></li>
+<li><p><strong>方向</strong>：后验均值 为正，即 other 慢于 self，与自我加工优势的预测一致。</p></li>
+<li><p><strong>量级</strong>：ROPE 内的比例为 1.6%，几乎全部落在 ROPE 之外，差异在实践上可认为有意义。。</p></li>
+<li><p><strong>边界</strong>：这是单个被试（201）的结果，把同一被试的试次当作独立观测，似然又取了正态（而反应时实际右偏）；要推广到总体、处理试次依赖或改进分布假设，需要分层模型或换似然。</p></li>
+</ul>
+</section>
+<section id="brms-版本同一个模型的另一种写法" class="slide level2">
+<h2>brms 版本：同一个模型的另一种写法</h2>
+<p>用 brms 重建同一模型，与 Stan 写法对照。</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb77"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="" aria-label="1"></a><span class="co"># 更简单的方法来构建贝叶斯线性模型</span></span>
+<span id="cb77-2"><a href="" aria-label="2"></a>lm1_brms <span class="ot">&lt;-</span> brms<span class="sc">::</span><span class="fu">brm</span>(</span>
+<span id="cb77-3"><a href="" aria-label="3"></a>    <span class="at">formula =</span> RT_sec <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Intercept <span class="sc">+</span> Label,  <span class="co"># 截距直接对应 self 条件的 beta0</span></span>
+<span id="cb77-4"><a href="" aria-label="4"></a>    <span class="at">data =</span> df,                 <span class="co"># 数据框（包含Label和RT_sec列）</span></span>
+<span id="cb77-5"><a href="" aria-label="5"></a>    <span class="at">family =</span> <span class="fu">gaussian</span>(),       <span class="co"># 似然函数：正态分布</span></span>
+<span id="cb77-6"><a href="" aria-label="6"></a>  </span>
+<span id="cb77-7"><a href="" aria-label="7"></a>    <span class="co"># 定义先验分布（与 Stan 写法一致）</span></span>
+<span id="cb77-8"><a href="" aria-label="8"></a>    <span class="at">prior =</span> <span class="fu">c</span>(</span>
+<span id="cb77-9"><a href="" aria-label="9"></a>      <span class="fu">prior</span>(<span class="fu">normal</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="at">class =</span> b, <span class="at">coef =</span> Intercept),  <span class="co"># beta0：self 条件的截距</span></span>
+<span id="cb77-10"><a href="" aria-label="10"></a>      <span class="fu">prior</span>(<span class="fu">normal</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">class =</span> b, <span class="at">coef =</span> Label),      <span class="co"># beta1：Label 的系数</span></span>
+<span id="cb77-11"><a href="" aria-label="11"></a>      <span class="fu">prior</span>(<span class="fu">exponential</span>(<span class="fl">0.3</span>), <span class="at">class =</span> sigma)             <span class="co"># sigma：误差项</span></span>
+<span id="cb77-12"><a href="" aria-label="12"></a>    ),</span>
+<span id="cb77-13"><a href="" aria-label="13"></a>  </span>
+<span id="cb77-14"><a href="" aria-label="14"></a>    <span class="co"># MCMC采样参数</span></span>
+<span id="cb77-15"><a href="" aria-label="15"></a>    <span class="at">iter =</span> <span class="dv">2000</span>,               <span class="co"># 每条链总迭代 2000 次，保留 1000 次；4 条链共 4000 次</span></span>
+<span id="cb77-16"><a href="" aria-label="16"></a>    <span class="at">warmup =</span> <span class="dv">1000</span>,             <span class="co"># 调参迭代次数</span></span>
+<span id="cb77-17"><a href="" aria-label="17"></a>    <span class="at">chains =</span> <span class="dv">4</span>,                <span class="co"># 马尔可夫链数量</span></span>
+<span id="cb77-18"><a href="" aria-label="18"></a>    <span class="at">cores =</span> <span class="dv">4</span>,                 <span class="co"># 并行计算核心数（加速采样）</span></span>
+<span id="cb77-19"><a href="" aria-label="19"></a>    <span class="at">seed =</span> <span class="dv">84735</span>,              <span class="co"># 随机种子，确保结果可重复</span></span>
+<span id="cb77-20"><a href="" aria-label="20"></a>    <span class="at">refresh =</span> <span class="dv">0</span>,               <span class="co"># 不输出采样过程信息</span></span>
+<span id="cb77-21"><a href="" aria-label="21"></a>    <span class="at">file =</span> <span class="st">"tmpdata/lec9_brms_fit"</span>,</span>
+<span id="cb77-22"><a href="" aria-label="22"></a>    <span class="at">file_refit =</span> <span class="st">"never"</span></span>
+<span id="cb77-23"><a href="" aria-label="23"></a>)</span>
+<span id="cb77-24"><a href="" aria-label="24"></a><span class="fu">print</span>(lm1_brms)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> Family: gaussian 
+  Links: mu = identity 
+Formula: RT_sec ~ 0 + Intercept + Label 
+   Data: df (Number of observations: 105) 
+  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup draws = 4000
+
+Regression Coefficients:
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     0.71      0.04     0.65     0.78 1.00     1909     1904
+Label         0.15      0.05     0.05     0.23 1.00     1921     1966
+
+Further Distributional Parameters:
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sigma     0.23      0.02     0.20     0.27 1.00     2355     1944
+
+Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+</div>
+</div>
+<blockquote>
+<p><strong>对照</strong>：<code>lm1_brms</code> 的 <code>Intercept</code>、<code>Label</code>、<code>sigma</code> 分别对应 Stan 的 <code>beta0</code>、<code>beta1</code>、<code>sigma</code>；两边的后验均值应在抽样误差内接近。</p>
+</blockquote>
 </section>
 <section id="总结" class="slide level2">
 <h2>总结</h2>
@@ -2166,60 +2247,6 @@ Inside ROPE
 <li><p>后验分布则可以表示为：</p>
 <p><span class="math display">\[ \begin{split} f(\beta_0,\beta_1,\sigma \; | \; \vec{y}) &amp; = \frac{\text{prior} \cdot \text{likelihood}}{ \int \text{prior} \cdot \text{likelihood}} \\ &amp; = \frac{f(\beta_0) f(\beta_1) f(\sigma) \cdot \left[\prod_{i=1}^{n}f(y_i|\beta_0, \beta_1, \sigma) \right]} {\int\int\int f(\beta_0) f(\beta_1) f(\sigma) \cdot \left[\prod_{i=1}^{n}f(y_i|\beta_0, \beta_1, \sigma) \right] d\beta_0 d\beta_1 d\sigma} \\ \end{split} \]</span></p></li>
 </ol>
-</section>
-<section class="slide level2">
-
-<p>用 brms 重建同一模型，与 Stan 写法对照。</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb77"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="" aria-label="1"></a><span class="co"># 更简单的方法来构建贝叶斯线性模型</span></span>
-<span id="cb77-2"><a href="" aria-label="2"></a>lm1_fit <span class="ot">&lt;-</span> brms<span class="sc">::</span><span class="fu">brm</span>(</span>
-<span id="cb77-3"><a href="" aria-label="3"></a>    <span class="at">formula =</span> RT_sec <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Intercept <span class="sc">+</span> Label,  <span class="co"># 截距直接对应 self 条件的 beta0</span></span>
-<span id="cb77-4"><a href="" aria-label="4"></a>    <span class="at">data =</span> df,                 <span class="co"># 数据框（包含Label和RT_sec列）</span></span>
-<span id="cb77-5"><a href="" aria-label="5"></a>    <span class="at">family =</span> <span class="fu">gaussian</span>(),       <span class="co"># 似然函数：正态分布</span></span>
-<span id="cb77-6"><a href="" aria-label="6"></a>  </span>
-<span id="cb77-7"><a href="" aria-label="7"></a>    <span class="co"># 定义先验分布（对应PyMC的先验设置）</span></span>
-<span id="cb77-8"><a href="" aria-label="8"></a>    <span class="at">prior =</span> <span class="fu">c</span>(</span>
-<span id="cb77-9"><a href="" aria-label="9"></a>      <span class="fu">prior</span>(<span class="fu">normal</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="at">class =</span> b, <span class="at">coef =</span> Intercept),  <span class="co"># beta0：self 条件的截距</span></span>
-<span id="cb77-10"><a href="" aria-label="10"></a>      <span class="fu">prior</span>(<span class="fu">normal</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">class =</span> b, <span class="at">coef =</span> Label),      <span class="co"># beta1：Label 的系数</span></span>
-<span id="cb77-11"><a href="" aria-label="11"></a>      <span class="fu">prior</span>(<span class="fu">exponential</span>(<span class="fl">0.3</span>), <span class="at">class =</span> sigma)             <span class="co"># sigma：误差项</span></span>
-<span id="cb77-12"><a href="" aria-label="12"></a>    ),</span>
-<span id="cb77-13"><a href="" aria-label="13"></a>  </span>
-<span id="cb77-14"><a href="" aria-label="14"></a>    <span class="co"># MCMC采样参数</span></span>
-<span id="cb77-15"><a href="" aria-label="15"></a>    <span class="at">iter =</span> <span class="dv">2000</span>,               <span class="co"># 每条链总迭代 2000 次，保留 1000 次；4 条链共 4000 次</span></span>
-<span id="cb77-16"><a href="" aria-label="16"></a>    <span class="at">warmup =</span> <span class="dv">1000</span>,             <span class="co"># 调参迭代次数（对应tune）</span></span>
-<span id="cb77-17"><a href="" aria-label="17"></a>    <span class="at">chains =</span> <span class="dv">4</span>,                <span class="co"># 马尔可夫链数量</span></span>
-<span id="cb77-18"><a href="" aria-label="18"></a>    <span class="at">cores =</span> <span class="dv">4</span>,                 <span class="co"># 并行计算核心数（加速采样）</span></span>
-<span id="cb77-19"><a href="" aria-label="19"></a>    <span class="at">seed =</span> <span class="dv">84735</span>,              <span class="co"># 随机种子，确保结果可重复</span></span>
-<span id="cb77-20"><a href="" aria-label="20"></a>    <span class="at">refresh =</span> <span class="dv">0</span>,               <span class="co"># 不输出采样过程信息</span></span>
-<span id="cb77-21"><a href="" aria-label="21"></a>    <span class="at">file =</span> <span class="st">"tmpdata/lec9_brms_fit"</span>,</span>
-<span id="cb77-22"><a href="" aria-label="22"></a>    <span class="at">file_refit =</span> <span class="st">"on_change"</span></span>
-<span id="cb77-23"><a href="" aria-label="23"></a>)</span>
-<span id="cb77-24"><a href="" aria-label="24"></a><span class="fu">print</span>(lm1_fit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code> Family: gaussian 
-  Links: mu = identity 
-Formula: RT_sec ~ 0 + Intercept + Label 
-   Data: df (Number of observations: 105) 
-  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
-         total post-warmup draws = 4000
-
-Regression Coefficients:
-          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept     0.71      0.04     0.64     0.78 1.00     2053     2218
-Label         0.15      0.05     0.06     0.24 1.00     1916     2181
-
-Further Distributional Parameters:
-      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-sigma     0.23      0.02     0.20     0.26 1.00     2750     2534
-
-Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-and Tail_ESS are effective sample size measures, and Rhat is the potential
-scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
-</div>
-</div>
 
 </section>
     </div>
@@ -2438,80 +2465,42 @@ scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
       });
     </script>
     
-
     <script>
-
       // htmlwidgets need to know to resize themselves when slides are shown/hidden.
-
       // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
-
       // slide changes (different for each slide format).
-
       (function () {
-
         // dispatch for htmlwidgets
-
         function fireSlideEnter() {
-
           const event = window.document.createEvent("Event");
-
           event.initEvent("slideenter", true, true);
-
           window.document.dispatchEvent(event);
-
         }
-
-    
 
         function fireSlideChanged(previousSlide, currentSlide) {
-
           fireSlideEnter();
 
-    
-
           // dispatch for shiny
-
           if (window.jQuery) {
-
             if (previousSlide) {
-
               window.jQuery(previousSlide).trigger("hidden");
-
             }
-
             if (currentSlide) {
-
               window.jQuery(currentSlide).trigger("shown");
-
             }
-
           }
-
         }
-
-    
 
         // hookup for slidy
-
         if (window.w3c_slidy) {
-
           window.w3c_slidy.add_observer(function (slide_num) {
-
             // slide_num starts at position 1
-
             fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
-
           });
-
         }
 
-    
-
       })();
-
     </script>
-
-    
 
     <script id="quarto-html-after-body" type="application/javascript">
       window.document.addEventListener("DOMContentLoaded", function (event) {

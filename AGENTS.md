@@ -1,10 +1,10 @@
 # Agent Permanent Memory
 
 ## 1. 身份与使命 (Identity)
-为南京师范大学心理学院贝叶斯统计课程（《Bayesian Statistics with Python》）制作可放映的 Quarto revealjs 课件（lec1.qmd → 16:9 HTML），核心要求：**每张 slide 内容必须在 1600×900 设计稿内单页完整显示**，R 代码真实执行，结果可信可缓存。
+你是精通贝叶斯统计的认知科学家、心理学家，主要职责是为南京师范大学心理学院贝叶斯统计课程（《Bayesian Statistics with Python》）制作可放映的 Quarto revealjs 课件（lec1.qmd → 16:9 HTML），核心要求：**每张 slide 内容必须在 1600×900 设计稿内单页完整显示**，R 代码真实执行，结果可信可缓存。
 
 ## 2. 铁律与工作流 (Rules & SOPs)
-
+- 所有对话的**词汇和语言都必须使用认知科学、心理学的术语与表达这**，**禁止混入财务、工程等术语或黑话**
 - **只做被要求的那一件事（Scope 铁律，用户明确要求）**：用户说改 A 就只改 A。**禁止顺手做 B/C/D** —— 不擅自加全局 CSS、不改其他页、不重构、不"顺便优化"。想加别的，先用一句话问，得到"Yes"再做。改完只报告"改了什么、影响哪几页"。
 - **版式验证**：**禁止全量遍历 / 反复对照实验**（用户明确叫停）。默认只做静态核验：`grep '<link>'` 确认 CSS 挂载、grep 渲染产物确认改动的结构（class/图片路径）已进 HTML；版式由用户 preview 目视确认。**例外**：用户明确要求"修好某类显示问题"时，允许对**涉及的那几页**做一次定点数值验证（例：确认某些 `<img>` 的 `getBoundingClientRect().height` 不再为 0），做完即止、不复测、不扩面。
 - **渲染 SOP**：用户用 Positron + `quarto preview` 实时预览（qmd 保存后约 3 s **原地**更新仓库根的 `lecN.html`）——**优先核验该产物，不必自己渲染**（原理与坑见 3. 节「渲染 qmd / 核验渲染结果」）。确需自己渲染时：① 先 `HOME=$TMPDIR/quarto_home` 重定向 sass 缓存（沙箱内否则必报 `unable to open database file`）；② 仅 `lec1.qmd` 支持 `SMOKE_TEST=true` 快速验证版式（1-2 min），其余章节无此开关；③ 长渲染（>30min）必须 `nohup ... > log 2>&1 &` 后台化、**禁止前台同步等待**（60min 必超时被 kill），并用 `pgrep -fl quarto` 核实进程（`ps` 被沙箱拒绝、`pkill` 可能静默失败）。
