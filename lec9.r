@@ -186,7 +186,7 @@ ggplot2::ggplot(plot_data, aes(x = x_axis, y = y_axis)) +
   ggplot2::geom_point(color = "black", size = 3) +      # 添加数据点
   ggplot2::xlab("Label Condition") +                   # x轴标签
   ggplot2::ylab("RT (sec)") +                          # y轴标签
-  ggplot2::theme_minimal() +
+  papaja::theme_apa() +
   # 移除顶部和右侧边框（模拟sns.despine效果）
   theme(
     panel.grid.minor = element_blank(),
@@ -468,7 +468,7 @@ ggplot() +
     linetype = c(0, 1, 0)
   ))) +
   # 美化主题
-  theme_minimal() +
+  papaja::theme_apa() +
   theme(
     panel.grid = element_blank(),
     axis.line = element_line(color = "black"),
@@ -541,7 +541,7 @@ ggplot() +
                          ))
   ) +
   # 主题设置
-  theme_minimal() +
+  papaja::theme_apa() +
   theme(
     panel.grid = element_blank(),
     axis.line = element_line(color = "black"),
@@ -620,7 +620,7 @@ p1 <- ggplot(par_post, aes(x = mu)) +
   ggtitle("mu distribution") +
   xlab("Value") +
   ylab("Density") +
-  theme_minimal() +
+  papaja::theme_apa() +
   theme(
     plot.title = element_text(hjust = 0.5),
     panel.grid = element_blank(),
@@ -635,7 +635,7 @@ p2 <- ggplot(par_post, aes(x = y_new)) +
   ggtitle("y_new distribution") +
   xlab("Value") +
   ylab("Density") +
-  theme_minimal() +
+  papaja::theme_apa() +
   theme(
     plot.title = element_text(hjust = 0.5),
     panel.grid = element_blank(),

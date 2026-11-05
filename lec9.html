@@ -814,7 +814,7 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <span id="cb16-13"><a href="" aria-label="13"></a>  ggplot2<span class="sc">::</span><span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span>      <span class="co"># 添加数据点</span></span>
 <span id="cb16-14"><a href="" aria-label="14"></a>  ggplot2<span class="sc">::</span><span class="fu">xlab</span>(<span class="st">"Label Condition"</span>) <span class="sc">+</span>                   <span class="co"># x轴标签</span></span>
 <span id="cb16-15"><a href="" aria-label="15"></a>  ggplot2<span class="sc">::</span><span class="fu">ylab</span>(<span class="st">"RT (sec)"</span>) <span class="sc">+</span>                          <span class="co"># y轴标签</span></span>
-<span id="cb16-16"><a href="" aria-label="16"></a>  ggplot2<span class="sc">::</span><span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb16-16"><a href="" aria-label="16"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>() <span class="sc">+</span></span>
 <span id="cb16-17"><a href="" aria-label="17"></a>  <span class="co"># 移除顶部和右侧边框（模拟sns.despine效果）</span></span>
 <span id="cb16-18"><a href="" aria-label="18"></a>  <span class="fu">theme</span>(</span>
 <span id="cb16-19"><a href="" aria-label="19"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
@@ -1149,7 +1149,7 @@ beta0 0.71       0 0.04 0.64 0.69 0.71 0.74  0.78  1846    1
 beta1 0.15       0 0.05 0.06 0.12 0.15 0.18  0.24  1776    1
 sigma 0.23       0 0.02 0.20 0.22 0.23 0.24  0.27  2550    1
 
-Samples were drawn using NUTS(diag_e) at Tue Nov  3 15:41:30 2026.
+Samples were drawn using NUTS(diag_e) at Thu Nov  5 11:56:26 2026.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).</code></pre>
@@ -1223,17 +1223,17 @@ convergence, Rhat=1).</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>List of 6
- $ beta0  : num [1:4000(1d)] 0.716 0.725 0.663 0.74 0.667 ...
+ $ beta0  : num [1:4000(1d)] 0.724 0.716 0.766 0.739 0.683 ...
   ..- attr(*, "dimnames")=List of 1
- $ beta1  : num [1:4000(1d)] 0.132 0.115 0.211 0.101 0.179 ...
+ $ beta1  : num [1:4000(1d)] 0.109 0.136 0.108 0.105 0.209 ...
   ..- attr(*, "dimnames")=List of 1
- $ sigma  : num [1:4000(1d)] 0.214 0.203 0.208 0.216 0.222 ...
+ $ sigma  : num [1:4000(1d)] 0.218 0.26 0.236 0.228 0.245 ...
   ..- attr(*, "dimnames")=List of 1
- $ y_rep  : num [1:4000, 1:105] 1.023 0.618 1.226 1.034 0.622 ...
+ $ y_rep  : num [1:4000, 1:105] 0.931 0.76 0.894 1.102 1.362 ...
   ..- attr(*, "dimnames")=List of 2
- $ log_lik: num [1:4000, 1:105] 0.523 0.583 0.482 0.529 0.5 ...
+ $ log_lik: num [1:4000, 1:105] 0.536 0.357 0.396 0.48 0.328 ...
   ..- attr(*, "dimnames")=List of 2
- $ lp__   : num [1:4000(1d)] 98.8 97.4 97.1 98.4 98.2 ...
+ $ lp__   : num [1:4000(1d)] 98.6 97.7 98 98.9 98 ...
   ..- attr(*, "dimnames")=List of 1</code></pre>
 </div>
 </div>
@@ -1256,8 +1256,8 @@ convergence, Rhat=1).</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="" aria-label="1"></a><span class="fu">print</span>(<span class="fu">head</span>(beta0_posterior, <span class="dv">10</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 0.7162317 0.7248332 0.6629528 0.7402238 0.6665294 0.7092868 0.6556285
- [8] 0.7033530 0.6342100 0.6553220</code></pre>
+<pre><code> [1] 0.7243245 0.7155829 0.7657383 0.7393627 0.6825483 0.7017431 0.6787730
+ [8] 0.6911449 0.6630137 0.7580280</code></pre>
 </div>
 </div>
 </section>
@@ -1273,7 +1273,7 @@ convergence, Rhat=1).</code></pre>
 <span id="cb33-4"><a href="" aria-label="4"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"第1条链的第11个beta_0样本值：%.4f</span><span class="sc">\n</span><span class="st">"</span>, chain1_sample11))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>第1条链的第11个beta_0样本值：0.7332</code></pre>
+<pre><code>第1条链的第11个beta_0样本值：0.6984</code></pre>
 </div>
 </div>
 </section>
@@ -1409,12 +1409,12 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>      beta0     beta1     sigma
-1 0.7162317 0.1318030 0.2143290
-2 0.7248332 0.1148239 0.2033105
-3 0.6629528 0.2105684 0.2083594
-4 0.7402238 0.1014439 0.2160077
-5 0.6665294 0.1793058 0.2216580
-6 0.7092868 0.1464458 0.2155635</code></pre>
+1 0.7243245 0.1094948 0.2177890
+2 0.7155829 0.1363211 0.2596285
+3 0.7657383 0.1078752 0.2355483
+4 0.7393627 0.1049160 0.2278620
+5 0.6825483 0.2086599 0.2452784
+6 0.7017431 0.1729080 0.2338368</code></pre>
 </div>
 </div>
 </section>
@@ -1487,7 +1487,7 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <span id="cb46-25"><a href="" aria-label="25"></a>    <span class="at">linetype =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
 <span id="cb46-26"><a href="" aria-label="26"></a>  ))) <span class="sc">+</span></span>
 <span id="cb46-27"><a href="" aria-label="27"></a>  <span class="co"># 美化主题</span></span>
-<span id="cb46-28"><a href="" aria-label="28"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb46-28"><a href="" aria-label="28"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>() <span class="sc">+</span></span>
 <span id="cb46-29"><a href="" aria-label="29"></a>  <span class="fu">theme</span>(</span>
 <span id="cb46-30"><a href="" aria-label="30"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
 <span id="cb46-31"><a href="" aria-label="31"></a>    <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"black"</span>),</span>
@@ -1607,7 +1607,7 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <span id="cb49-29"><a href="" aria-label="29"></a>                        ))</span>
 <span id="cb49-30"><a href="" aria-label="30"></a>  ) <span class="sc">+</span></span>
 <span id="cb49-31"><a href="" aria-label="31"></a>  <span class="co"># 主题设置</span></span>
-<span id="cb49-32"><a href="" aria-label="32"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb49-32"><a href="" aria-label="32"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>() <span class="sc">+</span></span>
 <span id="cb49-33"><a href="" aria-label="33"></a>  <span class="fu">theme</span>(</span>
 <span id="cb49-34"><a href="" aria-label="34"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
 <span id="cb49-35"><a href="" aria-label="35"></a>    <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"black"</span>),</span>
@@ -1712,7 +1712,7 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim \ma
 <span id="cb51-13"><a href="" aria-label="13"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"mu_i: %.2f, 预测值：%.2f</span><span class="sc">\n</span><span class="st">"</span>, mu_i, prediction_i))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>mu_i: 0.85, 预测值：0.75</code></pre>
+<pre><code>mu_i: 0.83, 预测值：0.73</code></pre>
 </div>
 </div>
 </section>
@@ -1758,12 +1758,12 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim \ma
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>      beta0     beta1     sigma        mu     y_new
-1 0.7162317 0.1318030 0.2143290 0.8480347 0.9910420
-2 0.7248332 0.1148239 0.2033105 0.8396571 0.8144791
-3 0.6629528 0.2105684 0.2083594 0.8735212 1.0362223
-4 0.7402238 0.1014439 0.2160077 0.8416678 0.8928439
-5 0.6665294 0.1793058 0.2216580 0.8458352 1.0223882
-6 0.7092868 0.1464458 0.2155635 0.8557326 1.1970230</code></pre>
+1 0.7243245 0.1094948 0.2177890 0.8338193 0.9791353
+2 0.7155829 0.1363211 0.2596285 0.8519040 0.8197516
+3 0.7657383 0.1078752 0.2355483 0.8736134 1.0575455
+4 0.7393627 0.1049160 0.2278620 0.8442787 0.8982634
+5 0.6825483 0.2086599 0.2452784 0.8912082 1.0865751
+6 0.7017431 0.1729080 0.2338368 0.8746511 1.2448726</code></pre>
 </div>
 </div>
 </section>
@@ -1830,7 +1830,7 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim \ma
 <span id="cb59-20"><a href="" aria-label="20"></a>  <span class="fu">ggtitle</span>(<span class="st">"mu distribution"</span>) <span class="sc">+</span></span>
 <span id="cb59-21"><a href="" aria-label="21"></a>  <span class="fu">xlab</span>(<span class="st">"Value"</span>) <span class="sc">+</span></span>
 <span id="cb59-22"><a href="" aria-label="22"></a>  <span class="fu">ylab</span>(<span class="st">"Density"</span>) <span class="sc">+</span></span>
-<span id="cb59-23"><a href="" aria-label="23"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb59-23"><a href="" aria-label="23"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>() <span class="sc">+</span></span>
 <span id="cb59-24"><a href="" aria-label="24"></a>  <span class="fu">theme</span>(</span>
 <span id="cb59-25"><a href="" aria-label="25"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
 <span id="cb59-26"><a href="" aria-label="26"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
@@ -1845,7 +1845,7 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim \ma
 <span id="cb59-35"><a href="" aria-label="35"></a>  <span class="fu">ggtitle</span>(<span class="st">"y_new distribution"</span>) <span class="sc">+</span></span>
 <span id="cb59-36"><a href="" aria-label="36"></a>  <span class="fu">xlab</span>(<span class="st">"Value"</span>) <span class="sc">+</span></span>
 <span id="cb59-37"><a href="" aria-label="37"></a>  <span class="fu">ylab</span>(<span class="st">"Density"</span>) <span class="sc">+</span></span>
-<span id="cb59-38"><a href="" aria-label="38"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb59-38"><a href="" aria-label="38"></a>  papaja<span class="sc">::</span><span class="fu">theme_apa</span>() <span class="sc">+</span></span>
 <span id="cb59-39"><a href="" aria-label="39"></a>  <span class="fu">theme</span>(</span>
 <span id="cb59-40"><a href="" aria-label="40"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
 <span id="cb59-41"><a href="" aria-label="41"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
@@ -1904,11 +1904,11 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim \ma
 <div class="cell-output cell-output-stdout">
 <pre><code>          
 iterations      [,1]      [,2]      [,3]      [,4]      [,5]
-      [1,] 1.0230093 0.7709149 0.7815701 0.4098067 0.4197748
-      [2,] 0.6183617 1.0888935 1.0154343 1.0502469 0.7766278
-      [3,] 1.2257384 1.2489554 0.5698926 0.8345012 0.8473553
-      [4,] 1.0339368 0.9258788 0.9323376 1.0015631 0.6436045
-      [5,] 0.6219857 0.9568263 0.6178388 1.1039633 0.8197403</code></pre>
+      [1,] 0.9314726 0.7471065 0.8373153 0.8288157 0.9293736
+      [2,] 0.7602357 0.8064175 0.7176407 0.5753941 1.0775999
+      [3,] 0.8941972 0.9617769 0.6133464 0.9906701 0.3913702
+      [4,] 1.1024594 1.1114890 0.8710940 0.9138421 0.9017630
+      [5,] 1.3620915 0.9273759 0.4802112 0.9029067 0.9702491</code></pre>
 </div>
 </div>
 </section>
