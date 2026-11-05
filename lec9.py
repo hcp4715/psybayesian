@@ -2,6 +2,9 @@
 import pymc as pm
 import arviz as az
 import seaborn as sns
+sns.set_theme(style="white", rc={"axes.spines.top": False,
+                                 "axes.spines.right": False,
+                                 "axes.edgecolor": "black"})
 import scipy.stats as st
 import numpy as np
 import matplotlib.pyplot as plt
