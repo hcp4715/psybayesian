@@ -1173,7 +1173,7 @@ beta0 0.71       0 0.04 0.64 0.69 0.71 0.74  0.78  1904    1
 beta1 0.15       0 0.05 0.06 0.12 0.15 0.18  0.24  1841    1
 sigma 0.23       0 0.02 0.20 0.22 0.23 0.24  0.27  2737    1
 
-Samples were drawn using NUTS(diag_e) at Thu Nov  5 17:51:21 2026.
+Samples were drawn using NUTS(diag_e) at Thu Nov  5 18:03:15 2026.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).</code></pre>
@@ -1236,17 +1236,17 @@ convergence, Rhat=1).</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>List of 6
- $ beta0  : num [1:4000(1d)] 0.702 0.683 0.691 0.702 0.658 ...
+ $ beta0  : num [1:4000(1d)] 0.69 0.741 0.738 0.691 0.698 ...
   ..- attr(*, "dimnames")=List of 1
- $ beta1  : num [1:4000(1d)] 0.142 0.186 0.138 0.123 0.246 ...
+ $ beta1  : num [1:4000(1d)] 0.158 0.096 0.17 0.14 0.165 ...
   ..- attr(*, "dimnames")=List of 1
- $ sigma  : num [1:4000(1d)] 0.234 0.201 0.225 0.231 0.27 ...
+ $ sigma  : num [1:4000(1d)] 0.205 0.243 0.225 0.219 0.243 ...
   ..- attr(*, "dimnames")=List of 1
- $ y_rep  : num [1:4000, 1:105] 0.821 0.851 0.985 0.838 1.444 ...
+ $ y_rep  : num [1:4000, 1:105] 0.799 1.055 0.783 0.773 0.996 ...
   ..- attr(*, "dimnames")=List of 2
- $ log_lik: num [1:4000, 1:105] 0.459 0.518 0.516 0.498 0.235 ...
+ $ log_lik: num [1:4000, 1:105] 0.557 0.435 0.336 0.539 0.391 ...
   ..- attr(*, "dimnames")=List of 2
- $ lp__   : num [1:4000(1d)] 99.1 97 98.5 98.5 95 ...
+ $ lp__   : num [1:4000(1d)] 97.7 98.3 97.6 98.3 98.8 ...
   ..- attr(*, "dimnames")=List of 1</code></pre>
 </div>
 </div>
@@ -1269,8 +1269,8 @@ convergence, Rhat=1).</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="" aria-label="1"></a><span class="fu">print</span>(<span class="fu">head</span>(beta0_posterior, <span class="dv">10</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 0.7024687 0.6832927 0.6914895 0.7019135 0.6578911 0.6952372 0.7070355
- [8] 0.7300385 0.7454411 0.6573702</code></pre>
+<pre><code> [1] 0.6897842 0.7410063 0.7379714 0.6908257 0.6984812 0.6696471 0.7005186
+ [8] 0.7521664 0.6928770 0.6894038</code></pre>
 </div>
 </div>
 </section>
@@ -1286,7 +1286,7 @@ convergence, Rhat=1).</code></pre>
 <span id="cb31-4"><a href="" aria-label="4"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"第1条链的第11个beta_0样本值：%.4f</span><span class="sc">\n</span><span class="st">"</span>, chain1_sample11))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>第1条链的第11个beta_0样本值：0.6824</code></pre>
+<pre><code>第1条链的第11个beta_0样本值：0.7350</code></pre>
 </div>
 </div>
 </section>
@@ -1415,13 +1415,13 @@ sigma 0.2417713 0.2672455 2737.290 0.9992968</code></pre>
 <span id="cb41-2"><a href="" aria-label="2"></a><span class="fu">head</span>(par_post)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>      beta0     beta1     sigma
-1 0.7024687 0.1418890 0.2336402
-2 0.6832927 0.1860454 0.2008626
-3 0.6914895 0.1375028 0.2248295
-4 0.7019135 0.1231358 0.2309292
-5 0.6578911 0.2457531 0.2698802
-6 0.6952372 0.1647692 0.2356291</code></pre>
+<pre><code>      beta0      beta1     sigma
+1 0.6897842 0.15835825 0.2051658
+2 0.7410063 0.09601452 0.2431632
+3 0.7379714 0.17026953 0.2246168
+4 0.6908257 0.13971178 0.2185130
+5 0.6984812 0.16522857 0.2432313
+6 0.6696471 0.18268134 0.2312098</code></pre>
 </div>
 </div>
 </section>
@@ -1696,7 +1696,7 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\l
 <span id="cb49-13"><a href="" aria-label="13"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"mu_i: %.2f, 预测值：%.2f</span><span class="sc">\n</span><span class="st">"</span>, mu_i, prediction_i))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>mu_i: 0.84, 预测值：0.74</code></pre>
+<pre><code>mu_i: 0.85, 预测值：0.75</code></pre>
 </div>
 </div>
 </section>
@@ -1741,13 +1741,13 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\l
 <span id="cb51-24"><a href="" aria-label="24"></a><span class="fu">head</span>(par_post)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>      beta0     beta1     sigma        mu     y_new
-1 0.7024687 0.1418890 0.2336402 0.8443577 1.0002501
-2 0.6832927 0.1860454 0.2008626 0.8693381 0.8444633
-3 0.6914895 0.1375028 0.2248295 0.8289923 1.0045544
-4 0.7019135 0.1231358 0.2309292 0.8250494 0.8797607
-5 0.6578911 0.2457531 0.2698802 0.9036441 1.1186067
-6 0.6952372 0.1647692 0.2356291 0.8600064 1.2330656</code></pre>
+<pre><code>      beta0      beta1     sigma        mu     y_new
+1 0.6897842 0.15835825 0.2051658 0.8481424 0.9850358
+2 0.7410063 0.09601452 0.2431632 0.8370208 0.8069074
+3 0.7379714 0.17026953 0.2246168 0.9082410 1.0836369
+4 0.6908257 0.13971178 0.2185130 0.8305375 0.8823072
+5 0.6984812 0.16522857 0.2432313 0.8637098 1.0574462
+6 0.6696471 0.18268134 0.2312098 0.8523285 1.2183909</code></pre>
 </div>
 </div>
 </section>
@@ -1880,11 +1880,11 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\l
 <div class="cell-output cell-output-stdout">
 <pre><code>          
 iterations      [,1]      [,2]      [,3]      [,4]      [,5]
-      [1,] 0.8208968 0.6852010 0.9912925 1.0645908 0.7865035
-      [2,] 0.8513878 0.8925647 0.9016370 0.9426931 1.0944478
-      [3,] 0.9851390 0.8781846 0.4714236 1.2600183 1.1822575
-      [4,] 0.8376857 1.1236251 0.8235936 0.6870586 0.7141624
-      [5,] 1.4435000 0.4806048 1.0154071 1.3200804 0.4803788</code></pre>
+      [1,] 0.7994518 0.7516764 1.2380953 0.8824513 0.7766861
+      [2,] 1.0547194 0.5529521 0.9225779 0.6565664 0.8684148
+      [3,] 0.7827347 1.1583749 0.5160079 1.0045569 1.1990283
+      [4,] 0.7725765 0.5885938 0.7726230 1.0538917 0.7025695
+      [5,] 0.9962741 1.0198349 0.9537432 0.8002544 1.0978354</code></pre>
 </div>
 </div>
 </section>
