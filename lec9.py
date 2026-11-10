@@ -107,163 +107,123 @@ sns.despine()
 plt.tight_layout()
 plt.show()
 
-# 设置随机种子确保结果可以重复
+# Match the prior predictive demonstration in lec9_new.qmd.
 np.random.seed(84735)
+beta0_200 = np.random.normal(5, 2, 200)
+beta1_200 = np.random.normal(0, 1, 200)
+sigma_200 = np.random.exponential(1 / 0.3, 200)
+prior_pred_sample = pd.DataFrame({"beta0": beta0_200, "beta1": beta1_200,
+                                  "sigma": sigma_200})
+print(prior_pred_sample.head())
+x_sim = np.array([0, 1])  # Self, Other
 
-# 根据设定的先验分布，在其中各抽取200个beta_0,200个beta_1, 200个sigma
-beta0_200 = np.random.normal(loc = 5, scale = 2, size = 200)
-beta1_200 = np.random.normal(loc = 0, scale = 1 , size = 200)
-sigma_200 = np.random.exponential(scale=1/0.3, size=200)
+# The first chart pairs all 200 parameter draws with one sampled mean line.
+fig, axes = plt.subplots(1, 2, figsize=(12, 5),
+                         gridspec_kw={"width_ratios": [1.1, 1]})
+for name, color in [("beta0", "#1f77b4"), ("beta1", "#ff7f0e"),
+                    ("sigma", "#2ca02c")]:
+    axes[0].plot(np.arange(1, 201), prior_pred_sample[name],
+                 color=color, linewidth=0.65, label=name)
+axes[0].set(xlabel="Sample Index", ylabel="Value",
+            title="Sampled Parameters: beta_0, beta_1, sigma")
+axes[0].legend()
+first_mu = prior_pred_sample.beta0.iloc[0] + prior_pred_sample.beta1.iloc[0] * x_sim
+equation_label = (f"mu = {prior_pred_sample.beta0.iloc[0]:.2f} "
+                  f"{prior_pred_sample.beta1.iloc[0]:+.2f} * X")
+axes[1].plot(x_sim, first_mu, color="blue", label=equation_label)
+axes[1].scatter(x_sim, first_mu, color="red")
+axes[1].set(xlabel="X (Condition)", ylabel="Predicted Mean RT (sec)",
+            title="Sampled Regression Line", xticks=x_sim,
+            xticklabels=["self (0)", "other (1)"])
+axes[1].legend()
+sns.despine(fig=fig)
+plt.tight_layout()
+plt.show()
 
-#将结果存在一个数据框内
-prior_pred_sample = pd.DataFrame({"beta0":beta0_200,
-                                  "beta1":beta1_200,
-                                  "sigma":sigma_200})
-#查看抽样结果                                
-prior_pred_sample
-
-# 通过np.arange设置Label，0 代表 Self， 1 代表other。
-x_sim = np.array([0, 1])
-
-# 查看自变量值
-x_sim
-
-# 设置随机种子确保结果可以重复
-np.random.seed(84735)
-# 根据设定的先验分布，在其中各抽取200个beta_0,200个beta_1, 200个sigma
-beta0_200 = np.random.normal(loc = 5, scale = 2, size = 200)
-beta1_200 = np.random.normal(loc = 0, scale = 1 , size = 200)
-sigma_200 = np.random.exponential(scale=1/0.3, size=200)
-#将结果存在一个数据框内
-prior_pred_sample = pd.DataFrame({"beta0":beta0_200,
-                                  "beta1":beta1_200,
-                                  "sigma":sigma_200})
-#查看抽样结果                                
-prior_pred_sample
-# 保存为数据框
-prior_pred_sample = pd.DataFrame({"beta0": beta0_200, "beta1": beta1_200, "sigma": sigma_200})
-
-
-# 获取第一组采样参数
-beta_0 = prior_pred_sample["beta0"][0]
-beta_1 = prior_pred_sample["beta1"][0]
-
-print(f"获取的第一组采样参数值，beta_0:{beta_0:.2f}, beta_1:{beta_1:.2f}")
-
-#===========================
-#     根据回归公式 $\mu = \beta_0 + \beta_1 X$ 预测$\mu$ 的值。
-#     课件练习暂用 self = 1、other = 2；正式数据使用 0、1。
-#===========================
-x_sim = np.array([1, 2])
+# Draw a fresh set, then simulate one observation per condition.
+beta0_200 = np.random.normal(5, 2, 200)
+beta1_200 = np.random.normal(0, 1, 200)
+sigma_200 = np.random.exponential(1 / 0.3, 200)
+prior_pred_sample = pd.DataFrame({"beta0": beta0_200, "beta1": beta1_200,
+                                  "sigma": sigma_200})
+beta_0 = prior_pred_sample.beta0.iloc[0]
+beta_1 = prior_pred_sample.beta1.iloc[0]
+sigma_1 = prior_pred_sample.sigma.iloc[0]
 mu = beta_0 + beta_1 * x_sim
-print("预测值 μ:", mu)
+y_rep = np.random.normal(mu, sigma_1)
+prior_pred_one = pd.DataFrame({"Condition": ["Self", "Other"],
+                               "mu": mu, "y_rep": y_rep})
+print(prior_pred_one)
 
-#===========================
-#     绘制回归线，请设置x轴和y轴的变量
-#===========================
-# 练习留空，填写 x_axis/y_axis 后再运行。
+# This exercise remains incomplete in the qmd too.
 if False:
     x_axis = ...
     y_axis = ...
     plt.plot(x_axis, y_axis)
-    plt.xlabel("Label Condition")
-    plt.ylabel("RT (sec)")
-sns.despine()
 
-# 通过 np.array 设置实验条件的取值范围，self=0，other=1
-x_sim = np.array([0, 1])
-
-# 设置一个空列表，用来储存每一个的预测结果
 mu_outcome = []
+y_rep_outcome = []
+for row in prior_pred_sample.itertuples(index=False):
+    mean = row.beta0 + row.beta1 * x_sim
+    mu_outcome.append(mean)
+    y_rep_outcome.append(np.random.normal(mean, row.sigma))
 
-# 循环生成 200 次先验预测回归线
-for i in range(len(prior_pred_sample)):
-    # 根据回归公式计算预测值
-    mu = prior_pred_sample["beta0"][i] + prior_pred_sample["beta1"][i] * x_sim
-    mu_outcome.append(mu)
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+for mean in mu_outcome:
+    axes[0].plot(x_sim, mean, alpha=0.4, linewidth=0.5)
+axes[0].set(xlabel="Label Condition", ylabel="Mean RT (sec)",
+            title="Prior Predictive Means", xticks=x_sim,
+            xticklabels=["Self", "Other"])
+y_rep_plot_data = pd.DataFrame({"Condition": np.tile(["Self", "Other"], 200),
+                                "y_rep": np.asarray(y_rep_outcome).ravel()})
+sns.violinplot(data=y_rep_plot_data, x="Condition", y="y_rep",
+               color="lightblue", ax=axes[1])
+sns.stripplot(data=y_rep_plot_data, x="Condition", y="y_rep",
+              alpha=0.4, size=1.5, ax=axes[1])
+axes[1].axhline(0, linestyle="--", color="gray")
+axes[1].set(xlabel="Label Condition", ylabel="Predicted RT (sec)",
+            title="Prior Predictive Distribution")
+sns.despine(fig=fig)
+plt.tight_layout()
+plt.show()
 
-# 画出每一次的先验预测结果
-for i in range(len(mu_outcome)):
-    plt.plot(x_sim, mu_outcome[i])
 
-plt.title("prior predictive check")
-plt.xlabel("Label Condition")
-plt.ylabel("RT (sec)")
-sns.despine()
-
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-def prior_predictive_plot(beta0_mean=0.5, beta0_sd=0.3, beta1_mean=-0.1, beta1_sd=0.04, sigma_rate=0.2, samples=200, seed=84735):
-    """
-    生成先验预测图。
-    
-    参数：
-    - beta0_mean: float，beta0的均值
-    - beta0_sd: float，beta0的标准差
-    - beta1_mean: float，beta1的均值
-    - beta1_sd: float，beta1的标准差
-    - sigma_rate: float，控制sigma的指数分布率参数（lambda = 1/scale）
-    - samples: int，生成的样本数量
-    - seed: int，随机种子，默认为84735，确保结果可重复
-    
-    输出：
-    - 一个先验预测图
-    """
-    
-    # 设置随机种子
-    if seed is not None:
-        np.random.seed(seed)
-    
-    # 根据设定的先验分布抽样
-    beta0_samples = np.random.normal(loc=beta0_mean, scale=beta0_sd, size=samples)
-    beta1_samples = np.random.normal(loc=beta1_mean, scale=beta1_sd, size=samples)
-    sigma_samples = np.random.exponential(scale=1/sigma_rate, size=samples)
-    
-    # 创建数据框存储样本
-    prior_pred_sample = pd.DataFrame({
-        "beta0": beta0_samples,
-        "beta1": beta1_samples,
-        "sigma": sigma_samples
+def prior_predictive_plot(beta0_mean=0.5, beta0_sd=0.3,
+                          beta1_mean=-0.1, beta1_sd=0.04,
+                          sigma_rate=0.2, samples=200, seed=84735):
+    """Simulate prior mean lines and observed RTs for Self and Other."""
+    rng = np.random.default_rng(seed)
+    draws = pd.DataFrame({
+        "beta0": rng.normal(beta0_mean, beta0_sd, samples),
+        "beta1": rng.normal(beta1_mean, beta1_sd, samples),
+        "sigma": rng.exponential(1 / sigma_rate, samples),
     })
-
-    # 定义实验条件（self=0，other=1）
-    x_sim = np.array([0, 1])
-    
-    # 创建一个空列表存储每次模拟的结果
-    mu_outcome = []
-    
-    # 生成先验预测回归线
-    for i in range(samples):
-        mu = prior_pred_sample["beta0"][i] + prior_pred_sample["beta1"][i] * x_sim
-        mu_outcome.append(mu)
-    
-    # 绘图
-    plt.figure(figsize=(10, 6))
-    for i in range(len(mu_outcome)):
-        plt.plot(x_sim, mu_outcome[i])
-    
-    plt.title("Prior Predictive Check")
-    plt.xlabel("Label Condition")
-    plt.ylabel("RT (sec)")
-    sns.despine()
+    conditions = np.array([0, 1])
+    means = np.asarray([row.beta0 + row.beta1 * conditions
+                        for row in draws.itertuples(index=False)])
+    predictions = rng.normal(means, draws.sigma.to_numpy()[:, None])
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    for mean in means:
+        axes[0].plot(conditions, mean, alpha=0.4, linewidth=0.5)
+    axes[0].set(xlabel="Label Condition", ylabel="Mean RT (sec)",
+                title="Prior Predictive Means", xticks=conditions,
+                xticklabels=["Self", "Other"])
+    plot_data = pd.DataFrame({"Condition": np.tile(["Self", "Other"], samples),
+                              "y_rep": predictions.ravel()})
+    sns.violinplot(data=plot_data, x="Condition", y="y_rep",
+                   color="lightblue", ax=axes[1])
+    sns.stripplot(data=plot_data, x="Condition", y="y_rep",
+                  alpha=0.4, size=1.5, ax=axes[1])
+    axes[1].axhline(0, linestyle="--", color="gray")
+    axes[1].set(xlabel="Label Condition", ylabel="Predicted RT (sec)",
+                title="Prior Predictive Distribution")
+    sns.despine(fig=fig)
+    plt.tight_layout()
     plt.show()
+    return {"parameters": draws, "means": means,
+            "predictions": predictions, "plot": fig}
 
-# 使用示例
-prior_predictive_plot()
-
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-#=====================================================
-#     请完善代码中...的部分，设置3个参数的值，使先验分布更符合实际情况
-#=====================================================
-
-# 练习留空，填写参数后再运行。
+# Fill in the hyperparameters before running the exercise.
 if False:
     prior_predictive_plot(beta0_mean=..., beta0_sd=...,
                           beta1_mean=..., beta1_sd=...,
@@ -438,7 +398,34 @@ with linear_model:
 ppc_data
 
 # 从 4000 个后验样本中选 1000 个进行后验预测检查。
-az.plot_ppc(ppc_data, num_pp_samples=1000) 
+az.plot_ppc(ppc_data, num_pp_samples=1000)
+
+# Match the qmd: average predictive density on one shared grid.
+ppc_samples = ppc_data.posterior_predictive["y_est"].values.reshape(-1, len(df))
+y_observed = df["RT_sec"].to_numpy()
+mean_obs = y_observed.mean()
+q95_obs = np.quantile(y_observed, 0.95)
+ppp_mean = np.mean(ppc_samples.mean(axis=1) >= mean_obs)
+ppp_q95 = np.mean(np.quantile(ppc_samples, 0.95, axis=1) >= q95_obs)
+print({"mean": ppp_mean, "q95": ppp_q95})
+
+x_grid = np.linspace(ppc_samples.min(), ppc_samples.max(), 512)
+average_density = np.mean(
+    [st.gaussian_kde(draw)(x_grid) for draw in ppc_samples], axis=0
+)
+fig, ax = plt.subplots(figsize=(8, 5))
+for draw in ppc_samples[:100]:
+    ax.plot(x_grid, st.gaussian_kde(draw)(x_grid), color="lightblue",
+            alpha=0.25, linewidth=0.5)
+ax.plot(x_grid, st.gaussian_kde(y_observed)(x_grid), color="black",
+        label="Observed density")
+ax.plot(x_grid, average_density, color="orange", linestyle="--",
+        label="Mean predictive density")
+ax.set(xlabel="RT", ylabel="Density",
+       title="Posterior Predictive Check with Mean Predictive Density")
+ax.legend()
+sns.despine(ax=ax)
+plt.show() 
 
 # 筛选编号为“205”的被试的数据
 df_new = df_raw[(df_raw["Subject"] == "205") & (df_raw["Matching"] == "Matching")]
@@ -565,15 +552,15 @@ model
 #      MCMC采样过程
 #      注意！！！以下代码可能需要运行几分钟
 #===========================
-trace = model.fit(draws=1000,                   # 4 链各保留 1000 次，共 4000 次
+bambi_trace = model.fit(draws=1000,                   # 4 链各保留 1000 次，共 4000 次
                   tune=1000,                    # tune为调整采样策略的次数，可以决定这些结果是否要被保留
                   chains=4,
                   random_seed=84735)
 
-ax = az.plot_trace(trace, figsize=(7,7), compact=False)
+ax = az.plot_trace(bambi_trace, figsize=(7,7), compact=False)
 plt.tight_layout()
 plt.show()
 
-az.summary(trace)
+az.summary(bambi_trace)
 
 

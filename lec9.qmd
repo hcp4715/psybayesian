@@ -27,7 +27,7 @@ execute:
 ```{r}
 #| label: setup
 #| include: false
-knitr::opts_chunk$set(fig.path = "assets/figs/lec9/", fig.width = 12, fig.height = 5, dpi = 144)
+knitr::opts_chunk$set(fig.path = "figs/lec9/", fig.width = 12, fig.height = 5, dpi = 144)
 ```
 
 ---
@@ -157,6 +157,7 @@ head(df)
 比较两种标签条件下的反应时分布与均值。
 
 ```{r}
+#| label: condition-rt-boxplot-and-means
 # 计算每个Label条件下的均值
 mean_values <- df %>%
   dplyr::group_by(Label) %>%
@@ -330,6 +331,7 @@ $$
 **先验的可视化**
 
 ```{r}
+#| label: regression-parameter-prior-distributions
 # 定义先验分布的参数
 mu_beta0 <- 5         
 sigma_beta0 <- 2     
@@ -476,13 +478,148 @@ x_sim
 
 > **我们通过一次采样来理解这个过程**  
 
-![先验参数抽样与对应回归线](figs/lec9/prior-samples-and-regression-line.png) 
+```{r}
+#| label: prior-parameter-samples-and-regression-line
+#| echo: false
+#| fig-width: 12
+#| fig-height: 5
+#===============================================================
+# 左图：展示200组先验参数抽样结果
+#===============================================================
+
+# 整理三个参数的抽样结果
+prior_draws_long <- tidyr::pivot_longer(
+  data.frame(
+    draw = seq_len(nrow(prior_pred_sample)),
+    prior_pred_sample
+  ),
+  cols = c(beta0, beta1, sigma),
+  names_to = "Parameter",
+  values_to = "Value"
+)
+
+# 设置参数名称及绘图顺序
+prior_draws_long$Parameter <- factor(
+  prior_draws_long$Parameter,
+  levels = c("beta0", "beta1", "sigma"),
+  labels = c("beta_0", "beta_1", "sigma")
+)
+
+# 绘制三个参数的采样变化曲线
+p_parameters <- ggplot2::ggplot(
+  prior_draws_long,
+  ggplot2::aes(x = draw, y = Value, color = Parameter)
+) +
+  ggplot2::geom_line(linewidth = 0.65) +
+  ggplot2::scale_color_manual(
+    values = c(
+      "beta_0" = "#1f77b4",
+      "beta_1" = "#ff7f0e",
+      "sigma" = "#2ca02c"
+    )
+  ) +
+  ggplot2::scale_x_continuous(
+    breaks = c(0, 50, 100, 150, 200)
+  ) +
+  ggplot2::ggtitle(
+    "Sampled Parameters: beta_0, beta_1, sigma"
+  ) +
+  ggplot2::xlab("Sample Index") +
+  ggplot2::ylab("Value") +
+  ggplot2::theme_classic(base_size = 12) +
+  ggplot2::theme(
+    plot.title = ggplot2::element_text(
+      hjust = 0.5, size = 13
+    ),
+    legend.title = ggplot2::element_blank(),
+    legend.position = c(0.03, 0.97),
+    legend.justification = c(0, 1),
+    legend.background = ggplot2::element_rect(
+      fill = "white", color = "grey80"
+    )
+  )
+
+#===============================================================
+# 右图：展示第一组参数对应的预测均值回归线
+#===============================================================
+
+# 选择第一组先验抽样参数
+sample_index <- 1
+
+# 提取同一组参数中的beta_0和beta_1
+beta_0 <- prior_pred_sample$beta0[sample_index]
+beta_1 <- prior_pred_sample$beta1[sample_index]
+
+# 根据回归公式计算两个条件下的预测均值
+first_mu <- beta_0 + beta_1 * x_sim
+
+# 生成回归方程标签
+equation_label <- sprintf(
+  "mu = %.2f %s %.2f * X",
+  beta_0,
+  ifelse(beta_1 >= 0, "+", "-"),
+  abs(beta_1)
+)
+
+# 准备绘图数据
+line_data <- data.frame(
+  Label = x_sim,
+  mu = first_mu,
+  Equation = equation_label
+)
+
+# 绘制预测均值回归线
+p_line <- ggplot2::ggplot(
+  line_data,
+  ggplot2::aes(x = Label, y = mu)
+) +
+  ggplot2::geom_line(
+    ggplot2::aes(color = Equation),
+    linewidth = 1
+  ) +
+  ggplot2::geom_point(
+    color = "red",
+    size = 2.5
+  ) +
+  ggplot2::scale_color_manual(
+    values = stats::setNames("blue", equation_label)
+  ) +
+  ggplot2::scale_x_continuous(
+    breaks = c(0, 1),
+    labels = c("self (0)", "other (1)")
+  ) +
+  ggplot2::ggtitle("Sampled Regression Line") +
+  ggplot2::xlab("X (Condition)") +
+  ggplot2::ylab("Predicted Mean RT (sec)") +
+  ggplot2::theme_classic(base_size = 12) +
+  ggplot2::theme(
+    plot.title = ggplot2::element_text(
+      hjust = 0.5, size = 13
+    ),
+    legend.title = ggplot2::element_blank(),
+    legend.position = c(0.97, 0.97),
+    legend.justification = c(1, 1),
+    legend.background = ggplot2::element_rect(
+      fill = "white", color = "grey80"
+    )
+  )
+
+#===============================================================
+# 组合两张图
+#===============================================================
+
+p_parameters + p_line +
+  patchwork::plot_layout(
+    ncol = 2,
+    widths = c(1.1, 1)
+  )
+``` 
 
 - **左侧图表**显示了 200 组随机抽取的参数  beta_0, beta_1, sigma 的值。  
     - 可以直观地看到参数在各自先验分布下的取值范围。  
 - **右侧图表**展示了基于抽取的一个特定参数组合绘制的回归线$Y = \beta_0 + \beta_1 X$
     - 红色的点表示预测的反应时间在两个条件下的值，蓝色线是连接这两个预测值的回归线。
-
+- 注意：这张图仅展示预测均值，尚未体现$\sigma$所代表的观测值的随机波动
 ---
 
 ## 🎯练习1：先验预测的均值线  
@@ -515,23 +652,53 @@ prior_pred_sample <- data.frame(
 # 获取第一组采样参数
 beta_0 <- prior_pred_sample$beta0[1]
 beta_1 <- prior_pred_sample$beta1[1]
+sigma_1 <- prior_pred_sample$sigma[1]
 
 # 打印第一组采样参数值（保留两位小数）
-cat(sprintf("获取的第一组采样参数值，beta_0:%.2f, beta_1:%.2f\n", beta_0, beta_1))
+cat(sprintf(
+  "第一组参数：beta_0: %.2f, beta_1: %.2f, sigma: %.2f\n",
+  beta_0, beta_1, sigma_1
+))
 ```
 
 ---
 
-将抽到的参数代入两个条件，计算预测均值。
+将抽到的参数代入两个条件，计算预测均值和观测值。
 
 ```{r}
 #===========================
-# 根据回归公式 mu = beta0 + beta1 * X 预测 mu 的值
-# 已知：自变量 X 取 0（self）与 1（other）
+# 根据回归公式 μ = β₀ + β₁X 预测μ的值
+# 已知：自变量（标签），self = 0, other = 1
 #===========================
 x_sim <- c(0, 1)
 mu <- beta_0 + beta_1 * x_sim
 cat("预测值 μ:", mu, "\n")
+
+
+#===========================
+# 根据预测均值和sigma生成模拟观测值
+#===========================
+
+# 每个条件分别抽取一个预测观测值
+y_rep <- rnorm(
+  n = length(x_sim),
+  mean = mu,
+  sd = sigma_1
+)
+
+# 整理预测结果
+prior_pred_one <- data.frame(
+  Condition = factor(
+    x_sim,
+    levels = c(0, 1),
+    labels = c("Self", "Other")
+  ),
+  mu = mu,
+  y_rep = y_rep
+)
+
+# 查看预测结果
+prior_pred_one
 ```
 
 ---
@@ -582,49 +749,128 @@ ggplot2::ggplot(plot_data, aes(x = x_axis, y = y_axis)) +
 
 ---
 
-把先验抽样转换为多条均值回归线。
+把先验抽样转换为多条均值回归线，以及预测观测值分布。
 
 ```{r}
+#| label: prior-predictive-means-and-observations
+
 # 设置实验条件的取值范围，self=0，other=1
 x_sim <- c(0, 1)
 
 # 初始化空列表储存预测结果
 mu_outcome <- list()
+y_rep_outcome <- list()
 
-# 循环生成200次先验预测回归线
+# 循环生成200次先验预测结果
 for (i in 1:nrow(prior_pred_sample)) {
-  mu <- prior_pred_sample$beta0[i] + prior_pred_sample$beta1[i] * x_sim
+
+  # 第一步：计算两个条件下的预测均值
+  mu <- prior_pred_sample$beta0[i] +
+        prior_pred_sample$beta1[i] * x_sim
+
   mu_outcome[[i]] <- mu
+
+  # 第二步：结合sigma，每个条件抽取一个预测观测值
+  y_rep_outcome[[i]] <- rnorm(
+    n = length(x_sim),
+    mean = mu,
+    sd = prior_pred_sample$sigma[i]
+  )
 }
 
-# 生成200种不同的颜色（使用hcl色空间，确保颜色差异明显）
+#===============================================================
+# 图1：绘制200条先验预测均值回归线
+#===============================================================
+
+# 生成200种不同的颜色
 n_lines <- length(mu_outcome)
+
 colors <- hcl(
-  h = seq(0, 360, length.out = n_lines + 1)[-1],  # 色相从0到360度循环
-  c = 60,                                         # 饱和度
-  l = 60,                                         # 亮度
-  alpha = 0.6                                     # 半透明，避免重叠过深
+  h = seq(0, 360, length.out = n_lines + 1)[-1],
+  c = 60,
+  l = 60,
+  alpha = 0.6
 )
 
 # 准备绘图数据
 plot_data <- data.frame(
   x = rep(x_sim, n_lines),
   y = unlist(mu_outcome),
-  line_id = factor(rep(1:n_lines, each = length(x_sim)))  # 转换为因子用于分组着色
+  line_id = factor(
+    rep(1:n_lines, each = length(x_sim))
+  )
 )
 
-# 绘制带不同颜色的先验预测回归线
-ggplot2::ggplot(plot_data, aes(x = x, y = y, group = line_id)) +
-  ggplot2::geom_line(aes(color = line_id), linewidth = 0.5) +  # 按line_id分配颜色
-  ggplot2::scale_color_manual(values = colors) +               # 使用自定义颜色
-  ggplot2::ggtitle("prior predictive check") +
+# 绘制带不同颜色的先验预测均值回归线
+p_mu <- ggplot2::ggplot(
+  plot_data,
+  ggplot2::aes(x = x, y = y, group = line_id)
+) +
+  ggplot2::geom_line(
+    ggplot2::aes(color = line_id),
+    linewidth = 0.5
+  ) +
+  ggplot2::scale_color_manual(values = colors) +
+  ggplot2::ggtitle("Prior Predictive Means") +
   ggplot2::xlab("Label Condition") +
-  ggplot2::ylab("RT (sec)") +
-  scale_x_continuous(breaks = seq(0,1),labels = c("Self","Other"))+ 
+  ggplot2::ylab("Mean RT (sec)") +
+  ggplot2::scale_x_continuous(
+    breaks = c(0, 1),
+    labels = c("Self", "Other")
+  ) +
   papaja::theme_apa() +
   ggplot2::theme(
-    legend.position = "none"  # 隐藏图例（200条线的图例无意义）
+    legend.position = "none"
   )
+
+#===============================================================
+# 图2：绘制先验预测观测值分布
+#===============================================================
+
+# 准备模拟观测值的绘图数据
+y_rep_data <- data.frame(
+  x = rep(x_sim, n_lines),
+  y_rep = unlist(y_rep_outcome)
+)
+
+# 转换实验条件为因子
+y_rep_data$Condition <- factor(
+  y_rep_data$x,
+  levels = c(0, 1),
+  labels = c("Self", "Other")
+)
+
+# 绘制先验预测观测值分布
+p_y_rep <- ggplot2::ggplot(
+  y_rep_data,
+  ggplot2::aes(x = Condition, y = y_rep)
+) +
+  ggplot2::geom_violin(
+    fill = "lightblue",
+    alpha = 0.6,
+    trim = FALSE
+  ) +
+  ggplot2::geom_jitter(
+    width = 0.08,
+    alpha = 0.4,
+    size = 1.5
+  ) +
+  ggplot2::geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "gray50"
+  ) +
+  ggplot2::ggtitle("Prior Predictive Distribution") +
+  ggplot2::xlab("Label Condition") +
+  ggplot2::ylab("Predicted RT (sec)") +
+  papaja::theme_apa()
+
+#===============================================================
+# 组合两张图
+#===============================================================
+
+p_mu + p_y_rep +
+  patchwork::plot_layout(ncol = 2)
 ```
 
 ---
@@ -648,82 +894,188 @@ ggplot2::ggplot(plot_data, aes(x = x, y = y, group = line_id)) +
 将先验抽样和均值线绘制过程封装成函数。
 
 ```{r}
-prior_predictive_plot <- function(beta0_mean = 5, beta0_sd = 2, 
-                                  beta1_mean = 0, beta1_sd = 1, 
-                                  sigma_rate = 0.3, samples = 200, seed = 84735) {
+prior_predictive_plot <- function(beta0_mean = 0.5, beta0_sd = 0.3,
+                                  beta1_mean = -0.1, beta1_sd = 0.04,
+                                  sigma_rate = 0.2, samples = 200,
+                                  seed = 84735) {
+
   # 生成先验预测图。
-  # 
+  #
   # 参数：
   # - beta0_mean: 数值，beta0的均值
   # - beta0_sd: 数值，beta0的标准差
   # - beta1_mean: 数值，beta1的均值
   # - beta1_sd: 数值，beta1的标准差
-  # - sigma_rate: 数值，控制sigma的指数分布率参数（lambda = 1/scale）
-  # - samples: 整数，生成的样本数量
-  # - seed: 整数，随机种子，默认为84735，确保结果可重复
-  # 
+  # - sigma_rate: 数值，控制sigma的指数分布率参数
+  # - samples: 整数，先验参数抽样次数
+  # - seed: 整数，随机种子
+  #
   # 输出：
-  # - 一个先验预测图
-  
+  # - 先验预测均值回归线
+  # - 先验预测观测值分布
+
   # 设置随机种子
   if (!is.null(seed)) {
     set.seed(seed)
   }
-  
-  # 根据设定的先验分布抽样
-  beta0_samples <- rnorm(samples, mean = beta0_mean, sd = beta0_sd)
-  beta1_samples <- rnorm(samples, mean = beta1_mean, sd = beta1_sd)
-  sigma_samples <- rexp(samples, rate = sigma_rate)
-  
-  # 创建数据框存储样本
+
+  #===========================
+  # 1. 根据设定的先验分布抽样
+  #===========================
+
+  beta0_samples <- rnorm(
+    samples,
+    mean = beta0_mean,
+    sd = beta0_sd
+  )
+
+  beta1_samples <- rnorm(
+    samples,
+    mean = beta1_mean,
+    sd = beta1_sd
+  )
+
+  sigma_samples <- rexp(
+    samples,
+    rate = sigma_rate
+  )
+
+  # 创建数据框存储参数抽样结果
   prior_pred_sample <- data.frame(
     beta0 = beta0_samples,
     beta1 = beta1_samples,
     sigma = sigma_samples
   )
-  
-  # 定义实验条件（self=0，other=1）
+
+  #===========================
+  # 2. 定义实验条件
+  #===========================
+
   x_sim <- c(0, 1)
 
-  # 生成先验预测结果
-  mu_outcome <- lapply(1:samples, function(i) {
-    prior_pred_sample$beta0[i] + prior_pred_sample$beta1[i] * x_sim
-  })
-  
-  # 生成多样化颜色
+  #===========================
+  # 3. 生成先验预测结果
+  #===========================
+
+  mu_outcome <- list()
+  y_rep_outcome <- list()
+
+  for (i in 1:samples) {
+
+    # 计算预测均值
+    mu <- prior_pred_sample$beta0[i] +
+          prior_pred_sample$beta1[i] * x_sim
+
+    mu_outcome[[i]] <- mu
+
+    # 每个条件结合sigma抽取一个预测观测值
+    y_rep_outcome[[i]] <- rnorm(
+      n = length(x_sim),
+      mean = mu,
+      sd = prior_pred_sample$sigma[i]
+    )
+  }
+
+  #===========================
+  # 4. 绘制先验预测均值回归线
+  #===========================
+
   colors <- hcl(
     h = seq(0, 360, length.out = samples + 1)[-1],
     c = 60,
     l = 60,
     alpha = 0.6
   )
-  
-  # 准备绘图数据
-  plot_data <- data.frame(
+
+  # 准备均值回归线绘图数据
+  mu_plot_data <- data.frame(
     x = rep(x_sim, samples),
     y = unlist(mu_outcome),
-    line_id = factor(rep(1:samples, each = length(x_sim)))
+    line_id = factor(
+      rep(1:samples, each = length(x_sim))
+    )
   )
-  
-  # 绘图
-  p <- ggplot(plot_data, aes(x = x, y = y, group = line_id)) +
-    geom_line(aes(color = line_id), linewidth = 0.5) +
-    scale_color_manual(values = colors) +
-    ggtitle("Prior Predictive Check") +
-    xlab("Label Condition") +
-    ylab("RT (sec)") +
-    scale_x_continuous(breaks = seq(0,1),labels = c("Self","Other"))+ 
+
+  # 绘制均值回归线
+  p_mu <- ggplot2::ggplot(
+    mu_plot_data,
+    ggplot2::aes(x = x, y = y, group = line_id)
+  ) +
+    ggplot2::geom_line(
+      ggplot2::aes(color = line_id),
+      linewidth = 0.5
+    ) +
+    ggplot2::scale_color_manual(values = colors) +
+    ggplot2::ggtitle("Prior Predictive Means") +
+    ggplot2::xlab("Label Condition") +
+    ggplot2::ylab("Mean RT (sec)") +
+    ggplot2::scale_x_continuous(
+      breaks = c(0, 1),
+      labels = c("Self", "Other")
+    ) +
     papaja::theme_apa() +
-    theme(
+    ggplot2::theme(
       legend.position = "none"
     )
-  
-  # 返回图形对象（不在函数内 print，否则可能取到上一张图）
-  p
-}
 
-# 使用示例（与上一页的 200 条先验线相同，只是封装成了函数）
-prior_predictive_plot()
+  #===========================
+  # 5. 绘制先验预测观测值分布
+  #===========================
+
+  y_rep_plot_data <- data.frame(
+    x = rep(x_sim, samples),
+    y_rep = unlist(y_rep_outcome)
+  )
+
+  # 转换实验条件为因子
+  y_rep_plot_data$Condition <- factor(
+    y_rep_plot_data$x,
+    levels = c(0, 1),
+    labels = c("Self", "Other")
+  )
+
+  # 绘制先验预测分布
+  p_y_rep <- ggplot2::ggplot(
+    y_rep_plot_data,
+    ggplot2::aes(x = Condition, y = y_rep)
+  ) +
+    ggplot2::geom_violin(
+      fill = "lightblue",
+      alpha = 0.6,
+      trim = FALSE
+    ) +
+    ggplot2::geom_jitter(
+      width = 0.08,
+      alpha = 0.4,
+      size = 1.5
+    ) +
+    ggplot2::geom_hline(
+      yintercept = 0,
+      linetype = "dashed",
+      color = "gray50"
+    ) +
+    ggplot2::ggtitle("Prior Predictive Distribution") +
+    ggplot2::xlab("Label Condition") +
+    ggplot2::ylab("Predicted RT (sec)") +
+    papaja::theme_apa()
+
+  #===========================
+  # 6. 组合并显示两张图
+  #===========================
+
+  combined_plot <- p_mu + p_y_rep +
+    patchwork::plot_layout(ncol = 2)
+
+  print(combined_plot)
+
+  # 返回抽样结果
+  invisible(list(
+    parameters = prior_pred_sample,
+    means = mu_outcome,
+    predictions = y_rep_outcome,
+    plot = combined_plot
+  ))
+}
 ```
 
 ---
@@ -961,6 +1313,7 @@ cat(sprintf("第1条链的第11个beta_0样本值：%.4f\n", chain1_sample11))
 用轨迹图和密度图检查采样链。
 
 ```{r}
+#| label: mcmc-trace-and-posterior-density
 par_trace <- rstan::traceplot(lm1_fit, pars = c("beta0", "beta1", "sigma"))
 par_dist <- bayesplot::mcmc_dens_overlay(lm1_fit, pars = c("beta0", "beta1", "sigma"))
 par_trace <- par_trace + papaja::theme_apa()
@@ -1004,6 +1357,7 @@ print(bayesplot::neff_ratio(lm1_fit, par=c("beta0","beta1","sigma")))
 绘制自相关图，检查采样链内部的依赖。
 
 ```{r}
+#| label: mcmc-autocorrelation
 bayesplot::mcmc_acf(lm1_fit, par=c("beta0","beta1","sigma")) + papaja::theme_apa()
 ```
 
@@ -1080,6 +1434,7 @@ observed_data <- data.frame(
 将观测反应时与 200 条后验回归线叠加比较（红点：观测值；灰线：预测回归线；黑点：每条线的两个端点）。
 
 ```{r}
+#| label: observed-rt-and-posterior-regression-lines
 # 绘制后验预测检查图
 ggplot() +
   # 观测值（红点，横向抖动避免重叠）
@@ -1169,6 +1524,7 @@ observed_mean <- df %>%
 用区间、均值线和观测均值展示拟合结果。
 
 ```{r}
+#| label: posterior-regression-credible-band
 # 绘制后验预测线性模型（修正图例设置）
 ggplot() +
   # 不确定性区间
@@ -1350,6 +1706,7 @@ head(df2$RT_sec, 10)  # 只显示前 10 个，避免刷屏
 比较预测均值与新观测值的分布宽度。
 
 ```{r}
+#| label: posterior-mean-and-predictive-density
 # 计算X轴全局范围（覆盖mu和y_new）
 x_min <- min(par_post$mu, par_post$y_new)
 x_max <- max(par_post$mu, par_post$y_new)
@@ -1451,6 +1808,7 @@ ncol(pp_samples)
 比较真实数据与一百组后验预测分布。
 
 ```{r}
+#| label: posterior-predictive-density-overlay
 color_scheme_set("brightblue")
 
 y <- df$RT_sec # observed data
@@ -1470,6 +1828,7 @@ ppc_plot
 在预测检查图上叠加平均预测密度。
 
 ```{r}
+#| label: posterior-predictive-average-density
 #-------------------------------------------------------
 # 计算“平均 posterior predictive density”
 #   对每个 draw 单独跑 density，然后对 y 值取 average
@@ -1595,6 +1954,7 @@ rope_res
 用 ROPE 图展示斜率后验与等效区间。
 
 ```{r}
+#| label: slope-posterior-rope
 plot(rope_res, rope_color = "grey70") + papaja::theme_apa()
 ```
 
