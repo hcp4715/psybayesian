@@ -462,7 +462,7 @@ plot_BF1 + plot_BF2 + plot_BF3
 ## 后验预测
 y_rep2 <- as.matrix(model2_fit, pars = "y_rep")
 
-pp_check2 <- bayesplot::ppc_dens_overlay(data_list2$y, y_rep[1:200, ]) + 
+pp_check2 <- bayesplot::ppc_dens_overlay(data_list2$y, y_rep2[1:200, ]) + 
   ggplot2::labs(title = "Posterior predictive check for model2") + 
   papaja::theme_apa()
 
@@ -689,7 +689,7 @@ plot_BF4 + plot_BF5
 ## 后验预测
 y_rep3 <- as.matrix(model3_fit, pars = "y_rep")
 
-pp_check3 <- bayesplot::ppc_dens_overlay(data_list$y, y_rep[1:200, ]) + 
+pp_check3 <- bayesplot::ppc_dens_overlay(data_list$y, y_rep3[1:200, ]) + 
   ggplot2::labs(title = "Posterior predictive check for model3") + 
   papaja::theme_apa()
 
