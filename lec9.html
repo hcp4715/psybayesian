@@ -296,7 +296,7 @@
 <span id="cb1-3"><a href="" aria-label="3"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">'pacman'</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
 <span id="cb1-4"><a href="" aria-label="4"></a>    <span class="fu">install.packages</span>(<span class="st">'pacman'</span>)</span>
 <span id="cb1-5"><a href="" aria-label="5"></a>}</span>
-<span id="cb1-6"><a href="" aria-label="6"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(<span class="st">"tidyverse"</span>,<span class="st">"ggplot2"</span>, <span class="st">"dplyr"</span>,<span class="st">"gridExtra"</span>,<span class="st">"papaja"</span>, <span class="st">"patchwork"</span>,<span class="st">"bayesplot"</span>,<span class="st">"rstan"</span>,<span class="st">"brms"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-6"><a href="" aria-label="6"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(<span class="st">"tidyverse"</span>,<span class="st">"ggplot2"</span>, <span class="st">"dplyr"</span>,<span class="st">"gridExtra"</span>,<span class="st">"papaja"</span>, <span class="st">"patchwork"</span>,<span class="st">"bayesplot"</span>,<span class="st">"rstan"</span>,<span class="st">"brms"</span>,<span class="st">"bayestestR"</span>,<span class="st">"easystats"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -401,7 +401,7 @@
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="figs/lec9/condition-rt-boxplot-and-means-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/condition-rt-boxplot-and-means-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -620,7 +620,7 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="figs/lec9/regression-parameter-prior-distributions-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/regression-parameter-prior-distributions-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -732,7 +732,7 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="figs/lec9/prior-parameter-samples-and-regression-line-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/prior-parameter-samples-and-regression-line-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -1021,7 +1021,7 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="figs/lec9/prior-predictive-means-and-observations-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/prior-predictive-means-and-observations-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -1385,11 +1385,11 @@ Y_i \mid \beta_0, \beta_1, \sigma
 post-warmup draws per chain=1000, total post-warmup draws=4000.
 
       mean se_mean   sd 2.5%  25%  50%  75% 97.5% n_eff Rhat
-beta0 0.71       0 0.04 0.64 0.69 0.71 0.74  0.78  1846    1
-beta1 0.15       0 0.05 0.06 0.12 0.15 0.18  0.24  1776    1
-sigma 0.23       0 0.02 0.20 0.22 0.23 0.24  0.27  2550    1
+beta0 0.71       0 0.04 0.64 0.69 0.71 0.74  0.78  1904    1
+beta1 0.15       0 0.05 0.06 0.12 0.15 0.18  0.24  1841    1
+sigma 0.23       0 0.02 0.20 0.22 0.23 0.24  0.27  2737    1
 
-Samples were drawn using NUTS(diag_e) at Mon Nov  9 14:26:49 2026.
+Samples were drawn using NUTS(diag_e) at Thu Nov 12 17:22:12 2026.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).</code></pre>
@@ -1411,8 +1411,8 @@ convergence, Rhat=1).</code></pre>
 <li><p>样本按”链”和”采样”顺序排列。本例有4条链，每条链保留1000个有效样本，共4000个后验样本。</p></li>
 <li><p>包含3个变量（列），即3个参数：<code>beta0</code>（对应<span class="math inline">\(\beta_0\)</span>）、<code>beta1</code>（对应<span class="math inline">\(\beta_1\)</span>）、<code>sigma</code>。</p>
 <ul>
-<li><p>我们可以使用 <code>par_post$beta0</code> 提取后验中的 <span class="math inline">\(\beta_0\)</span> 参数（<code>par_post</code> 为 <code>rstan::extract()</code> 的结果）。</p></li>
-<li><p>我们可以使用 <code>par_post$beta1[11]</code> 提取第一条链中的一个有效采样值（前 <code>warmup</code> 个样本已自动丢弃）。</p></li>
+<li><p>用 <code>par_post$beta0</code> 提取后验中的 <span class="math inline">\(\beta_0\)</span> 参数（<code>par_post</code> 为 <code>rstan::extract()</code> 的结果）。</p></li>
+<li><p>用 <code>par_post$beta1[11]</code> 提取第一条链中的一个有效采样值（前 <code>warmup</code> 个样本已自动丢弃）。</p></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -1421,28 +1421,33 @@ convergence, Rhat=1).</code></pre>
 <h2>补充：后验结果的数据结构</h2>
 <p>典型的后验结果结构和内容：</p>
 <ol type="1">
-<li>后验样本（<code>rstan::extract()</code> 的结果）<br>
-这是建模结果中最核心的部分，包含了每条链和每次采样的后验分布样本，对应 brms 的 <code>as_draws_df()</code> 输出。对于本例的线性模型，后验样本主要包括：</li>
+<li>后验样本（<code>rstan::extract()</code> 所提取的）<br>
+贝叶斯推断的核心，包含每条链和每次采样的参数样本，对应 <code>brms</code> 的 <code>as_draws_df()</code> 输出。在本例中，后验样本主要包括：</li>
 </ol>
 <ul>
-<li><p><code>beta_0</code>：即截距参数（<span class="math inline">\(\beta_0\)</span>）的后验采样值。</p></li>
-<li><p><code>beta_1</code>：即斜率参数（<span class="math inline">\(\beta_1\)</span>，Label 对 RT_sec 的影响）的后验采样值。</p></li>
+<li><p><code>beta_0</code>：即截距参数（<span class="math inline">\(\beta_0\)</span>）的后验参数采样。</p></li>
+<li><p><code>beta_1</code>：即斜率参数（<span class="math inline">\(\beta_1\)</span>，Label 对 RT_sec 的影响）的后验参数采样。</p></li>
 <li><p><code>sigma</code>: 残差标准差的后验采样值。</p></li>
 </ul>
-<p>数据结构通常为数据框或数组，每行代表一个样本，每列代表一个参数。以本例为例，4 条链各保留 1000 个样本，共 4000 个后验样本。通过这些样本可以绘制后验分布图，计算均值、中位数及可信区间，分析参数的不确定性。</p>
+<p>数据结构通常为数据框或数组，每行代表一个样本，每列代表一个参数。本例中 4 条链各保留 1000 个样本，共 4000 个后验样本。</p>
+<p>通过这些样本可以绘制后验分布图，计算均值、中位数及可信区间，分析参数的不确定性。</p>
 </section>
-<section class="slide level2">
-
+<section id="补充后验结果的数据结构续" class="slide level2">
+<h2>补充：后验结果的数据结构（续）</h2>
 <ol start="2" type="1">
 <li><code>generated quantities</code>（产生的数据）<br>
-<code>y_rep</code>，预测数据，通过与 <code>observed_data</code> 对比（如绘制预测值与实际值的散点图），可评估模型的预测准确性和泛化能力。</li>
+</li>
 </ol>
-<p><code>log_lik</code>, log likelihood，用来评估模型的数据.</p>
-<p><code>rstan</code> 中”产生的数据”是可以自定义的，但R中有其他的贝叶斯相关的包，自动地包括了一系列用于贝叶斯推断的值，如 <code>brms</code> 。</p>
+<ul>
+<li><code>y_rep</code>，预测数据，通过与 <code>observed_data</code> 对比（如绘制预测值与实际值的散点图），可评估模型的预测准确性和泛化能力。</li>
+<li><code>log_lik</code>, log likelihood，用来评估模型的数据.</li>
+</ul>
+<p><code>rstan</code> 中”产生的数据”是在定义模型时决定的。现代更加方便的R包会默认包括一系列用于贝叶斯推断的值，如 <code>brms</code> 。</p>
 </section>
 <section class="slide level2">
 
-<p>提取后验样本，查看拟合结果的数据结构。</p>
+<h3 id="查看后验数据">查看后验数据</h3>
+<p>使用R中常用的代码来查看后验采样值。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1452,24 +1457,21 @@ convergence, Rhat=1).</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>List of 6
- $ beta0  : num [1:4000(1d)] 0.73 0.739 0.688 0.618 0.755 ...
+ $ beta0  : num [1:4000(1d)] 0.738 0.71 0.733 0.734 0.713 ...
   ..- attr(*, "dimnames")=List of 1
- $ beta1  : num [1:4000(1d)] 0.161 0.102 0.133 0.191 0.137 ...
+ $ beta1  : num [1:4000(1d)] 0.143 0.177 0.137 0.102 0.123 ...
   ..- attr(*, "dimnames")=List of 1
- $ sigma  : num [1:4000(1d)] 0.236 0.227 0.239 0.241 0.227 ...
+ $ sigma  : num [1:4000(1d)] 0.227 0.239 0.228 0.216 0.243 ...
   ..- attr(*, "dimnames")=List of 1
- $ y_rep  : num [1:4000, 1:105] 0.626 1.107 0.961 0.803 1.007 ...
+ $ y_rep  : num [1:4000, 1:105] 0.848 1.071 1.304 0.939 1.148 ...
   ..- attr(*, "dimnames")=List of 2
- $ log_lik: num [1:4000, 1:105] 0.354 0.489 0.472 0.478 0.377 ...
+ $ log_lik: num [1:4000, 1:105] 0.404 0.354 0.428 0.538 0.437 ...
   ..- attr(*, "dimnames")=List of 2
- $ lp__   : num [1:4000(1d)] 98.5 98.8 98 94.4 97.9 ...
+ $ lp__   : num [1:4000(1d)] 98.8 98.7 99.1 98.4 98.6 ...
   ..- attr(*, "dimnames")=List of 1</code></pre>
 </div>
 </div>
-</section>
-<section class="slide level2">
-
-<p>单独取出截距的后验样本并检查前十个值。</p>
+<p>比如，查看前10个值</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1485,14 +1487,15 @@ convergence, Rhat=1).</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="" aria-label="1"></a><span class="fu">print</span>(<span class="fu">head</span>(beta0_posterior, <span class="dv">10</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 0.7302864 0.7385376 0.6878033 0.6178438 0.7554543 0.7298096 0.7291971
- [8] 0.7301657 0.7235383 0.7479629</code></pre>
+<pre><code> [1] 0.7377650 0.7100410 0.7325606 0.7344511 0.7131606 0.6695657 0.7468244
+ [8] 0.6888675 0.7221824 0.6870610</code></pre>
 </div>
 </div>
 </section>
 <section class="slide level2">
 
-<p>读取截距后验样本中的第十一个值。</p>
+<h3 id="查看后验数据-1">查看后验数据</h3>
+<p>比如，读取截距后验样本中的第十一个值。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1502,15 +1505,13 @@ convergence, Rhat=1).</code></pre>
 <span id="cb33-4"><a href="" aria-label="4"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"第1条链的第11个beta_0样本值：%.4f</span><span class="sc">\n</span><span class="st">"</span>, chain1_sample11))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>第1条链的第11个beta_0样本值：0.7478</code></pre>
+<pre><code>第1条链的第11个beta_0样本值：0.7009</code></pre>
 </div>
 </div>
 </section>
-<section class="slide level2">
-
-<h3 id="mcmc-诊断">MCMC 诊断</h3>
-<p>使用 <code>mcmc_trace()</code> 可视化参数的后验分布</p>
-<p>用轨迹图和密度图检查采样链。</p>
+<section id="mcmc-收敛的诊断" class="slide level2">
+<h2>MCMC 收敛的诊断</h2>
+<p>使用 <code>mcmc_trace()</code> 可视化参数的后验分布；用轨迹图和密度图检查采样链。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1524,14 +1525,14 @@ convergence, Rhat=1).</code></pre>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="figs/lec9/mcmc-trace-and-posterior-density-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/mcmc-trace-and-posterior-density-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section class="slide level2">
-
+<section id="mcmc-收敛的诊断续" class="slide level2">
+<h2>MCMC 收敛的诊断（续）</h2>
 <p>对于模型的诊断信息 <code>n_eff</code> 和 <code>Rhat</code>（当然可以结合可视化进行诊断）。</p>
 <ul>
 <li><p>其中，各参数的 <code>Rhat</code> 均接近于 1。</p></li>
@@ -1545,18 +1546,18 @@ convergence, Rhat=1).</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>           mean      se_mean         sd       2.5%       25%       50%
-beta0 0.7130661 0.0008272063 0.03554505 0.64379976 0.6895373 0.7132021
-beta1 0.1462627 0.0011004107 0.04638016 0.05634752 0.1157348 0.1453923
-sigma 0.2322861 0.0003236173 0.01634052 0.20310111 0.2207509 0.2316269
+beta0 0.7120424 0.0008150843 0.03556425 0.64370591 0.6881029 0.7118369
+beta1 0.1478831 0.0010649709 0.04569974 0.05887613 0.1164582 0.1482100
+sigma 0.2318466 0.0003041909 0.01591500 0.20372786 0.2205980 0.2309199
             75%     97.5%    n_eff      Rhat
-beta0 0.7365758 0.7809175 1846.420 1.0007014
-beta1 0.1778836 0.2379236 1776.458 1.0010709
-sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
+beta0 0.7356664 0.7838605 1903.804 1.0005392
+beta1 0.1789442 0.2380517 1841.416 1.0003730
+sigma 0.2417713 0.2672455 2737.290 0.9992968</code></pre>
 </div>
 </div>
 </section>
-<section class="slide level2">
-
+<section id="mcmc-收敛的诊断续-1" class="slide level2">
+<h2>MCMC 收敛的诊断（续）</h2>
 <p>查看 <span class="math inline">\(\hat R\)</span>，评估采样链的收敛情况。</p>
 <div class="cell">
 <details class="code-fold">
@@ -1565,12 +1566,12 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>    beta0     beta1     sigma 
-1.0007014 1.0010709 0.9994324 </code></pre>
+1.0005392 1.0003730 0.9992968 </code></pre>
 </div>
 </div>
 </section>
-<section class="slide level2">
-
+<section id="mcmc-收敛的诊断续-2" class="slide level2">
+<h2>MCMC 收敛的诊断（续）</h2>
 <p>查看有效样本量占比，评估样本相关性。</p>
 <div class="cell">
 <details class="code-fold">
@@ -1579,12 +1580,12 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>    beta0     beta1     sigma 
-0.4616050 0.4441144 0.6373942 </code></pre>
+0.4759511 0.4603541 0.6843224 </code></pre>
 </div>
 </div>
 </section>
-<section class="slide level2">
-
+<section id="mcmc-收敛的诊断续-3" class="slide level2">
+<h2>MCMC 收敛的诊断（续）</h2>
 <p>绘制自相关图，检查采样链内部的依赖。</p>
 <div class="cell">
 <details class="code-fold">
@@ -1594,21 +1595,21 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="figs/lec9/mcmc-autocorrelation-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/mcmc-autocorrelation-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="后验预测ppc" class="slide level2">
-<h2>后验预测(PPC)</h2>
-<p>MCMC 诊断仅能显示采样过程的收敛性和采样质量，而不能直接说明模型在观测数据上的拟合效果或预测能力。为评估模型的预测能力，我们可以进行<strong>后验预测检查</strong>，通过模拟新的数据样本来比较模型生成的数据与实际观测数据的分布是否一致，从而验证模型的合理性和适用性。</p>
+<section id="模型诊断后验预测ppc" class="slide level2">
+<h2>模型诊断：后验预测(PPC)</h2>
+<p>MCMC 诊断仅显示采样过程的收敛性和采样质量，而不能直接说明模型在观测数据上的效果。</p>
+<p><strong>后验预测检查</strong> 是当前被推荐用于诊断模型表现的方法。</p>
+<p>PPC的过程：基于参数的后验采样值，生成新的数据样本，并与实际观测数据进行比较，以验证模型对数据的拟合。</p>
 <ul>
-<li><p>为了更全面地反映模型的不确定性，我们可以基于 4000 对参数值生成 4000 条回归线。</p></li>
-<li><p>这些回归线将展示在 “self” 和 “other” 条件下的预测差异，以及模型在不同参数样本下的预测范围。这种基于后验参数的预测被称为后验预测 (Posterior Prediction)。</p></li>
-<li><p>在进行后验预测时，我们利用模型后验采样得到的参数进行预测，并结合真实数据生成预测值的分布。<br>
-</p></li>
-<li><p>这个过程不仅可以帮助我们检查模型对数据的适配度，还能通过可视化展现预测的不确定性。</p></li>
+<li><p>基于参数的后验采样值，本例中为 4000 对参数值；</p></li>
+<li><p>将这些后验值“带入”到模型，形成 4000 个“回归线”，基于这4000 个“回归线”，可以生成 4000 个“自我”和“他人”条件下的反应时间，即后验预测 (Posterior Prediction)。</p></li>
+<li><p>将这些后验预测值与观测数据进行比较，可以看到模型的预测值与观测数据的差异，也可以展现预测的不确定性。</p></li>
 </ul>
 </section>
 <section class="slide level2">
@@ -1632,12 +1633,12 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>      beta0     beta1     sigma
-1 0.7302864 0.1609406 0.2357864
-2 0.7385376 0.1016316 0.2271914
-3 0.6878033 0.1325519 0.2390476
-4 0.6178438 0.1910227 0.2408857
-5 0.7554543 0.1366859 0.2267092
-6 0.7298096 0.1357318 0.2165275</code></pre>
+1 0.7377650 0.1431106 0.2274278
+2 0.7100410 0.1769220 0.2392774
+3 0.7325606 0.1374866 0.2279329
+4 0.7344511 0.1020250 0.2163216
+5 0.7131606 0.1225587 0.2432569
+6 0.6695657 0.2005250 0.2239860</code></pre>
 </div>
 </div>
 </section>
@@ -1704,7 +1705,7 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="figs/lec9/observed-rt-and-posterior-regression-lines-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/observed-rt-and-posterior-regression-lines-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -1733,9 +1734,6 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 </ul></li>
 </ul></li>
 </ul>
-<blockquote>
-<p>😎<em>通过向量化计算优化，运行效率较高</em></p>
-</blockquote>
 </section>
 <section class="slide level2">
 
@@ -1818,7 +1816,7 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="figs/lec9/posterior-regression-credible-band-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/posterior-regression-credible-band-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -1877,11 +1875,12 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\l
 </section>
 <section class="slide level2">
 
-<blockquote>
-<p>可以注意到，生成的预测值受到两种变异的影响：<br>
-* 一是参数估计的不确定性（即<span class="math inline">\(\beta_0\)</span>和<span class="math inline">\(\beta_1\)</span>的后验分布带来的变异），导致不同样本的均值<span class="math inline">\(\mu\)</span>具有差异；<br>
-* 二是随机误差项<span class="math inline">\(\epsilon\)</span>的影响，使得在相同均值<span class="math inline">\(\mu\)</span>下生成的预测值<span class="math inline">\(Y_{\text{new}}\)</span>仍然存在随机波动。这两种变异共同决定了最终预测值的后验预测分布。</p>
-</blockquote>
+<p>后验预测检查中生成的预测值有两个变异的影响：</p>
+<ul>
+<li><p>参数估计的不确定性（即 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 本身并非固定，而一个特定的后验分布，具有变异性，这个变异性决定了 <span class="math inline">\(\mu\)</span> 的变异性；</p></li>
+<li><p>从参数到数据中的变异性，来自于数据生成过程中的随机误差项 <span class="math inline">\(\epsilon\)</span> ，相同均值 <span class="math inline">\(\mu\)</span> 下生成的预测值 <span class="math inline">\(Y_{\text{new}}\)</span> 仍然存随机波动，这种波动由随机误差决定。</p></li>
+</ul>
+<p>这两种变异共同决定了最终预测值的后验预测分布。</p>
 <div style="padding-bottom: 30px;">
 
 </div>
@@ -1912,7 +1911,7 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\l
 <span id="cb51-13"><a href="" aria-label="13"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"mu_i: %.2f, 预测值：%.2f</span><span class="sc">\n</span><span class="st">"</span>, mu_i, prediction_i))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>mu_i: 0.89, 预测值：0.49</code></pre>
+<pre><code>mu_i: 0.88, 预测值：0.49</code></pre>
 </div>
 </div>
 </section>
@@ -1958,12 +1957,12 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\l
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>      beta0     beta1     sigma        mu     y_new
-1 0.7302864 0.1609406 0.2357864 0.8912270 1.0485514
-2 0.7385376 0.1016316 0.2271914 0.8401692 0.8120338
-3 0.6878033 0.1325519 0.2390476 0.8203552 1.0070198
-4 0.6178438 0.1910227 0.2408857 0.8088665 0.8659367
-5 0.7554543 0.1366859 0.2267092 0.8921402 1.0727166
-6 0.7298096 0.1357318 0.2165275 0.8655415 1.2083581</code></pre>
+1 0.7377650 0.1431106 0.2274278 0.8808756 1.0326229
+2 0.7100410 0.1769220 0.2392774 0.8869630 0.8573308
+3 0.7325606 0.1374866 0.2279329 0.8700471 1.0480325
+4 0.7344511 0.1020250 0.2163216 0.8364760 0.8877266
+5 0.7131606 0.1225587 0.2432569 0.8357193 1.0294761
+6 0.6695657 0.2005250 0.2239860 0.8700907 1.2247160</code></pre>
 </div>
 </div>
 </section>
@@ -1999,7 +1998,7 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\l
 </section>
 <section class="slide level2">
 
-<p>比较预测均值与新观测值的分布宽度。</p>
+<p>比较模型所预测均值与模型所预测的观测值在分布宽度上的区别。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2050,7 +2049,7 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\l
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="figs/lec9/posterior-mean-and-predictive-density-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/posterior-mean-and-predictive-density-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -2071,7 +2070,7 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\l
 
 <h3 id="总体后验预测分布">总体后验预测分布</h3>
 <ul>
-<li><p>除了生成特定自变量下，因变量的分布，也可以生成总体因变量的后验预测分布</p></li>
+<li><p>除了生成特定自变量外，因变量的分布，也可以生成总体因变量的后验预测分布</p></li>
 <li><p>通过 <code>posterior_predic</code>方法可以快速从模型生成后验预测数据。</p></li>
 </ul>
 </section>
@@ -2096,11 +2095,11 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\l
 <div class="cell-output cell-output-stdout">
 <pre><code>          
 iterations      [,1]      [,2]      [,3]      [,4]      [,5]
-      [1,] 0.6261527 0.5561069 0.9733229 1.0101996 1.0563602
-      [2,] 1.1065760 0.3514769 0.5919865 0.7780980 0.9212489
-      [3,] 0.9606849 0.4631148 0.6011222 1.3664590 1.3527001
-      [4,] 0.8026168 1.2889888 1.0850619 0.6930894 0.9005320
-      [5,] 1.0066720 0.7020955 1.2270757 0.4664602 0.6329699</code></pre>
+      [1,] 0.8479501 0.9106818 1.0319028 1.1820535 0.8512675
+      [2,] 1.0711613 1.2561505 1.5929087 1.4012612 0.7568110
+      [3,] 1.3040235 0.6776878 0.5734106 1.2492140 0.4091879
+      [4,] 0.9387724 0.8310315 1.0441571 0.9376880 0.7316389
+      [5,] 1.1480417 0.5151837 0.6596500 0.4175561 0.7676720</code></pre>
 </div>
 </div>
 </section>
@@ -2157,7 +2156,7 @@ iterations      [,1]      [,2]      [,3]      [,4]      [,5]
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="figs/lec9/posterior-predictive-density-overlay-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/posterior-predictive-density-overlay-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -2202,7 +2201,7 @@ iterations      [,1]      [,2]      [,3]      [,4]      [,5]
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="figs/lec9/posterior-predictive-average-density-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/posterior-predictive-average-density-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
@@ -2227,33 +2226,33 @@ iterations      [,1]      [,2]      [,3]      [,4]      [,5]
 <span id="cb70-11"><a href="" aria-label="11"></a><span class="fu">c</span>(<span class="at">mean =</span> ppp_mean, <span class="at">q95 =</span> ppp_q95)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code> mean   q95 
-0.510 0.021 </code></pre>
+<pre><code>   mean     q95 
+0.49825 0.02100 </code></pre>
 </div>
 </div>
 </section>
 <section id="后验预测检查的结论模型可以接受吗" class="slide level2">
 <h2>后验预测检查的结论：模型可以接受吗？</h2>
 <ul>
-<li><p><strong>判据</strong>：把观测的检验统计量放进后验预测分布看它落在哪里——与 ROPE 是同一套逻辑，只是从参数空间换到数据空间。后验预测 <span class="math inline">\(p\)</span> 值在 0.5 附近表示拟合良好，接近 0 或 1 表示系统偏离；它不是假设检验。</p></li>
-<li><p><strong>结果</strong>：均值的后验预测 <span class="math inline">\(p\)</span> 值为 0.51，95% 分位点为 0.02。</p></li>
+<li><p><strong>判断依据</strong>：比较观测值的统计量与后验预测的分布。如果观测值的均值落在后验预测分布的中心位置，则拟合良好，接近 0 或 1 表示系统偏离。</p></li>
+<li><p><strong>结果</strong>：均值在后验预测分布中的百分位为 0.50，95% 分位点为 0.02。</p></li>
 <li><p><strong>判断</strong>：至少一项落在 0.05–0.95 之外：模型在中心或尾部系统性偏离观测数据，正态似然只是一个近似。</p></li>
-<li><p><strong>对后面的影响</strong>：若模型只是近似，<span class="math inline">\(\beta_1\)</span> 的后验、HDI 与 ROPE 比例都<strong>条件于这个模型</strong>；方向可以读，幅度与”实际意义”要保守。</p></li>
+<li><p><strong>对后续分析的影响</strong>：可以接受这个模型的后验进行进一步的分析。</p></li>
 </ul>
 </section>
-<section id="后验推断" class="slide level2">
-<h2>后验推断</h2>
+<section id="基于后验的统计推断" class="slide level2">
+<h2>基于后验的统计推断</h2>
 <blockquote>
-<p><strong>前提</strong>：以下推断都<strong>条件于</strong>上一节被检验的模型。若 PPC 判断拟合尚可，结论可直接用；若判断有系统偏离，则方向可读、幅度与”实际意义”需谨慎。</p>
+<p>以下推断都是基于上述诊断的结果，若 PPC 判断拟合尚可，结论可直接用；若判断有系统偏离，则可能需要慎重。</p>
 </blockquote>
-<p>我们共得到 4000 对<span class="math inline">\(\beta_0\)</span>和<span class="math inline">\(\beta_1\)</span>值，可以通过<code>summary()</code>总结参数的基本信息</p>
+<p>我们共得到 4000 对 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 值，可以通过<code>summary()</code>总结参数的基本信息</p>
 <ul>
 <li><p>此表包含模型的诊断信息：参数的均值、标准差，以及有效样本量 <code>n_eff</code> 与 <code>Rhat</code>。</p></li>
 <li><p>还提供了每个参数的 95% 等尾分位区间（2.5% 与 97.5% 分位点），用于展示参数的不确定性范围；最高密度区间（HDI）需用 <code>bayestestR::hdi()</code> 另行计算。</p></li>
 </ul>
 </section>
-<section class="slide level2">
-
+<section id="基于后验的统计推断-1" class="slide level2">
+<h2>基于后验的统计推断</h2>
 <p>汇总参数后验，为后续推断提供数值依据。</p>
 <div class="cell">
 <details class="code-fold">
@@ -2262,40 +2261,40 @@ iterations      [,1]      [,2]      [,3]      [,4]      [,5]
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>           mean      se_mean         sd       2.5%       25%       50%
-beta0 0.7130661 0.0008272063 0.03554505 0.64379976 0.6895373 0.7132021
-beta1 0.1462627 0.0011004107 0.04638016 0.05634752 0.1157348 0.1453923
-sigma 0.2322861 0.0003236173 0.01634052 0.20310111 0.2207509 0.2316269
+beta0 0.7120424 0.0008150843 0.03556425 0.64370591 0.6881029 0.7118369
+beta1 0.1478831 0.0010649709 0.04569974 0.05887613 0.1164582 0.1482100
+sigma 0.2318466 0.0003041909 0.01591500 0.20372786 0.2205980 0.2309199
             75%     97.5%    n_eff      Rhat
-beta0 0.7365758 0.7809175 1846.420 1.0007014
-beta1 0.1778836 0.2379236 1776.458 1.0010709
-sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
+beta0 0.7356664 0.7838605 1903.804 1.0005392
+beta1 0.1789442 0.2380517 1841.416 1.0003730
+sigma 0.2417713 0.2672455 2737.290 0.9992968</code></pre>
 </div>
 </div>
 </section>
-<section class="slide level2">
-
+<section id="基于后验的统计推断-2" class="slide level2">
+<h2>基于后验的统计推断</h2>
 <ul>
-<li><p>我们可以使用均值来理解生成的后验分布，通过上表我们知道</p>
+<li><p>使用均值来理解生成的后验分布，通过上表可知</p>
 <ul>
-<li><p><span class="math inline">\(\beta_0\)</span> 表示 self 条件下的基准反应时间；其后验均值为 0.713 秒。</p></li>
+<li><p><span class="math inline">\(\beta_0\)</span> 表示 self 条件下的基准反应时间；其后验均值为 0.712 秒。</p></li>
 <li><p><span class="math inline">\(\beta_1\)</span> 表示 self 和 other 条件下的反应时间差异；其大小和不确定性以本次拟合输出为准。</p></li>
 </ul></li>
-<li><p>注意：尽管表中显示了参数的均值，但这些均值只是后验分布的一个概要信息。</p>
+<li><p>注意：这些均值只是后验分布的一个概要信息。</p>
 <ul>
-<li>我们还可以从 95% 分位区间和标准差中观察到后验分布的广泛性，反映了模型的内在不确定性。<br>
+<li>95% 分位区间和标准差中观察到后验分布的广泛性，反映了模型的内在不确定性。<br>
 </li>
-<li>因此，仅使用均值生成的回归线并不足以充分展示后验分布的复杂性和不确定性。</li>
+<li>不能仅使用均值生成的回归线并不足以充分展示后验分布的复杂性和不确定性。</li>
 </ul></li>
-<li><p>别忘了对照先验：<span class="math inline">\(\beta_0\)</span> 的先验均值是 5 秒，而后验均值为 0.71 秒——两者的差距就是数据“拉动”先验的幅度。</p></li>
+<li><p>与先验进行对比：<span class="math inline">\(\beta_0\)</span> 的先验均值是 5 秒，而后验均值为 0.71 秒 —— 两者的差距是数据“拉动”先验的幅度。</p></li>
 </ul>
 </section>
-<section class="slide level2">
-
-<p>上节课我们学习了使用 HDI + ROPE 做判断。在这里我们假设 <span class="math inline">\(\beta_1\)</span> 的值在 <span class="math inline">\([-0.05, 0.05]\)</span> 范围内可以视为实用等效，</p>
-<p>即如果 <span class="math inline">\(\beta_1\)</span> 落在这个范围内，说明 self 和 other 条件之间的反应时间差异在实际效果上可以忽略。</p>
+<section id="基于后验的统计推断-3" class="slide level2">
+<h2>基于后验的统计推断</h2>
+<p>先前学习过使用 HDI + ROPE 做判断。这里假设 <span class="math inline">\(\beta_1\)</span> 的值在 <span class="math inline">\([-0.05, 0.05]\)</span> 范围内可以视为零效应的实际等效区别，</p>
+<p>如果 <span class="math inline">\(\beta_1\)</span> 落在这个范围内，说明 self 和 other 条件之间的反应时间差异在实际效果上可以忽略。</p>
 <ol type="1">
-<li><p><strong>ROPE 区间</strong>：我们设定 <span class="math inline">\([-0.05, 0.05]\)</span> 为 ROPE，表示 self 和 other 之间的反应时间差异落在该范围内时，在实际效果上可视为“等效零”。这个范围就是对“等效零效应”的显式声明。</p></li>
-<li><p><strong>HDI (Highest Density Interval)</strong>：后验分布的 95% 最高密度区间（HDI）显示了<span class="math inline">\(\beta_1\)</span>的不确定性范围，帮助我们了解后验分布中最可信的值区域。</p></li>
+<li><p><strong>ROPE 区间</strong>： <span class="math inline">\([-0.05, 0.05]\)</span>，表示 self 和 other 之间的反应时间差异落在该范围内时，在实际效果上可视为“等效零”。</p></li>
+<li><p><strong>HDI (Highest Density Interval)</strong>：后验分布的 95% 最高密度区间（HDI）显示了 <span class="math inline">\(\beta_1\)</span> 的范围。</p></li>
 <li><p><strong>结果解读</strong>（看 95% HDI 与 ROPE 的相对位置，而不是看比例大不大）：</p>
 <ul>
 <li>95% HDI 完全落在 ROPE <strong>之内</strong> → 可判定两者在实际效果上等效；完全落在 <strong>之外</strong> → 可判定两者不等效。<br>
@@ -2304,8 +2303,8 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 </ul></li>
 </ol>
 </section>
-<section class="slide level2">
-
+<section id="基于后验的统计推断-4" class="slide level2">
+<h2>基于后验的统计推断</h2>
 <p>计算斜率后验落入实用等效区间的比例。</p>
 <div class="cell">
 <details class="code-fold">
@@ -2327,12 +2326,12 @@ sigma 0.2427158 0.2674511 2549.577 0.9994324</code></pre>
 
 Inside ROPE
 -----------
-1.77 %     </code></pre>
+1.55 %     </code></pre>
 </div>
 </div>
 </section>
-<section class="slide level2">
-
+<section id="基于后验的统计推断-5" class="slide level2">
+<h2>基于后验的统计推断</h2>
 <p>用 ROPE 图展示斜率后验与等效区间。</p>
 <div class="cell">
 <details class="code-fold">
@@ -2342,31 +2341,31 @@ Inside ROPE
 <div class="cell-output-display">
 <div>
 <figure>
-<p><img data-src="figs/lec9/slope-posterior-rope-1.png" width="1728"></p>
+<p><img data-src="assets/figs/lec9/slope-posterior-rope-1.png" width="1728"></p>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section class="slide level2">
-
-<p><span class="math inline">\(\beta_1\)</span> 的后验均值为 0.146 秒，95% HDI 为 [0.056, 0.238]，<span class="math inline">\(P(\beta_1&gt;0)=\)</span> 0.998。</p>
-<p>有 1.8% 的后验样本落在 ROPE <span class="math inline">\([-0.05, 0.05]\)</span> 内，其余 98.2% 落在等效区间之外。</p>
+<section id="基于后验的统计推断-6" class="slide level2">
+<h2>基于后验的统计推断</h2>
+<p><span class="math inline">\(\beta_1\)</span> 的后验均值为 0.148 秒，95% HDI 为 [0.063, 0.241]，<span class="math inline">\(P(\beta_1&gt;0)=\)</span> 0.999。</p>
+<p>有 1.6% 的后验样本落在 ROPE <span class="math inline">\([-0.05, 0.05]\)</span> 内，其余 98.5% 落在等效区间之外。</p>
 <p>按 HDI + ROPE 的判据：整个 95% HDI 落在 ROPE 之外，可判定两者不等效——差异在实际效果上值得关注。。</p>
 </section>
 <section id="回到研究问题自我加工优势成立吗" class="slide level2">
 <h2>回到研究问题：自我加工优势成立吗？</h2>
 <ul>
 <li><p><strong>假设</strong>（见研究示例）：与 other 条件相比，self 条件下的反应时更短，即 <span class="math inline">\(\beta_1=\mu_{\mathrm{other}}-\mu_{\mathrm{self}}&gt;0\)</span>。</p></li>
-<li><p><strong>后验</strong>：<span class="math inline">\(\beta_1\)</span> 的后验均值为 0.146 秒，95% HDI 为 [0.056, 0.238]，<span class="math inline">\(P(\beta_1&gt;0)=\)</span> 0.998。</p></li>
+<li><p><strong>后验</strong>：<span class="math inline">\(\beta_1\)</span> 的后验均值为 0.148 秒，95% HDI 为 [0.063, 0.241]，<span class="math inline">\(P(\beta_1&gt;0)=\)</span> 0.999。</p></li>
 <li><p><strong>方向</strong>：后验均值 为正，即 other 慢于 self，与自我加工优势的预测一致。</p></li>
-<li><p><strong>量级</strong>：ROPE 内的比例为 1.8%，几乎全部落在 ROPE 之外，差异在实践上可认为有意义。。</p></li>
-<li><p><strong>边界</strong>：这是单个被试（201）的结果，把同一被试的试次当作独立观测，似然又取了正态（而反应时实际右偏）；要推广到总体、处理试次依赖或改进分布假设，需要分层模型或换似然。</p></li>
+<li><p><strong>统计推断</strong>：ROPE 内的比例为 1.6%，几乎全部落在 ROPE 之外，差异在实践上可认为有意义。。</p></li>
+<li><p><strong>推断的边界条件</strong>：这是单个被试（201）的结果，把同一被试的试次当作独立观测，似然又取了正态（而反应时实际右偏）；要推广到总体、处理试次依赖或改进分布假设，需要分层模型或换似然。</p></li>
 </ul>
 </section>
 <section id="brms-版本同一个模型的另一种写法" class="slide level2">
 <h2>brms 版本：同一个模型的另一种写法</h2>
-<p>用 brms 重建同一模型，与 Stan 写法对照。</p>
+<p>用 <code>brms</code> 重建同一模型，与 <code>Stan</code> 写法对照。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2405,12 +2404,12 @@ Formula: RT_sec ~ 0 + Intercept + Label
 
 Regression Coefficients:
           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept     0.71      0.04     0.64     0.78 1.00     2053     2218
-Label         0.15      0.05     0.06     0.24 1.00     1916     2181
+Intercept     0.71      0.04     0.65     0.78 1.00     1909     1904
+Label         0.15      0.05     0.05     0.23 1.00     1921     1966
 
 Further Distributional Parameters:
       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-sigma     0.23      0.02     0.20     0.26 1.00     2750     2534
+sigma     0.23      0.02     0.20     0.27 1.00     2355     1944
 
 Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -2426,9 +2425,9 @@ scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
 <ul>
 <li>本节课通过一个简单的线性回归示例，展示了如何使用 <code>rstan</code> 构建贝叶斯模型，并结合之前的内容对模型结果进行深入分析。<br>
 </li>
-<li>我们特别关注了先验分布的设定和后验预测检查（PPC）的重要性，通过对比真实数据与预测分布，评估模型的合理性和对新数据的预测能力。</li>
+<li>本节着重讨论了先验分布的设定和后验预测检查（PPC）的重要性，通过对比真实数据与预测分布，评估模型的合理性和对新数据的预测能力。</li>
+<li>最后，再次强调贝叶斯建模的关键步骤：从先验设定、模型拟合（依赖MCMC方法近似后验分布），到后验推断（如HDI区间、ROPE检验）与结果解释，完整覆盖了贝叶斯线性回归的核心流程，也进一步明确了MCMC方法在获取参数后验分布中的核心作用。</li>
 </ul>
-<p>- 最后，我们强调了贝叶斯建模的关键步骤：从先验设定、模型拟合（依赖MCMC方法近似后验分布），到后验推断（如HDI区间、ROPE检验）与结果解释，完整覆盖了贝叶斯线性回归的核心流程，也进一步明确了MCMC方法在获取参数后验分布中的核心作用。</p>
 <div class="quarto-figure quarto-figure-center">
 <figure>
 <p><img data-src="figs/lec9/bayesian-modeling-workflow.png"></p>
@@ -2681,80 +2680,42 @@ scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
       });
     </script>
     
-
     <script>
-
       // htmlwidgets need to know to resize themselves when slides are shown/hidden.
-
       // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
-
       // slide changes (different for each slide format).
-
       (function () {
-
         // dispatch for htmlwidgets
-
         function fireSlideEnter() {
-
           const event = window.document.createEvent("Event");
-
           event.initEvent("slideenter", true, true);
-
           window.document.dispatchEvent(event);
-
         }
-
-    
 
         function fireSlideChanged(previousSlide, currentSlide) {
-
           fireSlideEnter();
 
-    
-
           // dispatch for shiny
-
           if (window.jQuery) {
-
             if (previousSlide) {
-
               window.jQuery(previousSlide).trigger("hidden");
-
             }
-
             if (currentSlide) {
-
               window.jQuery(currentSlide).trigger("shown");
-
             }
-
           }
-
         }
-
-    
 
         // hookup for slidy
-
         if (window.w3c_slidy) {
-
           window.w3c_slidy.add_observer(function (slide_num) {
-
             // slide_num starts at position 1
-
             fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
-
           });
-
         }
 
-    
-
       })();
-
     </script>
-
-    
 
     <script id="quarto-html-after-body" type="application/javascript">
       window.document.addEventListener("DOMContentLoaded", function (event) {
