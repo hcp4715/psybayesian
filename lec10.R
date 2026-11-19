@@ -1,20 +1,16 @@
 # 安装和加载包
 options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
-if (!requireNamespace('pacman', quietly = TRUE)) {
-  install.packages('pacman')
+if (!requireNamespace("pacman", quietly = TRUE)) {
+  install.packages("pacman")
 }
-pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja", "patchwork","bayesplot",
-               "rstan","bridgesampling", 'logspline', "easystats", "loo") 
+pacman::p_load("tidyverse", "ggplot2", "dplyr", "gridExtra", "papaja", "patchwork", "bayesplot",
+               "rstan", "bridgesampling", "logspline", "bayestestR", "see", "easystats", "loo")
 options(warn = -1)  # 抑制警告
 
 # sessionInfo()
 
 # 导入数据
-df_raw <- tryCatch({
-  read.csv('/home/mw/input/bayes3797/Kolvoort_2020_HBM_Exp1_Clean.csv')
-}, error = function(e) {
-  read.csv('data/Kolvoort_2020_HBM_Exp1_Clean.csv')
-})
+df_raw <- utils::read.csv("data/Kolvoort_2020_HBM_Exp1_Clean.csv")
 # 显示数据前几行
 head(df_raw)    
 # 数据分组和计算均值
@@ -23,15 +19,15 @@ df <- df_raw %>%
   dplyr::summarize(RT_sec = mean(RT_sec)) %>%
   dplyr::ungroup() %>%
   # 将 Label 列的数字编码转为文字标签
-  dplyr::mutate(Label = case_when(
-    Label == '1' ~ "Self",
-    Label == '2' ~ "Friend",
-    Label == '3' ~ "Stranger"
+  dplyr::mutate(Label = dplyr::case_when(
+    Label == "1" ~ "Self",
+    Label == "2" ~ "Friend",
+    Label == "3" ~ "Stranger"
   )) %>%
   # 替换 Matching 列的值为小写标签
-  dplyr::mutate(Matching = ifelse(Matching == "Matching", 'matching','nonmatching')) %>%
+  dplyr::mutate(Matching = ifelse(Matching == "Matching", "matching", "nonmatching")) %>%
   # 设置索引
-  dplyr::mutate(index = row_number()) %>%
+  dplyr::mutate(index = dplyr::row_number()) %>%
   tibble::column_to_rownames(var = "index")  # 设置索引为新创建的命名行
 
 head(df)
@@ -39,8 +35,8 @@ cat("Label列共有", toString(unique(df$Label)), "这几类\n")
 
 ####模型一
 # 将分类变量转换为哑变量
-X1 <- as.integer(df$Label == 'Friend')
-X2 <- as.integer(df$Label == 'Stranger')
+X1 <- as.integer(df$Label == "Friend")
+X2 <- as.integer(df$Label == "Stranger")
 ## 建立模型
 model_code1 <- "
 data {
@@ -70,8 +66,8 @@ model {
 //Generated Quantities 模块可用于获取我们想要的关于后验的任何其他信息，或对新数据进行预测。
 
 generated quantities {
- real y_rep[N];
- real log_lik[N];            // 储存每个观测值的对数似然，方便后续的模型比较
+ array[N] real y_rep;
+ array[N] real log_lik;            // 储存每个观测值的对数似然，方便后续的模型比较
  
  for (n in 1:N) {
  y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n], sigma);
@@ -90,7 +86,7 @@ data_list <- list(
 )
 
 ## 采样
-model1_fit <- stan(model_code = model_code1, data = data_list, 
+model1_fit <- rstan::stan(model_code = model_code1, data = data_list, 
                    iter = 3000, 
                    chains = 4, 
                    warmup = 1000, 
@@ -105,7 +101,6 @@ model_summary1 <- summary(model1_fit)
 round(head(model_summary1$summary, 4),3)
 
 ## ROPE + HDI
-library(bayestestR)
 # 提取后验样本
 trace <- rstan::extract(model1_fit)
 trace_beta1 <- as.data.frame(trace$beta_1)
@@ -115,9 +110,12 @@ trace_beta2 <- as.data.frame(trace$beta_2)
 beta1_hdi95 <- bayestestR::hdi(trace_beta1)
 beta2_hdi95 <- bayestestR::hdi(trace_beta2)
 
+# 定义 ROPE 区间，根据研究的需要指定实际等效范围
+rope_interval <- c(-0.05, 0.05)
+
 # 计算ROPE
-rope1 <- bayestestR::rope(trace_beta1,range = c(-0.05, 0.05))
-rope2 <- bayestestR::rope(trace_beta2,range = c(-0.05, 0.05))
+rope1 <- bayestestR::rope(trace_beta1,range = rope_interval)
+rope2 <- bayestestR::rope(trace_beta2,range = rope_interval)
 
 beta1_plot <- plot(rope1, rope_color = "grey70") + 
   ggplot2::annotate("text", # 添加标签显示 Rope 值
@@ -128,7 +126,7 @@ beta1_plot <- plot(rope1, rope_color = "grey70") +
                     x = mean(trace$beta_1), y = 0.1,
                     label = paste0("95% HDI:\n[", round(beta1_hdi95$CI_low, 3), ", ", round(beta1_hdi95$CI_high, 3), "]"),
                     color = "black", size = 6) +
-  ggplot2::labs(title = expression(paste("Region of Practical Equivalence (ROPE) of ",beta[0]))) +
+  ggplot2::labs(title = expression(paste("Region of Practical Equivalence (ROPE) of ",beta[1]))) +
   papaja::theme_apa() + 
   ggplot2::scale_y_continuous(expand = c(0, 0)) +
   ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置
@@ -142,18 +140,17 @@ beta2_plot <- plot(rope2, rope_color = "grey70") +
                     x = mean(trace$beta_2), y = 0.1,
                     label = paste0("95% HDI:\n[", round(beta2_hdi95$CI_low, 3), ", ", round(beta2_hdi95$CI_high, 3), "]"),
                     color = "black", size = 6) +
-  ggplot2::labs(title = expression(paste("Region of Practical Equivalence (ROPE) of ",beta[1]))) +
+  ggplot2::labs(title = expression(paste("Region of Practical Equivalence (ROPE) of ",beta[2]))) +
   papaja::theme_apa() + 
   ggplot2::scale_y_continuous(expand = c(0, 0)) +
   ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置
 
 # 显示图形
-options(repr.plot.width=14, repr.plot.height=6) 
 beta1_plot + beta2_plot
 
 ## 贝叶斯因子
 # 定义先验模型
-stan_prior_code <- "
+stan_prior_code1 <- "
 data {
   int<lower=0> N;                // 数据点数量
   vector[N] y;              // 观测数据
@@ -179,7 +176,7 @@ model {
 "
 
 # 从先验采样
-model1_pri <- stan(model_code = stan_prior_code, 
+model1_pri <- rstan::stan(model_code = stan_prior_code1, 
                    data = data_list, 
                    iter = 3000, 
                    warmup = 1000,
@@ -187,10 +184,10 @@ model1_pri <- stan(model_code = stan_prior_code,
                    seed = 84735)
 
 # 提取先验样本
-prior_samples1 <- extract(model1_pri)
+prior_samples1 <- rstan::extract(model1_pri)
 
 # 提取后验样本
-post_samples1 <- extract(model1_fit)
+post_samples1 <- rstan::extract(model1_fit)
 
 # 可以使用bayestestR包中的bayesfactor_parameters函数计算贝叶斯因子（Savage-Dickey）
 beta1_BF <- bayestestR::bayesfactor_parameters(post_samples1$beta_1, prior_samples1$beta_1, direction = "two-sided", null = 0)
@@ -200,39 +197,36 @@ print(beta1_BF)
 print(beta2_BF)
 
 # 配合see包可以对贝叶斯因子可视化
-library(see)
 plot_BF1 <- plot(beta1_BF)+
   see::scale_fill_material_d(palette = "beta_1") +
   see::scale_color_material_d(palette = "beta_1") +
-  xlim(-0.3,0.3) +
-  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[0]))) +
+  ggplot2::xlim(-0.3, 0.3) +
+  ggplot2::labs(title = expression(paste("Bayes factor (BF) for ", beta[1]))) +
   papaja::theme_apa() +
   ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置
 
 plot_BF2 <- plot(beta2_BF)+
   see::scale_fill_material_d(palette = "beta_2") +
   see::scale_color_material_d(palette = "beta_2") +
-  xlim(-0.3,0.3) +
-  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[1]))) +
+  ggplot2::xlim(-0.3, 0.3) +
+  ggplot2::labs(title = expression(paste("Bayes factor (BF) for ", beta[2]))) +
   papaja::theme_apa() +
   ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置
 
-options(repr.plot.width=16, repr.plot.height=6) 
 plot_BF1 + plot_BF2
 
 ## 后验预测
 y_rep <- as.matrix(model1_fit, pars = "y_rep")
 
-pp_check <- bayesplot::ppc_dens_overlay(data_list$y, y_rep[1:200, ]) + 
+pp_check1 <- bayesplot::ppc_dens_overlay(data_list$y, y_rep[1:200, ]) + 
   ggplot2::labs(title = "Posterior predictive check for model1") + 
   papaja::theme_apa()
 
-options(repr.plot.width=10, repr.plot.height=6) 
-pp_check
+pp_check1
 
 # 可视化（箱图）
 # 提取后验样本
-post_samples1 <- extract(model1_fit)
+post_samples1 <- rstan::extract(model1_fit)
 # 先将列表转换为矩阵
 temp_matrix <- do.call(rbind, post_samples1)
 
@@ -244,28 +238,27 @@ column1_means <- apply(posterior_samples1, 2, mean, na.rm = TRUE)
 df$pred_mean1 <- column1_means[1] + column1_means[2] * data_list$X1 + column1_means[3] * data_list$X2
 
 # 创建箱线图风格的后验预测图
-real_boxp <- ggplot(df, aes(x = Label, y = RT_sec, fill = Matching)) +
+real_boxp <- ggplot2::ggplot(df, ggplot2::aes(x = Label, y = RT_sec, fill = Matching)) +
   ggplot2::geom_boxplot() +
-  ggplot2:: scale_fill_manual(
+  ggplot2::scale_fill_manual(
     values = c("matching" = "#66c2a5", "nonmatching" = "#fc8d62"),
     labels = c("matching" = "Matching", "nonmatching" = "Non-matching"))  +
   papaja::theme_apa()
 
 p1 <- real_boxp +
-  ggplot2::geom_point(aes(y = pred_mean1), 
+  ggplot2::geom_point(ggplot2::aes(y = pred_mean1), 
                       color = "red", 
                       size = 3, 
                       shape = 16,
-                      position = position_dodge(width = 0.8)) +
+                      position = ggplot2::position_dodge(width = 0.8)) +
   ggplot2::labs(title = "Posterior predictive check for model1 (Box plot)") 
 
 p1
 
 ## 模型比较
-library(loo)
-loglik1 <- extract(model1_fit, "log_lik")$log_lik
-waic_result1 <- waic(loglik1)
-loo_result1 <- loo(loglik1)
+loglik1 <- rstan::extract(model1_fit, "log_lik")$log_lik
+waic_result1 <- loo::waic(loglik1)
+loo_result1 <- loo::loo(loglik1)
 
 # 打印结果
 print(waic_result1)
@@ -274,7 +267,8 @@ print(loo_result1)
 
 #### 模型二
 # 准备数据并转换分类变量为哑变量
-Matching <- as.integer(df$Matching == 'matching')
+# 1 = nonmatching（基线 = matching），与讲义中的对比列 Contrast3 一致
+Matching <- as.integer(df$Matching == "nonmatching")
 
 ## 定义Stan模型
 # 定义Stan模型
@@ -284,7 +278,7 @@ data {
   vector[N] y;           // 响应变量
   vector[N] X1;               // 哑变量1（Friend）
   vector[N] X2;               // 哑变量2（Stranger）
-  vector[N] Matching;         // 哑变量（Matching条件）
+  vector[N] Matching;         // 哑变量（1 = nonmatching）
 }
 
 parameters {
@@ -320,8 +314,8 @@ model {
   y ~ normal(beta_0 + beta_1 * X1 + beta_2 * X2 + beta_3 * Matching, sigma);
 }
 generated quantities {
- real y_rep[N];
- real log_lik[N];
+ array[N] real y_rep;
+ array[N] real log_lik;
 
  for (n in 1:N) {
  y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n]+ beta_3 * Matching[n], sigma);
@@ -340,7 +334,7 @@ data_list2 <- list(
 )
 
 ## 采样
-model2_fit <- stan(model_code = model_code2, data = data_list2, 
+model2_fit <- rstan::stan(model_code = model_code2, data = data_list2, 
                    iter = 3000, 
                    chains = 4, 
                    warmup = 1000, 
@@ -351,8 +345,8 @@ model2_fit <- stan(model_code = model_code2, data = data_list2,
 neff_ratio2 <- as.data.frame(bayesplot::neff_ratio(model2_fit))
 head(neff_ratio2,5)
 
-model_summary <- summary(model2_fit)
-round(head(model_summary$summary, 5),3)
+model_summary2 <- summary(model2_fit)
+round(head(model_summary2$summary, 5),3)
 
 ## ROPE + HDI
 # 定义 ROPE 区间，根据研究的需要指定实际等效范围
@@ -371,9 +365,9 @@ beta2_hdi95 <- bayestestR::hdi(trace2_beta2)
 beta3_hdi95 <- bayestestR::hdi(trace2_beta3)
 
 # 计算ROPE
-rope1 <- bayestestR::rope(trace2_beta1,range = c(-0.05, 0.05))
-rope2 <- bayestestR::rope(trace2_beta2,range = c(-0.05, 0.05))
-rope3 <- bayestestR::rope(trace2_beta3,range = c(-0.05, 0.05))
+rope1 <- bayestestR::rope(trace2_beta1,range = rope_interval)
+rope2 <- bayestestR::rope(trace2_beta2,range = rope_interval)
+rope3 <- bayestestR::rope(trace2_beta3,range = rope_interval)
 
 beta1_plot <- plot(rope1, rope_color = "grey70") + 
   ggplot2::annotate("text", # 添加标签显示 Rope 值
@@ -414,12 +408,11 @@ beta3_plot <- plot(rope3, rope_color = "grey70") +
   papaja::theme_apa() + ggplot2::scale_y_continuous(expand = c(0, 0)) +
   ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置
 # 显示图形
-options(repr.plot.width=16, repr.plot.height=6) 
 beta1_plot + beta2_plot + beta3_plot
 
 ## 贝叶斯因子
 # 提取样本
-allsamples2 <- extract(model2_fit)
+allsamples2 <- rstan::extract(model2_fit)
 
 # 可以使用bayestestR包中的bayesfactor_parameters函数计算贝叶斯因子（Savage-Dickey）
 beta1_BF <- bayestestR::bayesfactor_parameters(allsamples2$beta_1, allsamples2$p_beta_1, direction = "two-sided", null = 0)
@@ -435,28 +428,27 @@ print(beta3_BF)
 plot_BF1 <- plot(beta1_BF)+
   see::scale_fill_material_d(palette = "beta_1") +
   see::scale_color_material_d(palette = "beta_1") +
-  xlim(-0.3,0.3) +
-  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[1]))) +
+  ggplot2::xlim(-0.3, 0.3) +
+  ggplot2::labs(title = expression(paste("Bayes factor (BF) for ", beta[1]))) +
   papaja::theme_apa() +
   ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置
 
 plot_BF2 <- plot(beta2_BF)+
   see::scale_fill_material_d(palette = "beta_2") +
   see::scale_color_material_d(palette = "beta_2") +
-  xlim(-0.3,0.3) +
-  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[2]))) +
+  ggplot2::xlim(-0.3, 0.3) +
+  ggplot2::labs(title = expression(paste("Bayes factor (BF) for ", beta[2]))) +
   papaja::theme_apa() +
   ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置
 
 plot_BF3 <- plot(beta3_BF)+
   see::scale_fill_material_d(palette = "beta_3") +
   see::scale_color_material_d(palette = "beta_3") +
-  xlim(-0.3,0.3) +
-  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[3]))) +
+  ggplot2::xlim(-0.3, 0.3) +
+  ggplot2::labs(title = expression(paste("Bayes factor (BF) for ", beta[3]))) +
   papaja::theme_apa() +
   ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置
 
-options(repr.plot.width=20, repr.plot.height=6) 
 plot_BF1 + plot_BF2 + plot_BF3
 
 ## 后验预测
@@ -466,12 +458,11 @@ pp_check2 <- bayesplot::ppc_dens_overlay(data_list2$y, y_rep2[1:200, ]) +
   ggplot2::labs(title = "Posterior predictive check for model2") + 
   papaja::theme_apa()
 
-options(repr.plot.width=10, repr.plot.height=6) 
 pp_check2
 
 # 可视化（箱图）
 # 提取后验样本
-post_samples2 <- extract(model2_fit)
+post_samples2 <- rstan::extract(model2_fit)
 # 先将列表转换为矩阵
 temp_matrix2 <- do.call(rbind, post_samples2)
 
@@ -485,21 +476,20 @@ df$pred_mean2 <- column2_means[1] + column2_means[2] * data_list2$X1 +
 
 # 创建箱线图风格的后验预测图
 p2 <- real_boxp +
-  ggplot2::geom_point(aes(y = df$pred_mean2), 
+  ggplot2::geom_point(ggplot2::aes(y = df$pred_mean2), 
                       color = "red", 
                       size = 3, 
                       shape = 16,
-                      position = position_dodge(width = 0.8)) +
+                      position = ggplot2::position_dodge(width = 0.8)) +
   ggplot2::labs(title = "Posterior predictive check for model2 (Box plot)") 
 
-options(repr.plot.width=18, repr.plot.height=6)
 
 p1 + p2
 
 ## 模型比较
-loglik2 <- extract(model2_fit, "log_lik")$log_lik
-waic_result2 <- waic(loglik2)
-loo_result2 <- loo(loglik2)
+loglik2 <- rstan::extract(model2_fit, "log_lik")$log_lik
+waic_result2 <- loo::waic(loglik2)
+loo_result2 <- loo::loo(loglik2)
 
 # 打印结果
 print(waic_result2)
@@ -526,7 +516,7 @@ data {
   vector[N] y;               // 响应变量
   vector[N] X1;                   // 哑变量1（Friend）
   vector[N] X2;                   // 哑变量2（Stranger）
-  vector[N] Matching;             // 哑变量（Matching条件）
+  vector[N] Matching;             // 哑变量（1 = nonmatching）
   vector[N] Interaction_1;        // Friend 和 Matching 的交互
   vector[N] Interaction_2;        // Stranger 和 Matching 的交互
 }
@@ -556,8 +546,8 @@ model {
                        beta_4 * Interaction_1 + beta_5 * Interaction_2, sigma);
 }
 generated quantities {
- real y_rep[N];
- real log_lik[N];
+ array[N] real y_rep;
+ array[N] real log_lik;
 
 //使用单纯的Monte Carlo generator不使用马尔可夫链用来获得先验分布
  real p_beta_0 = normal_rng(5,2); 
@@ -571,7 +561,8 @@ generated quantities {
  for (n in 1:N) {
  y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n] + 
                        beta_4 * Interaction_1[n] + beta_5 * Interaction_2[n], sigma);
- log_lik[n] = normal_lpdf(y[n] | beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n], sigma);
+ log_lik[n] = normal_lpdf(y[n] | beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n] +
+                       beta_4 * Interaction_1[n] + beta_5 * Interaction_2[n], sigma);
 
  }
 }
@@ -589,7 +580,7 @@ data_list3 <- list(
 )
 
 # 采样
-model3_fit <- stan(model_code = model_code3, 
+model3_fit <- rstan::stan(model_code = model_code3, 
                    data = data_list3, 
                    iter = 3000, 
                    chains = 4, 
@@ -620,8 +611,8 @@ beta4_hdi95 <- bayestestR::hdi(trace3_beta4)
 beta5_hdi95 <- bayestestR::hdi(trace3_beta5)
 
 # 计算ROPE
-rope4 <- bayestestR::rope(trace3_beta4,range = c(-0.05, 0.05))
-rope5 <- bayestestR::rope(trace3_beta5,range = c(-0.05, 0.05))
+rope4 <- bayestestR::rope(trace3_beta4,range = rope_interval)
+rope5 <- bayestestR::rope(trace3_beta5,range = rope_interval)
 
 # 绘图
 beta4_plot <- plot(rope4, rope_color = "grey70") + 
@@ -652,12 +643,11 @@ beta5_plot <- plot(rope5, rope_color = "grey70") +
   ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置
 
 # 显示图形
-options(repr.plot.width=14, repr.plot.height=6) 
 beta4_plot + beta5_plot
 
 ## 贝叶斯因子
 # 提取样本
-allsamples3 <- as.data.frame(extract(model3_fit))
+allsamples3 <- as.data.frame(rstan::extract(model3_fit))
 
 # 可以使用bayestestR包中的bayesfactor_parameters函数计算贝叶斯因子（Savage-Dickey）
 beta4_BF <- bayestestR::bayesfactor_parameters(allsamples3$beta_4, allsamples3$p_beta_4, direction = "two-sided", null = 0)
@@ -670,35 +660,33 @@ print(beta5_BF)
 plot_BF4 <- plot(beta4_BF)+
   see::scale_fill_material_d(palette = "beta_4") +
   see::scale_color_material_d(palette = "beta_4") +
-  xlim(-0.3,0.3) +
-  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[4]))) +
+  ggplot2::xlim(-0.3, 0.3) +
+  ggplot2::labs(title = expression(paste("Bayes factor (BF) for ", beta[4]))) +
   papaja::theme_apa() +
   ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置
 
 plot_BF5 <- plot(beta5_BF)+
   see::scale_fill_material_d(palette = "beta_5") +
   see::scale_color_material_d(palette = "beta_5") +
-  ggplot2::labs(title = expression(paste("Bayes facotr (BF) for ", beta[5]))) +
-  xlim(-0.3,0.3) +
+  ggplot2::labs(title = expression(paste("Bayes factor (BF) for ", beta[5]))) +
+  ggplot2::xlim(-0.3, 0.3) +
   papaja::theme_apa() +
   ggplot2::theme(legend.position = c(0.85, 0.75))  # 调整图例位置
 
-options(repr.plot.width=20, repr.plot.height=6) 
 plot_BF4 + plot_BF5
 
 ## 后验预测
 y_rep3 <- as.matrix(model3_fit, pars = "y_rep")
 
-pp_check3 <- bayesplot::ppc_dens_overlay(data_list$y, y_rep3[1:200, ]) + 
+pp_check3 <- bayesplot::ppc_dens_overlay(data_list3$y, y_rep3[1:200, ]) + 
   ggplot2::labs(title = "Posterior predictive check for model3") + 
   papaja::theme_apa()
 
-options(repr.plot.width=10, repr.plot.height=6) 
 pp_check3
 
 # 可视化（箱图）
 # 提取后验样本
-post_samples3 <- extract(model3_fit)
+post_samples3 <- rstan::extract(model3_fit)
 # 先将列表转换为矩阵
 temp_matrix3 <- do.call(rbind, post_samples3)
 
@@ -713,20 +701,19 @@ df$pred_mean3 <- column3_means[1] + column3_means[2] * data_list3$X1 +
 
 # 创建箱线图风格的后验预测图
 p3 <- real_boxp +
-  ggplot2::geom_point(aes(y = df$pred_mean3), 
+  ggplot2::geom_point(ggplot2::aes(y = df$pred_mean3), 
                       color = "red", 
                       size = 3, 
                       shape = 16,
-                      position = position_dodge(width = 0.8)) +
+                      position = ggplot2::position_dodge(width = 0.8)) +
   ggplot2::labs(title = "Posterior predictive check for model3 (Box plot)") 
 
-options(repr.plot.width=18, repr.plot.height=6) 
 p1 + p2 + p3
 
 ## 模型比较
-loglik3 <- extract(model3_fit, "log_lik")$log_lik
-waic_result3 <- waic(loglik3)
-loo_result3 <- loo(loglik3)
+loglik3 <- rstan::extract(model3_fit, "log_lik")$log_lik
+waic_result3 <- loo::waic(loglik3)
+loo_result3 <- loo::loo(loglik3)
 
 # 打印结果
 print(waic_result3)

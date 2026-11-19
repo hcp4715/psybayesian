@@ -13,10 +13,7 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-try:
-    df_raw = pd.read_csv('/home/mw/input/bayes3797/Kolvoort_2020_HBM_Exp1_Clean.csv')
-except:
-    df_raw = pd.read_csv('data/Kolvoort_2020_HBM_Exp1_Clean.csv')
+df_raw = pd.read_csv("data/Kolvoort_2020_HBM_Exp1_Clean.csv")
 
 df = df_raw.groupby(['Subject', 'Label', 'Matching'], as_index=False)['RT_sec'].mean()
 
@@ -180,8 +177,8 @@ plt.show()
 X1 = (df['Label'] == 'Friend').astype(int)
 X2 = (df['Label'] == 'Stranger').astype(int)
 
-# Matching 条件的哑变量
-Matching = (df['Matching'] == 'matching').astype(int)
+# Matching 条件的哑变量（1 = nonmatching，基线 = matching）
+Matching = (df['Matching'] == 'nonmatching').astype(int)
 
 import pymc as pm
 
@@ -257,7 +254,7 @@ import xarray as xr
 # 导入真实的自变量
 X1 = xr.DataArray((df['Label'] == 'Friend').astype(int))
 X2 = xr.DataArray((df['Label'] == 'Stranger').astype(int))
-Matching = xr.DataArray((df['Matching'] == 'matching').astype(int))
+Matching = xr.DataArray((df['Matching'] == 'nonmatching').astype(int))
 
 model2_trace.posterior["y_model"] = model2_trace.posterior["beta_0"] + model2_trace.posterior["beta_1"] * X1 + \
                                     model2_trace.posterior["beta_2"] * X2 + model2_trace.posterior["beta_3"] * Matching
@@ -283,8 +280,8 @@ plt.show()
 X1 = (df['Label'] == 'Friend').astype(int)
 X2 = (df['Label'] == 'Stranger').astype(int)
 
-# Matching 条件的哑变量
-Matching = (df['Matching'] == 'matching').astype(int)
+# Matching 条件的哑变量（1 = nonmatching，基线 = matching）
+Matching = (df['Matching'] == 'nonmatching').astype(int)
 
 # Friend 和 Matching 的交互
 Interaction_1 = X1 * Matching
@@ -364,7 +361,7 @@ import xarray as xr
 # 导入真实的自变量
 X1 = xr.DataArray((df['Label'] == 'Friend').astype(int))
 X2 = xr.DataArray((df['Label'] == 'Stranger').astype(int))
-Matching = xr.DataArray((df['Matching'] == 'matching').astype(int))
+Matching = xr.DataArray((df['Matching'] == 'nonmatching').astype(int))
 Interaction_1 = X1 * Matching
 Interaction_2 = X2 * Matching
 
