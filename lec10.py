@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore")
 try:
     df_raw = pd.read_csv('/home/mw/input/bayes3797/Kolvoort_2020_HBM_Exp1_Clean.csv')
 except:
-    df_raw = pd.read_csv('/data/Kolvoort_2020_HBM_Exp1_Clean.csv')
+    df_raw = pd.read_csv('data/Kolvoort_2020_HBM_Exp1_Clean.csv')
 
 df = df_raw.groupby(['Subject', 'Label', 'Matching'], as_index=False)['RT_sec'].mean()
 
@@ -59,7 +59,7 @@ with pm.Model() as model1:
     likelihood = pm.Normal('Y_obs', mu=mu, sigma=sigma, observed=df['RT_sec'])
 
 with model1:
-    model1_trace = pm.sample(draws=5000,  # 使用mcmc方法进行采样，draws为采样次数
+    model1_trace = pm.sample(draws=2000,  # 使用mcmc方法进行采样，draws为采样次数
                              tune=1000,  # tune为调整采样策略的次数，可以决定这些结果是否要被保留
                              chains=4,  # 链数
                              discard_tuned_samples=True,  # tune的结果将在采样结束后被丢弃
@@ -200,7 +200,7 @@ with pm.Model() as model2:
     likelihood = pm.Normal('Y_obs', mu=mu, sigma=sigma, observed=df['RT_sec'])
 
 with model2:
-    model2_trace = pm.sample(draws=5000,  # 使用mcmc方法进行采样，draws为采样次数
+    model2_trace = pm.sample(draws=2000,  # 使用mcmc方法进行采样，draws为采样次数
                              tune=1000,  # tune为调整采样策略的次数，可以决定这些结果是否要被保留
                              chains=4,  # 链数
                              discard_tuned_samples=True,  # tune的结果将在采样结束后被丢弃
@@ -311,7 +311,7 @@ with pm.Model() as model3:
     likelihood = pm.Normal('Y_obs', mu=mu, sigma=sigma, observed=df['RT_sec'])
 
 with model3:
-    model3_trace = pm.sample(draws=5000,  # 使用mcmc方法进行采样，draws为采样次数
+    model3_trace = pm.sample(draws=2000,  # 使用mcmc方法进行采样，draws为采样次数
                              tune=1000,  # tune为调整采样策略的次数，可以决定这些结果是否要被保留
                              chains=4,  # 链数
                              discard_tuned_samples=True,  # tune的结果将在采样结束后被丢弃
