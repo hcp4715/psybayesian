@@ -34,6 +34,8 @@ venv.bak/
 
 # Rope project settings
 .ropeproject
+*.Rhistory
+*.Rproj
 
 # mypy
 .mypy_cache/
@@ -71,3 +73,4 @@ tmpdata/
 # Quarto project cache (created once _quarto.yml exists)
 /.quarto/
 **/*.quarto_ipynb
+.Rproj.user
