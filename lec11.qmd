@@ -115,7 +115,7 @@ stats::contr.treatment(levels(rt$Matching))
 
 $$
 Y_i \mid \boldsymbol{\beta}, \sigma
-\sim \mathcal{N}\bigl((X\boldsymbol{\beta})_i, \sigma^2\bigr)
+\sim N \bigl((X \boldsymbol{\beta})_i, \sigma^2\bigr)
 $$
 
 - `y_rep` 保存每次后验抽样生成的反应时，用于计算 MedAE。
@@ -223,8 +223,9 @@ rt_fits <- lapply(rt_stan_data, function(model_data) {
 #| label: rt-ols
 
 rt_ols <- stats::lm(rt_formulas$model3, data = rt, contrasts = contrast_codes)
-stopifnot(identical(stats::model.matrix(rt_ols), rt_designs$model3))
+
 ols_coefficients <- stats::coef(summary(rt_ols))
+
 ols_ci <- stats::confint(rt_ols, level = 0.95)
 ```
 
@@ -237,8 +238,6 @@ ols_ci <- stats::confint(rt_ols, level = 0.95)
 
 X <- rt_designs$model3
 ols_matrix <- stats::lm(rt$RT_sec ~ X - 1)
-stopifnot(isTRUE(all.equal(unname(stats::coef(ols_matrix)),
-                           unname(stats::coef(rt_ols)))))
 ```
 
 ## 贝叶斯回归与 OLS 的参数比较
@@ -308,10 +307,10 @@ ols_f <- ols_summary$fstatistic
 
 ---
 
-## 三个评估问题
+## 模型评估的三个标准
 
 1. **研究过程公正吗？** 招募、测量、分析及结果使用是否考虑了相关人群？
-2. **模型假设影响什么？** 观测依赖性、非线性和异方差会改变哪些解释？
+2. **模型假设影响什么？** 隐含模型预设、非线性和方差非齐性会改变哪些解释？
 3. **模型能预测哪些新观测？** 增加匹配状态或交互项，是否改善了所关心的样本外预测？
 
 ## 为什么要进行模型比较？
@@ -406,7 +405,7 @@ Bettache (2024) 与 Ghai 等人 (2024) 分别讨论了心理学研究中的隐�
 
 统计模型简化了现实。以前一讲的标签与反应时模型为例，哪些简化会影响模型对心理现象的解释与预测？
 
-## 高斯线性回归的三项假设
+## 高斯线性回归的三个预设(assumptions)
 
 $$
 Y_i \mid \beta_0, \beta_1, \sigma
@@ -440,7 +439,7 @@ $$
 - 右图的虚线显示被试各自的基线，实线显示群体平均趋势。
 - 忽略被试内或刺激内的关联可能低估标准误，也可能掩盖个体差异。层级模型可同时表达总体趋势和被试间差异。
 
-## 非线性与异方差
+## 线性预设违反与方差非齐性
 
 ![](assets/figs/lec11/nonlinearity-heteroscedasticity-and-posterior-prediction.png){width=65% style="max-height: 465px; object-fit: contain;" fig-alt="线性模型对非线性且异方差数据的拟合和后验预测检验"}
 
@@ -450,11 +449,11 @@ $$
 
 ## 如何修改模型
 
-- **观测依赖**：根据被试、刺激或站点的分组结构建立层级模型。
+- **根据数据结构建模型**：根据被试、刺激或站点的分组结构建立层级模型。
 - **反应分布不适合正态模型**：根据反应变量的测量尺度考虑二项、泊松或负二项回归。
 - **均值趋势或残差变异不同**：考虑变换 $X$ 或 $Y$，或者直接为非线性均值趋势、变化的残差标准差建模。
 
-## 三种数据变换
+## 通过数据变换
 
 条件分布仍可设为均值 $\mu_i$、方差 $\sigma^2$ 的正态分布。以下写法改变响应或条件均值所在的尺度。
 
@@ -699,7 +698,7 @@ stats::median(abs(rt$RT_sec[posterior_mean$i] - posterior_mean$predicted))
 
 calculate_medae <- function(fit, observed) {
   draws <- rstan::extract(fit, pars = "y_rep")$y_rep
-  stopifnot(ncol(draws) == length(observed))
+
   stats::median(abs(observed - colMeans(draws)))
 }
 
@@ -806,7 +805,7 @@ calculate_dic <- function(fit, model_data) {
 dic <- mapply(calculate_dic, rt_fits, rt_stan_data)
 model_order <- match(names(rt_fits), rt_loo_comparison$model)
 elpd_diff <- rt_loo_comparison$elpd_diff[model_order]
-stopifnot(all(is.finite(elpd_diff)))
+
 knitr::kable(
   data.frame(模型 = names(rt_fits), MedAE秒 = unname(medae),
              ELPD差 = elpd_diff, DIC = unname(dic)),

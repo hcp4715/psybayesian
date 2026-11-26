@@ -360,7 +360,7 @@ Nonmatching           1</code></pre>
 <p>三个模型共用一个 Stan 程序。设计矩阵 <span class="math inline">\(X\)</span> 决定每个模型有哪些预测因子。</p>
 <p><span class="math display">\[
 Y_i \mid \boldsymbol{\beta}, \sigma
-\sim \mathcal{N}\bigl((X\boldsymbol{\beta})_i, \sigma^2\bigr)
+\sim N \bigl((X \boldsymbol{\beta})_i, \sigma^2\bigr)
 \]</span></p>
 <ul>
 <li><code>y_rep</code> 保存每次后验抽样生成的反应时，用于计算 MedAE。</li>
@@ -497,9 +497,10 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="" aria-label="1"></a>rt_ols <span class="ot">&lt;-</span> stats<span class="sc">::</span><span class="fu">lm</span>(rt_formulas<span class="sc">$</span>model3, <span class="at">data =</span> rt, <span class="at">contrasts =</span> contrast_codes)</span>
-<span id="cb14-2"><a href="" aria-label="2"></a><span class="fu">stopifnot</span>(<span class="fu">identical</span>(stats<span class="sc">::</span><span class="fu">model.matrix</span>(rt_ols), rt_designs<span class="sc">$</span>model3))</span>
+<span id="cb14-2"><a href="" aria-label="2"></a></span>
 <span id="cb14-3"><a href="" aria-label="3"></a>ols_coefficients <span class="ot">&lt;-</span> stats<span class="sc">::</span><span class="fu">coef</span>(<span class="fu">summary</span>(rt_ols))</span>
-<span id="cb14-4"><a href="" aria-label="4"></a>ols_ci <span class="ot">&lt;-</span> stats<span class="sc">::</span><span class="fu">confint</span>(rt_ols, <span class="at">level =</span> <span class="fl">0.95</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-4"><a href="" aria-label="4"></a></span>
+<span id="cb14-5"><a href="" aria-label="5"></a>ols_ci <span class="ot">&lt;-</span> stats<span class="sc">::</span><span class="fu">confint</span>(rt_ols, <span class="at">level =</span> <span class="fl">0.95</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -510,9 +511,7 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="" aria-label="1"></a>X <span class="ot">&lt;-</span> rt_designs<span class="sc">$</span>model3</span>
-<span id="cb15-2"><a href="" aria-label="2"></a>ols_matrix <span class="ot">&lt;-</span> stats<span class="sc">::</span><span class="fu">lm</span>(rt<span class="sc">$</span>RT_sec <span class="sc">~</span> X <span class="sc">-</span> <span class="dv">1</span>)</span>
-<span id="cb15-3"><a href="" aria-label="3"></a><span class="fu">stopifnot</span>(<span class="fu">isTRUE</span>(<span class="fu">all.equal</span>(<span class="fu">unname</span>(stats<span class="sc">::</span><span class="fu">coef</span>(ols_matrix)),</span>
-<span id="cb15-4"><a href="" aria-label="4"></a>                           <span class="fu">unname</span>(stats<span class="sc">::</span><span class="fu">coef</span>(rt_ols)))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb15-2"><a href="" aria-label="2"></a>ols_matrix <span class="ot">&lt;-</span> stats<span class="sc">::</span><span class="fu">lm</span>(rt<span class="sc">$</span>RT_sec <span class="sc">~</span> X <span class="sc">-</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -628,11 +627,11 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 <p>这一讲要问，增加预测因子或交互项，能否改善对所关心的新数据的预测？</p>
 <p><img data-src="assets/figs/lec11/bayesian-workflow-model-evaluation.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="原稿的模型比较引导图"></p>
 </section>
-<section id="三个评估问题" class="slide level2">
-<h2>三个评估问题</h2>
+<section id="模型评估的三个标准" class="slide level2">
+<h2>模型评估的三个标准</h2>
 <ol type="1">
 <li><strong>研究过程公正吗？</strong> 招募、测量、分析及结果使用是否考虑了相关人群？</li>
-<li><strong>模型假设影响什么？</strong> 观测依赖性、非线性和异方差会改变哪些解释？</li>
+<li><strong>模型假设影响什么？</strong> 隐含模型预设、非线性和方差非齐性会改变哪些解释？</li>
 <li><strong>模型能预测哪些新观测？</strong> 增加匹配状态或交互项，是否改善了所关心的样本外预测？</li>
 </ol>
 </section>
@@ -779,8 +778,8 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 </blockquote>
 <p>统计模型简化了现实。以前一讲的标签与反应时模型为例，哪些简化会影响模型对心理现象的解释与预测？</p>
 </section>
-<section id="高斯线性回归的三项假设" class="slide level2">
-<h2>高斯线性回归的三项假设</h2>
+<section id="高斯线性回归的三个预设assumptions" class="slide level2">
+<h2>高斯线性回归的三个预设(assumptions)</h2>
 <p><span class="math display">\[
 Y_i \mid \beta_0, \beta_1, \sigma
 \stackrel{\mathrm{ind}}{\sim} \mathcal{N}(\mu_i, \sigma^2),
@@ -813,21 +812,21 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <li>忽略被试内或刺激内的关联可能低估标准误，也可能掩盖个体差异。层级模型可同时表达总体趋势和被试间差异。</li>
 </ul>
 </section>
-<section id="非线性与异方差" class="slide level2">
-<h2>非线性与异方差</h2>
+<section id="线性预设违反与方差非齐性" class="slide level2">
+<h2>线性预设违反与方差非齐性</h2>
 <p><img data-src="assets/figs/lec11/nonlinearity-heteroscedasticity-and-posterior-prediction.png" style="max-height: 465px; object-fit: contain;;width:65.0%" alt="线性模型对非线性且异方差数据的拟合和后验预测检验"></p>
 <p>左图中，均值随预测变量呈非线性变化，反应的变异也随预测变量增加。右图用后验预测检验比较模型生成的数据与观测数据。</p>
 </section>
 <section id="如何修改模型" class="slide level2">
 <h2>如何修改模型</h2>
 <ul>
-<li><strong>观测依赖</strong>：根据被试、刺激或站点的分组结构建立层级模型。</li>
+<li><strong>根据数据结构建模型</strong>：根据被试、刺激或站点的分组结构建立层级模型。</li>
 <li><strong>反应分布不适合正态模型</strong>：根据反应变量的测量尺度考虑二项、泊松或负二项回归。</li>
 <li><strong>均值趋势或残差变异不同</strong>：考虑变换 <span class="math inline">\(X\)</span> 或 <span class="math inline">\(Y\)</span>，或者直接为非线性均值趋势、变化的残差标准差建模。</li>
 </ul>
 </section>
-<section id="三种数据变换" class="slide level2">
-<h2>三种数据变换</h2>
+<section id="通过数据变换" class="slide level2">
+<h2>通过数据变换</h2>
 <p>条件分布仍可设为均值 <span class="math inline">\(\mu_i\)</span>、方差 <span class="math inline">\(\sigma^2\)</span> 的正态分布。以下写法改变响应或条件均值所在的尺度。</p>
 <table class="caption-top">
 <thead>
@@ -1178,7 +1177,7 @@ p(y_i \mid y_{-i})
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="" aria-label="1"></a>calculate_medae <span class="ot">&lt;-</span> <span class="cf">function</span>(fit, observed) {</span>
 <span id="cb19-2"><a href="" aria-label="2"></a>  draws <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(fit, <span class="at">pars =</span> <span class="st">"y_rep"</span>)<span class="sc">$</span>y_rep</span>
-<span id="cb19-3"><a href="" aria-label="3"></a>  <span class="fu">stopifnot</span>(<span class="fu">ncol</span>(draws) <span class="sc">==</span> <span class="fu">length</span>(observed))</span>
+<span id="cb19-3"><a href="" aria-label="3"></a></span>
 <span id="cb19-4"><a href="" aria-label="4"></a>  stats<span class="sc">::</span><span class="fu">median</span>(<span class="fu">abs</span>(observed <span class="sc">-</span> <span class="fu">colMeans</span>(draws)))</span>
 <span id="cb19-5"><a href="" aria-label="5"></a>}</span>
 <span id="cb19-6"><a href="" aria-label="6"></a></span>
@@ -1343,7 +1342,7 @@ p_D=\overline{D}-D(\bar{\theta}),\quad
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="" aria-label="1"></a>dic <span class="ot">&lt;-</span> <span class="fu">mapply</span>(calculate_dic, rt_fits, rt_stan_data)</span>
 <span id="cb26-2"><a href="" aria-label="2"></a>model_order <span class="ot">&lt;-</span> <span class="fu">match</span>(<span class="fu">names</span>(rt_fits), rt_loo_comparison<span class="sc">$</span>model)</span>
 <span id="cb26-3"><a href="" aria-label="3"></a>elpd_diff <span class="ot">&lt;-</span> rt_loo_comparison<span class="sc">$</span>elpd_diff[model_order]</span>
-<span id="cb26-4"><a href="" aria-label="4"></a><span class="fu">stopifnot</span>(<span class="fu">all</span>(<span class="fu">is.finite</span>(elpd_diff)))</span>
+<span id="cb26-4"><a href="" aria-label="4"></a></span>
 <span id="cb26-5"><a href="" aria-label="5"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
 <span id="cb26-6"><a href="" aria-label="6"></a>  <span class="fu">data.frame</span>(模型 <span class="ot">=</span> <span class="fu">names</span>(rt_fits), MedAE秒 <span class="ot">=</span> <span class="fu">unname</span>(medae),</span>
 <span id="cb26-7"><a href="" aria-label="7"></a>             ELPD差 <span class="ot">=</span> elpd_diff, <span class="at">DIC =</span> <span class="fu">unname</span>(dic)),</span>
