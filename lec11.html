@@ -479,7 +479,7 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 <section id="拟合三个候选模型" class="slide level2">
 <h2>拟合三个候选模型</h2>
 <p>每个模型使用 4 条链，每条链迭代 3,000 次，前 1,000 次用于预热。</p>
-<div class="cell" data-cache.extra="aa3e730cbd1d3d72b29dba3e4a94d871">
+<div class="cell" data-cache.extra="ea5a4725e6c1fae31d8f450491a6b406">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="" aria-label="1"></a>rt_stan_model <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">stan_model</span>(<span class="at">model_code =</span> gaussian_stan)</span>
@@ -522,11 +522,11 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 <div class="cell-output-display">
 <table class="caption-top">
 <colgroup>
-<col style="width: 19%">
-<col style="width: 11%">
+<col style="width: 20%">
+<col style="width: 10%">
 <col style="width: 9%">
 <col style="width: 19%">
-<col style="width: 11%">
+<col style="width: 10%">
 <col style="width: 8%">
 <col style="width: 19%">
 </colgroup>
@@ -544,17 +544,17 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">截距</td>
-<td style="text-align: left;">0.678</td>
-<td style="text-align: left;">0.024</td>
-<td style="text-align: left;">[0.631, 0.725]</td>
+<td style="text-align: left;">0.679</td>
+<td style="text-align: left;">0.025</td>
+<td style="text-align: left;">[0.631, 0.726]</td>
 <td style="text-align: left;">0.678</td>
 <td style="text-align: left;">0.024</td>
 <td style="text-align: left;">[0.631, 0.725]</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">朋友</td>
-<td style="text-align: left;">0.079</td>
-<td style="text-align: left;">0.034</td>
+<td style="text-align: left;">0.078</td>
+<td style="text-align: left;">0.035</td>
 <td style="text-align: left;">[0.011, 0.147]</td>
 <td style="text-align: left;">0.079</td>
 <td style="text-align: left;">0.034</td>
@@ -562,36 +562,36 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 </tr>
 <tr class="odd">
 <td style="text-align: left;">陌生人</td>
-<td style="text-align: left;">0.089</td>
-<td style="text-align: left;">0.034</td>
-<td style="text-align: left;">[0.022, 0.158]</td>
+<td style="text-align: left;">0.088</td>
+<td style="text-align: left;">0.035</td>
+<td style="text-align: left;">[0.020, 0.155]</td>
 <td style="text-align: left;">0.089</td>
 <td style="text-align: left;">0.034</td>
 <td style="text-align: left;">[0.023, 0.156]</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">不匹配</td>
-<td style="text-align: left;">0.050</td>
-<td style="text-align: left;">0.034</td>
-<td style="text-align: left;">[-0.016, 0.117]</td>
+<td style="text-align: left;">0.049</td>
+<td style="text-align: left;">0.035</td>
+<td style="text-align: left;">[-0.019, 0.118]</td>
 <td style="text-align: left;">0.050</td>
 <td style="text-align: left;">0.034</td>
 <td style="text-align: left;">[-0.016, 0.116]</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">朋友 × 不匹配</td>
-<td style="text-align: left;">-0.030</td>
-<td style="text-align: left;">0.048</td>
-<td style="text-align: left;">[-0.124, 0.066]</td>
+<td style="text-align: left;">-0.029</td>
+<td style="text-align: left;">0.049</td>
+<td style="text-align: left;">[-0.128, 0.066]</td>
 <td style="text-align: left;">-0.030</td>
 <td style="text-align: left;">0.048</td>
 <td style="text-align: left;">[-0.124, 0.063]</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">陌生人 × 不匹配</td>
-<td style="text-align: left;">-0.057</td>
-<td style="text-align: left;">0.048</td>
-<td style="text-align: left;">[-0.154, 0.035]</td>
+<td style="text-align: left;">-0.055</td>
+<td style="text-align: left;">0.049</td>
+<td style="text-align: left;">[-0.151, 0.040]</td>
 <td style="text-align: left;">-0.057</td>
 <td style="text-align: left;">0.048</td>
 <td style="text-align: left;">[-0.151, 0.037]</td>
@@ -604,7 +604,7 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 <section id="参数不确定性与模型拟合" class="slide level2">
 <h2>参数不确定性与模型拟合</h2>
 <ul>
-<li>贝叶斯模型的 <span class="math inline">\(\sigma\)</span> 后验均值为 0.133 秒，后验标准差为 0.007 秒，95% 可信区间为 [0.120, 0.148] 秒。</li>
+<li>贝叶斯模型的 <span class="math inline">\(\sigma\)</span> 后验均值为 0.134 秒，后验标准差为 0.007 秒，95% 可信区间为 [0.120, 0.149] 秒。</li>
 <li>OLS 的 <span class="math inline">\(R^2\)</span> 为 0.062，调整后 <span class="math inline">\(R^2\)</span> 为 0.036。整体检验的 <span class="math inline">\(F\)</span> 值为 2.36，<span class="math inline">\(p\)</span> 值为 0.0418。</li>
 <li>OLS 的对数似然、AIC 和 BIC 分别为 115.01、-216.03 和 -193.45。</li>
 </ul>
@@ -1147,10 +1147,10 @@ p(y_i \mid y_{-i})
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>   observed predicted
-1 0.7105952 0.7035062
-2 0.7399870 0.7053153
-3 0.7890741 0.7647687
-4 0.8526000 0.7666065</code></pre>
+1 0.7105952 0.7019977
+2 0.7399870 0.7030642
+3 0.7890741 0.7653403
+4 0.8526000 0.7687244</code></pre>
 </div>
 </div>
 </section>
@@ -1196,11 +1196,11 @@ p(y_i \mid y_{-i})
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">model1</td>
-<td style="text-align: right;">0.0871</td>
+<td style="text-align: right;">0.0868</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">model2</td>
-<td style="text-align: right;">0.0904</td>
+<td style="text-align: right;">0.0894</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">model3</td>
@@ -1228,10 +1228,10 @@ p(y_i \mid y_{-i})
 <span id="cb20-8"><a href="" aria-label="8"></a>rt_loo<span class="sc">$</span>model3<span class="sc">$</span>estimates</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>           Estimate         SE
-elpd_loo  107.73791 10.2773250
-p_loo       7.02463  0.8486602
-looic    -215.47582 20.5546501</code></pre>
+<pre><code>            Estimate         SE
+elpd_loo  107.625785 10.2454048
+p_loo       7.115762  0.8616123
+looic    -215.251571 20.4908096</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -1273,12 +1273,12 @@ All Pareto k estimates are good (k &lt; 0.7).</code></pre>
 <tr class="even">
 <td style="text-align: left;">model2</td>
 <td style="text-align: right;">-0.36</td>
-<td style="text-align: right;">1.07</td>
+<td style="text-align: right;">1.11</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">model3</td>
-<td style="text-align: right;">-1.81</td>
-<td style="text-align: right;">1.51</td>
+<td style="text-align: right;">-1.93</td>
+<td style="text-align: right;">1.47</td>
 </tr>
 </tbody>
 </table>
@@ -1291,7 +1291,7 @@ All Pareto k estimates are good (k &lt; 0.7).</code></pre>
 </section>
 <section id="怎样解读本例的-elpd" class="slide level2">
 <h2>怎样解读本例的 ELPD</h2>
-<p>模型 1 的 ELPD-LOO 最高，模型 3 最低。模型 2 相对模型 1 的差为 -0.36，差值标准误为 1.07。比较差值是否达到两三个标准误，可帮助理解排名的不确定性。</p>
+<p>模型 1 的 ELPD-LOO 最高，模型 3 最低。模型 2 相对模型 1 的差为 -0.36，差值标准误为 1.11。比较差值是否达到两三个标准误，可帮助理解排名的不确定性。</p>
 <p>也可以对照上一讲的贝叶斯因子、HDI 和实际等价区域（ROPE），讨论参数推断与样本外预测各自回答了什么。</p>
 </section>
 <section id="dic-的计算依据" class="slide level2">
@@ -1362,21 +1362,21 @@ p_D=\overline{D}-D(\bar{\theta}),\quad
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">model1</td>
-<td style="text-align: right;">0.0871</td>
+<td style="text-align: right;">0.0868</td>
 <td style="text-align: right;">0.0000</td>
-<td style="text-align: right;">-219.2592</td>
+<td style="text-align: right;">-219.2718</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">model2</td>
-<td style="text-align: right;">0.0904</td>
-<td style="text-align: right;">-0.3649</td>
-<td style="text-align: right;">-218.5236</td>
+<td style="text-align: right;">0.0894</td>
+<td style="text-align: right;">-0.3632</td>
+<td style="text-align: right;">-218.5366</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">model3</td>
 <td style="text-align: right;">0.0891</td>
-<td style="text-align: right;">-1.8140</td>
-<td style="text-align: right;">-215.7666</td>
+<td style="text-align: right;">-1.9307</td>
+<td style="text-align: right;">-215.5199</td>
 </tr>
 </tbody>
 </table>
@@ -1427,17 +1427,41 @@ p_D=\overline{D}-D(\bar{\theta}),\quad
 </table>
 <p>截距先验为均值 50、标准差 10 的正态分布，各斜率的先验均值为 0、标准差为 10。<span class="math inline">\(\sigma\)</span> 的指数先验率为 0.6。</p>
 </section>
+<section id="用brms拟合贝叶斯回归模型" class="slide level2">
+<h2>用brms拟合贝叶斯回归模型</h2>
+<p><strong>brms</strong> 是用于贝叶斯回归的 R 包。<code>brm()</code> 根据模型公式、响应分布和先验生成 Stan 代码，并调用 Stan 进行 MCMC 后验采样。</p>
+<p>以压力分数预测自我控制分数为例：</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="" aria-label="1"></a>fit_intro <span class="ot">&lt;-</span> brms<span class="sc">::</span><span class="fu">brm</span>(</span>
+<span id="cb27-2"><a href="" aria-label="2"></a>  <span class="at">formula =</span> scontrol <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Intercept <span class="sc">+</span> stress, </span>
+<span id="cb27-3"><a href="" aria-label="3"></a>  <span class="at">data =</span> exercise,</span>
+<span id="cb27-4"><a href="" aria-label="4"></a>  <span class="at">family =</span> stats<span class="sc">::</span><span class="fu">gaussian</span>(),</span>
+<span id="cb27-5"><a href="" aria-label="5"></a>  <span class="at">prior =</span> <span class="fu">c</span>(</span>
+<span id="cb27-6"><a href="" aria-label="6"></a>    brms<span class="sc">::</span><span class="fu">set_prior</span>(<span class="st">"normal(0, 10)"</span>, <span class="at">class =</span> <span class="st">"b"</span>),</span>
+<span id="cb27-7"><a href="" aria-label="7"></a>    brms<span class="sc">::</span><span class="fu">set_prior</span>(<span class="st">"normal(50, 10)"</span>, <span class="at">class =</span> <span class="st">"b"</span>, <span class="at">coef =</span> <span class="st">"Intercept"</span>),</span>
+<span id="cb27-8"><a href="" aria-label="8"></a>    brms<span class="sc">::</span><span class="fu">set_prior</span>(<span class="st">"exponential(0.6)"</span>, <span class="at">class =</span> <span class="st">"sigma"</span>)</span>
+<span id="cb27-9"><a href="" aria-label="9"></a>  ),</span>
+<span id="cb27-10"><a href="" aria-label="10"></a>  <span class="at">chains =</span> <span class="dv">4</span>, <span class="at">iter =</span> <span class="dv">3000</span>, <span class="at">warmup =</span> <span class="dv">1000</span>, <span class="at">seed =</span> <span class="dv">84735</span></span>
+<span id="cb27-11"><a href="" aria-label="11"></a>)</span>
+<span id="cb27-12"><a href="" aria-label="12"></a><span class="fu">summary</span>(fit_intro)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<ul>
+<li><strong>定义模型</strong>　<code>formula</code> 指定用压力预测自我控制。<code>family</code> 指定在给定压力分数时，自我控制分数服从正态分布。</li>
+<li><strong>设定先验</strong>　<code>0 + Intercept</code> 显式保留原始截距。<code>prior</code> 分别设定斜率、截距与残差标准差的先验。</li>
+<li><strong>采样并查看结果</strong>　运行 4 条链，每条链迭代 3,000 次，前 1,000 次用于预热。<code>summary()</code> 查看后验估计、可信区间和收敛诊断。</li>
+</ul>
+</section>
 <section id="准备练习数据" class="slide level2">
 <h2>准备练习数据</h2>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="" aria-label="1"></a>exercise_raw <span class="ot">&lt;-</span> utils<span class="sc">::</span><span class="fu">read.csv</span>(<span class="st">"data/Data_Sum_HPP_Multi_Site_Share.csv"</span>)</span>
-<span id="cb27-2"><a href="" aria-label="2"></a>exercise <span class="ot">&lt;-</span> exercise_raw <span class="sc">%&gt;%</span></span>
-<span id="cb27-3"><a href="" aria-label="3"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(Site <span class="sc">==</span> <span class="st">"Tsinghua"</span>, smoke <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>L, <span class="dv">2</span>L),</span>
-<span id="cb27-4"><a href="" aria-label="4"></a>                <span class="fu">is.finite</span>(stress), <span class="fu">is.finite</span>(scontrol)) <span class="sc">%&gt;%</span></span>
-<span id="cb27-5"><a href="" aria-label="5"></a>  dplyr<span class="sc">::</span><span class="fu">transmute</span>(stress, scontrol, <span class="at">smoke =</span> <span class="fu">as.integer</span>(smoke <span class="sc">==</span> <span class="dv">1</span>L))</span>
-<span id="cb27-6"><a href="" aria-label="6"></a>utils<span class="sc">::</span><span class="fu">head</span>(exercise, <span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="" aria-label="1"></a>exercise_raw <span class="ot">&lt;-</span> utils<span class="sc">::</span><span class="fu">read.csv</span>(<span class="st">"data/Data_Sum_HPP_Multi_Site_Share.csv"</span>)</span>
+<span id="cb28-2"><a href="" aria-label="2"></a>exercise <span class="ot">&lt;-</span> exercise_raw <span class="sc">%&gt;%</span></span>
+<span id="cb28-3"><a href="" aria-label="3"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(Site <span class="sc">==</span> <span class="st">"Tsinghua"</span>, smoke <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>L, <span class="dv">2</span>L),</span>
+<span id="cb28-4"><a href="" aria-label="4"></a>                <span class="fu">is.finite</span>(stress), <span class="fu">is.finite</span>(scontrol)) <span class="sc">%&gt;%</span></span>
+<span id="cb28-5"><a href="" aria-label="5"></a>  dplyr<span class="sc">::</span><span class="fu">transmute</span>(stress, scontrol, <span class="at">smoke =</span> <span class="fu">as.integer</span>(smoke <span class="sc">==</span> <span class="dv">1</span>L))</span>
+<span id="cb28-6"><a href="" aria-label="6"></a>utils<span class="sc">::</span><span class="fu">head</span>(exercise, <span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>  stress scontrol smoke
@@ -1450,43 +1474,64 @@ p_D=\overline{D}-D(\bar{\theta}),\quad
 </section>
 <section id="练习一定义候选模型" class="slide level2">
 <h2>练习一：定义候选模型</h2>
-<p>补全模型公式。模型 6 可用 <code>*</code> 同时纳入两个主效应与交互项。也可用两个主效应加上预先计算的乘积列，得到同样的设计矩阵列。</p>
+<p>参照模型 4，补全模型 5 的两个主效应，以及模型 6 的两个主效应和交互项。</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="" aria-label="1"></a>exercise_formulas <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb29-2"><a href="" aria-label="2"></a>  <span class="at">model4 =</span> scontrol <span class="sc">~</span> stress,</span>
-<span id="cb29-3"><a href="" aria-label="3"></a>  <span class="at">model5 =</span> scontrol <span class="sc">~</span> ...,    <span class="co"># 补全主效应</span></span>
-<span id="cb29-4"><a href="" aria-label="4"></a>  <span class="at">model6 =</span> scontrol <span class="sc">~</span> ...     <span class="co"># 补全主效应与交互项</span></span>
-<span id="cb29-5"><a href="" aria-label="5"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="" aria-label="1"></a>exercise_formulas <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb30-2"><a href="" aria-label="2"></a>  <span class="at">model4 =</span> scontrol <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Intercept <span class="sc">+</span> stress,</span>
+<span id="cb30-3"><a href="" aria-label="3"></a>  <span class="at">model5 =</span> <span class="dv">0</span> <span class="sc">+</span> Intercept <span class="sc">+</span> ...,    <span class="co"># 补全主效应</span></span>
+<span id="cb30-4"><a href="" aria-label="4"></a>  <span class="at">model6 =</span> <span class="dv">0</span> <span class="sc">+</span> Intercept <span class="sc">+</span> ...     <span class="co"># 补全主效应与交互项</span></span>
+<span id="cb30-5"><a href="" aria-label="5"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
-<section id="练习提示在-r-或-stan-中写交互项" class="slide level2">
-<h2>练习提示：在 R 或 Stan 中写交互项</h2>
-<ul>
-<li>在 R 中计算乘积列 <code>exercise$stress * exercise$smoke</code>，将其与两个主效应一起传给 Stan。</li>
-<li>在 Stan 中保留压力 <code>X1</code> 和吸烟 <code>X2</code>，在似然里计算向量逐元素乘积 <code>X1 .* X2</code>。在生成量中用 <code>X1[n] * X2[n]</code>。</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb30-1"><a href="" aria-label="1"></a>y ~ normal(beta_0 + beta_1 * X1 + beta_2 * X2</span>
-<span id="cb30-2"><a href="" aria-label="2"></a>           + beta_3 * (X1 .* X2), sigma);</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="练习二将设计矩阵传给-stan" class="slide level2">
-<h2>练习二：将设计矩阵传给 Stan</h2>
-<p>填好公式后运行。沿用反应时示例中编译的同一个高斯回归程序。</p>
+<section id="练习提示如何写交互项" class="slide level2">
+<h2>练习提示：如何写交互项</h2>
+<p>可以用下面两种方式来写交互项：</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="" aria-label="1"></a>exercise_stan_data <span class="ot">&lt;-</span> <span class="fu">lapply</span>(exercise_formulas, <span class="cf">function</span>(formula) {</span>
-<span id="cb31-2"><a href="" aria-label="2"></a>  X <span class="ot">&lt;-</span> stats<span class="sc">::</span><span class="fu">model.matrix</span>(formula, <span class="at">data =</span> exercise)</span>
-<span id="cb31-3"><a href="" aria-label="3"></a>  <span class="fu">list</span>(<span class="at">N =</span> <span class="fu">nrow</span>(X), <span class="at">K =</span> <span class="fu">ncol</span>(X), <span class="at">X =</span> X, <span class="at">y =</span> exercise<span class="sc">$</span>scontrol,</span>
-<span id="cb31-4"><a href="" aria-label="4"></a>       <span class="at">prior_mean =</span> <span class="fu">c</span>(<span class="dv">50</span>, <span class="fu">rep</span>(<span class="dv">0</span>, <span class="fu">ncol</span>(X) <span class="sc">-</span> <span class="dv">1</span>)),</span>
-<span id="cb31-5"><a href="" aria-label="5"></a>       <span class="at">prior_sd =</span> <span class="fu">rep</span>(<span class="dv">10</span>, <span class="fu">ncol</span>(X)), <span class="at">sigma_rate =</span> <span class="fl">0.6</span>)</span>
-<span id="cb31-6"><a href="" aria-label="6"></a>})</span>
-<span id="cb31-7"><a href="" aria-label="7"></a>exercise_fits <span class="ot">&lt;-</span> <span class="fu">lapply</span>(exercise_stan_data, <span class="cf">function</span>(model_data) {</span>
-<span id="cb31-8"><a href="" aria-label="8"></a>  rstan<span class="sc">::</span><span class="fu">sampling</span>(rt_stan_model, <span class="at">data =</span> model_data, <span class="at">chains =</span> <span class="dv">4</span>,</span>
-<span id="cb31-9"><a href="" aria-label="9"></a>                  <span class="at">iter =</span> <span class="dv">3000</span>, <span class="at">warmup =</span> <span class="dv">1000</span>, <span class="at">seed =</span> <span class="dv">84735</span>, <span class="at">refresh =</span> <span class="dv">0</span>)</span>
-<span id="cb31-10"><a href="" aria-label="10"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="" aria-label="1"></a>scontrol <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Intercept <span class="sc">+</span> stress <span class="sc">+</span> smoke <span class="sc">+</span> stress<span class="sc">:</span>smoke</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>scontrol ~ 0 + Intercept + stress + smoke + stress:smoke</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="" aria-label="1"></a>scontrol <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Intercept <span class="sc">+</span> stress <span class="sc">*</span> smoke</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>scontrol ~ 0 + Intercept + stress * smoke</code></pre>
+</div>
+</div>
+</section>
+<section id="练习二用-brms-拟合候选模型" class="slide level2">
+<h2>练习二：用 brms 拟合候选模型</h2>
+<p>用补齐的三个公式和课件指定的先验进行 MCMC 采样，并检查各模型的 $ (R) $ 和ESS。</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="" aria-label="1"></a>exercise_priors <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb35-2"><a href="" aria-label="2"></a>  brms<span class="sc">::</span><span class="fu">set_prior</span>(<span class="st">"normal(0, 10)"</span>, <span class="at">class =</span> <span class="st">"b"</span>),</span>
+<span id="cb35-3"><a href="" aria-label="3"></a>  brms<span class="sc">::</span><span class="fu">set_prior</span>(<span class="st">"normal(50, 10)"</span>, <span class="at">class =</span> <span class="st">"b"</span>, <span class="at">coef =</span> <span class="st">"Intercept"</span>),</span>
+<span id="cb35-4"><a href="" aria-label="4"></a>  brms<span class="sc">::</span><span class="fu">set_prior</span>(<span class="st">"exponential(0.6)"</span>, <span class="at">class =</span> <span class="st">"sigma"</span>)</span>
+<span id="cb35-5"><a href="" aria-label="5"></a>)</span>
+<span id="cb35-6"><a href="" aria-label="6"></a></span>
+<span id="cb35-7"><a href="" aria-label="7"></a>exercise_fits <span class="ot">&lt;-</span> <span class="fu">lapply</span>(exercise_formulas, <span class="cf">function</span>(model_formula) {</span>
+<span id="cb35-8"><a href="" aria-label="8"></a>  brms<span class="sc">::</span><span class="fu">brm</span>(</span>
+<span id="cb35-9"><a href="" aria-label="9"></a>    <span class="at">formula =</span> model_formula,</span>
+<span id="cb35-10"><a href="" aria-label="10"></a>    <span class="at">data =</span> exercise,</span>
+<span id="cb35-11"><a href="" aria-label="11"></a>    <span class="at">family =</span> stats<span class="sc">::</span><span class="fu">gaussian</span>(<span class="at">link =</span> <span class="st">"identity"</span>),</span>
+<span id="cb35-12"><a href="" aria-label="12"></a>    <span class="at">prior =</span> exercise_priors,</span>
+<span id="cb35-13"><a href="" aria-label="13"></a>    <span class="at">backend =</span> <span class="st">"rstan"</span>,</span>
+<span id="cb35-14"><a href="" aria-label="14"></a>    <span class="at">chains =</span> <span class="dv">4</span>,</span>
+<span id="cb35-15"><a href="" aria-label="15"></a>    <span class="at">iter =</span> <span class="dv">3000</span>,</span>
+<span id="cb35-16"><a href="" aria-label="16"></a>    <span class="at">warmup =</span> <span class="dv">1000</span>,</span>
+<span id="cb35-17"><a href="" aria-label="17"></a>    <span class="at">seed =</span> <span class="dv">84735</span>,</span>
+<span id="cb35-18"><a href="" aria-label="18"></a>    <span class="at">refresh =</span> <span class="dv">0</span></span>
+<span id="cb35-19"><a href="" aria-label="19"></a>  )</span>
+<span id="cb35-20"><a href="" aria-label="20"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -1496,9 +1541,15 @@ p_D=\overline{D}-D(\bar{\theta}),\quad
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="" aria-label="1"></a><span class="fu">vapply</span>(exercise_fits, calculate_medae, <span class="fu">numeric</span>(<span class="dv">1</span>), <span class="at">observed =</span> ...)</span>
-<span id="cb32-2"><a href="" aria-label="2"></a>exercise_loo <span class="ot">&lt;-</span> <span class="fu">lapply</span>(exercise_fits, calculate_loo)</span>
-<span id="cb32-3"><a href="" aria-label="3"></a>loo<span class="sc">::</span><span class="fu">loo_compare</span>(exercise_loo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="" aria-label="1"></a>calculate_medae_brms <span class="ot">&lt;-</span> <span class="cf">function</span>(fit, observed) {</span>
+<span id="cb36-2"><a href="" aria-label="2"></a>  predicted <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(brms<span class="sc">::</span><span class="fu">posterior_predict</span>(fit))</span>
+<span id="cb36-3"><a href="" aria-label="3"></a>  stats<span class="sc">::</span><span class="fu">median</span>(<span class="fu">abs</span>(observed <span class="sc">-</span> predicted))</span>
+<span id="cb36-4"><a href="" aria-label="4"></a>}</span>
+<span id="cb36-5"><a href="" aria-label="5"></a></span>
+<span id="cb36-6"><a href="" aria-label="6"></a><span class="fu">vapply</span>(exercise_fits, calculate_medae_brms, <span class="fu">numeric</span>(<span class="dv">1</span>), <span class="at">observed =</span> ...)</span>
+<span id="cb36-7"><a href="" aria-label="7"></a></span>
+<span id="cb36-8"><a href="" aria-label="8"></a>exercise_loo <span class="ot">&lt;-</span> <span class="fu">lapply</span>(exercise_fits, loo<span class="sc">::</span>loo)</span>
+<span id="cb36-9"><a href="" aria-label="9"></a>loo<span class="sc">::</span><span class="fu">loo_compare</span>(exercise_loo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -1508,130 +1559,139 @@ p_D=\overline{D}-D(\bar{\theta}),\quad
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="" aria-label="1"></a><span class="fu">mapply</span>(calculate_dic, exercise_fits, ...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="" aria-label="1"></a>calculate_dic_brms <span class="ot">&lt;-</span> <span class="cf">function</span>(fit, observed) {</span>
+<span id="cb37-2"><a href="" aria-label="2"></a>  log_lik_draws <span class="ot">&lt;-</span> brms<span class="sc">::</span><span class="fu">log_lik</span>(fit)</span>
+<span id="cb37-3"><a href="" aria-label="3"></a>  mean_deviance <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="sc">-</span><span class="dv">2</span> <span class="sc">*</span> <span class="fu">rowSums</span>(log_lik_draws))</span>
+<span id="cb37-4"><a href="" aria-label="4"></a></span>
+<span id="cb37-5"><a href="" aria-label="5"></a>  mean_mu <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(brms<span class="sc">::</span><span class="fu">posterior_epred</span>(fit))</span>
+<span id="cb37-6"><a href="" aria-label="6"></a>  sigma_draws <span class="ot">&lt;-</span> posterior<span class="sc">::</span><span class="fu">as_draws_df</span>(fit, <span class="at">variable =</span> <span class="st">"sigma"</span>)</span>
+<span id="cb37-7"><a href="" aria-label="7"></a>  mean_sigma <span class="ot">&lt;-</span> <span class="fu">mean</span>(sigma_draws<span class="sc">$</span>sigma)</span>
+<span id="cb37-8"><a href="" aria-label="8"></a></span>
+<span id="cb37-9"><a href="" aria-label="9"></a>  plug_in_deviance <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">2</span> <span class="sc">*</span> <span class="fu">sum</span>(stats<span class="sc">::</span><span class="fu">dnorm</span>(</span>
+<span id="cb37-10"><a href="" aria-label="10"></a>    observed, <span class="at">mean =</span> mean_mu, <span class="at">sd =</span> mean_sigma, <span class="at">log =</span> <span class="cn">TRUE</span></span>
+<span id="cb37-11"><a href="" aria-label="11"></a>  ))</span>
+<span id="cb37-12"><a href="" aria-label="12"></a></span>
+<span id="cb37-13"><a href="" aria-label="13"></a>  <span class="dv">2</span> <span class="sc">*</span> mean_deviance <span class="sc">-</span> plug_in_deviance</span>
+<span id="cb37-14"><a href="" aria-label="14"></a>}</span>
+<span id="cb37-15"><a href="" aria-label="15"></a></span>
+<span id="cb37-16"><a href="" aria-label="16"></a><span class="fu">vapply</span>(exercise_fits, calculate_dic_brms, <span class="fu">numeric</span>(<span class="dv">1</span>), <span class="at">observed =</span> ...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>如果 DIC 与 ELPD-LOO 的排序不同，两种准则分别支持怎样的结论？</p>
 </section>
-<section id="part6补充练习逐个写出-stan-模型" class="slide level2">
-<h2>Part6：补充练习：逐个写出 Stan 模型</h2>
-<p>沿用原稿逐个模型填写 Stan 的练习，补全下面的代码后再手动运行。前面的矩阵版提供了可对照的模型结构。</p>
+<section id="part6补充练习逐个用-brms-拟合模型" class="slide level2">
+<h2>Part6：补充练习：逐个用 brms 拟合模型</h2>
+<p>沿用 Part 5 的练习数据 <code>exercise</code>。先运行下方的先验代码，再依次补全并运行模型 4、5、6 的代码。</p>
+<p><strong>练习任务</strong>　读出三条先验分别对应哪个参数，并在三个模型中使用相同的先验设定。</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="" aria-label="1"></a>part6_priors <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb38-2"><a href="" aria-label="2"></a>  <span class="co"># 回归系数的通用先验，适用于主效应和交互项。</span></span>
+<span id="cb38-3"><a href="" aria-label="3"></a>  brms<span class="sc">::</span><span class="fu">set_prior</span>(<span class="st">"normal(0, 10)"</span>, <span class="at">class =</span> <span class="st">"b"</span>),</span>
+<span id="cb38-4"><a href="" aria-label="4"></a></span>
+<span id="cb38-5"><a href="" aria-label="5"></a>  <span class="co"># 单独设定原始截距的先验，与手写 Stan 的截距对齐。</span></span>
+<span id="cb38-6"><a href="" aria-label="6"></a>  brms<span class="sc">::</span><span class="fu">set_prior</span>(<span class="st">"normal(50, 10)"</span>, <span class="at">class =</span> <span class="st">"b"</span>, <span class="at">coef =</span> <span class="st">"Intercept"</span>),</span>
+<span id="cb38-7"><a href="" aria-label="7"></a></span>
+<span id="cb38-8"><a href="" aria-label="8"></a>  <span class="co"># 自我控制分数的残差标准差采用率为 0.6 的指数先验。</span></span>
+<span id="cb38-9"><a href="" aria-label="9"></a>  brms<span class="sc">::</span><span class="fu">set_prior</span>(<span class="st">"exponential(0.6)"</span>, <span class="at">class =</span> <span class="st">"sigma"</span>)</span>
+<span id="cb38-10"><a href="" aria-label="10"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 </section>
 <section id="模型-4只用压力" class="slide level2">
 <h2>模型 4：只用压力</h2>
-<p>补全参数类型、先验和似然。R 数据列表应包含 N、y、X。</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb34-1"><a href="" aria-label="1"></a><span class="kw">data</span> {</span>
-<span id="cb34-2"><a href="" aria-label="2"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;</span>
-<span id="cb34-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] y;                  <span class="co">// scontrol</span></span>
-<span id="cb34-4"><a href="" aria-label="4"></a>  <span class="dt">vector</span>[N] X;                  <span class="co">// 连续变量: stress</span></span>
-<span id="cb34-5"><a href="" aria-label="5"></a>}</span>
-<span id="cb34-6"><a href="" aria-label="6"></a></span>
-<span id="cb34-7"><a href="" aria-label="7"></a><span class="kw">parameters</span> {</span>
-<span id="cb34-8"><a href="" aria-label="8"></a>  ... beta_0;                   <span class="co">// 截距</span></span>
-<span id="cb34-9"><a href="" aria-label="9"></a>  ... beta_1;                   <span class="co">// stress的斜率</span></span>
-<span id="cb34-10"><a href="" aria-label="10"></a>  ... sigma;                    <span class="co">// 误差标准差</span></span>
-<span id="cb34-11"><a href="" aria-label="11"></a>}</span>
-<span id="cb34-12"><a href="" aria-label="12"></a></span>
-<span id="cb34-13"><a href="" aria-label="13"></a><span class="kw">model</span> {</span>
-<span id="cb34-14"><a href="" aria-label="14"></a>  ...</span>
-<span id="cb34-15"><a href="" aria-label="15"></a></span>
-<span id="cb34-16"><a href="" aria-label="16"></a>  <span class="co">// 似然函数</span></span>
-<span id="cb34-17"><a href="" aria-label="17"></a>  ... ~ ...</span>
-<span id="cb34-18"><a href="" aria-label="18"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>练习任务</strong>　补全压力预测项，拟合模型后从摘要中读出压力每增加 1 分时，预期自我控制分数改变多少。</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="" aria-label="1"></a>fit4_brms <span class="ot">&lt;-</span> brms<span class="sc">::</span><span class="fu">brm</span>(</span>
+<span id="cb39-2"><a href="" aria-label="2"></a>  <span class="co"># Intercept 保留原始截距，省略号处填入压力变量。</span></span>
+<span id="cb39-3"><a href="" aria-label="3"></a>  <span class="at">formula =</span> scontrol <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Intercept <span class="sc">+</span> ...,</span>
+<span id="cb39-4"><a href="" aria-label="4"></a>  <span class="at">data =</span> exercise,</span>
+<span id="cb39-5"><a href="" aria-label="5"></a>  <span class="at">family =</span> stats<span class="sc">::</span><span class="fu">gaussian</span>(<span class="at">link =</span> <span class="st">"identity"</span>),</span>
+<span id="cb39-6"><a href="" aria-label="6"></a>  <span class="at">prior =</span> part6_priors,</span>
+<span id="cb39-7"><a href="" aria-label="7"></a>  <span class="at">backend =</span> <span class="st">"rstan"</span>,</span>
+<span id="cb39-8"><a href="" aria-label="8"></a>  <span class="at">chains =</span> <span class="dv">4</span>, <span class="at">iter =</span> <span class="dv">3000</span>, <span class="at">warmup =</span> <span class="dv">1000</span>,</span>
+<span id="cb39-9"><a href="" aria-label="9"></a>  <span class="at">seed =</span> <span class="dv">84735</span>, <span class="at">refresh =</span> <span class="dv">0</span></span>
+<span id="cb39-10"><a href="" aria-label="10"></a>)</span>
+<span id="cb39-11"><a href="" aria-label="11"></a></span>
+<span id="cb39-12"><a href="" aria-label="12"></a><span class="fu">summary</span>(fit4_brms)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 </section>
-<section id="模型-4补全生成量" class="slide level2">
-<h2>模型 4：补全生成量</h2>
-<p>按该模型的线性预测式生成后验预测值并计算逐点对数似然。</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb35-1"><a href="" aria-label="1"></a><span class="kw">generated quantities</span> {</span>
-<span id="cb35-2"><a href="" aria-label="2"></a>  <span class="dt">vector</span>[N] y_rep;             <span class="co">// 后验预测</span></span>
-<span id="cb35-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] log_lik;         <span class="co">// 逐点对数似然</span></span>
-<span id="cb35-4"><a href="" aria-label="4"></a></span>
-<span id="cb35-5"><a href="" aria-label="5"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
-<span id="cb35-6"><a href="" aria-label="6"></a>    <span class="co">// 后验预测值  (计算 MAE 需要)</span></span>
-<span id="cb35-7"><a href="" aria-label="7"></a>    y_rep[n] = normal_rng(...);</span>
-<span id="cb35-8"><a href="" aria-label="8"></a>    <span class="co">// 逐点对数似然 (计算 loo 和 DIC 需要)</span></span>
-<span id="cb35-9"><a href="" aria-label="9"></a>    log_lik[n] = normal_lpdf(y[n] | ...);</span>
-<span id="cb35-10"><a href="" aria-label="10"></a>  }</span>
-<span id="cb35-11"><a href="" aria-label="11"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="模型-4提取后验预测与逐点对数似然" class="slide level2">
+<h2>模型 4：提取后验预测与逐点对数似然</h2>
+<p><strong>练习任务</strong>　把模型 4 的拟合对象传给两个函数，并确认输出矩阵的列数等于练习数据中的被试人数。</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="" aria-label="1"></a><span class="co"># 对每次后验抽样，为每位被试模拟一个自我控制分数。</span></span>
+<span id="cb40-2"><a href="" aria-label="2"></a>y_rep4 <span class="ot">&lt;-</span> brms<span class="sc">::</span><span class="fu">posterior_predict</span>(...)</span>
+<span id="cb40-3"><a href="" aria-label="3"></a></span>
+<span id="cb40-4"><a href="" aria-label="4"></a><span class="co"># 对每次后验抽样，计算每位被试实际得分的对数似然。</span></span>
+<span id="cb40-5"><a href="" aria-label="5"></a>log_lik4 <span class="ot">&lt;-</span> brms<span class="sc">::</span><span class="fu">log_lik</span>(...)</span>
+<span id="cb40-6"><a href="" aria-label="6"></a></span>
+<span id="cb40-7"><a href="" aria-label="7"></a><span class="fu">dim</span>(y_rep4)</span>
+<span id="cb40-8"><a href="" aria-label="8"></a><span class="fu">dim</span>(log_lik4)</span>
+<span id="cb40-9"><a href="" aria-label="9"></a><span class="fu">nrow</span>(exercise)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 </section>
 <section id="模型-5加入吸烟状态" class="slide level2">
 <h2>模型 5：加入吸烟状态</h2>
-<p>补全参数类型、先验和似然。R 数据列表应包含 N、y、X1、X2。</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb36-1"><a href="" aria-label="1"></a><span class="kw">data</span> {</span>
-<span id="cb36-2"><a href="" aria-label="2"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;</span>
-<span id="cb36-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] y;</span>
-<span id="cb36-4"><a href="" aria-label="4"></a>  <span class="dt">vector</span>[N] X1;                   <span class="co">// 连续变量: stress</span></span>
-<span id="cb36-5"><a href="" aria-label="5"></a>  <span class="dt">vector</span>[N] X2;                <span class="co">// 二分类变量: smoke</span></span>
-<span id="cb36-6"><a href="" aria-label="6"></a>}</span>
-<span id="cb36-7"><a href="" aria-label="7"></a></span>
-<span id="cb36-8"><a href="" aria-label="8"></a><span class="kw">parameters</span> {</span>
-<span id="cb36-9"><a href="" aria-label="9"></a>  ... beta_0;                   <span class="co">// 截距</span></span>
-<span id="cb36-10"><a href="" aria-label="10"></a>  ... beta_1;                   <span class="co">// stress的斜率</span></span>
-<span id="cb36-11"><a href="" aria-label="11"></a>  ... beta_2;                   <span class="co">// smoke的斜率</span></span>
-<span id="cb36-12"><a href="" aria-label="12"></a>  ... sigma;           <span class="co">// 误差标准差</span></span>
-<span id="cb36-13"><a href="" aria-label="13"></a>}</span>
-<span id="cb36-14"><a href="" aria-label="14"></a></span>
-<span id="cb36-15"><a href="" aria-label="15"></a><span class="kw">model</span> {</span>
-<span id="cb36-16"><a href="" aria-label="16"></a>  ...</span>
-<span id="cb36-17"><a href="" aria-label="17"></a></span>
-<span id="cb36-18"><a href="" aria-label="18"></a>  <span class="co">// 似然函数</span></span>
-<span id="cb36-19"><a href="" aria-label="19"></a>  ... ~ ...</span>
-<span id="cb36-20"><a href="" aria-label="20"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>练习任务</strong>　补全压力与吸烟的两个主效应，拟合后解释在相同压力分数下，吸烟组与非吸烟组的预期自我控制分数相差多少。</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="" aria-label="1"></a>fit5_brms <span class="ot">&lt;-</span> brms<span class="sc">::</span><span class="fu">brm</span>(</span>
+<span id="cb41-2"><a href="" aria-label="2"></a>  <span class="co"># 用 + 加入两个主效应，两组共用同一个压力斜率。</span></span>
+<span id="cb41-3"><a href="" aria-label="3"></a>  <span class="at">formula =</span> scontrol <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Intercept <span class="sc">+</span> ...,</span>
+<span id="cb41-4"><a href="" aria-label="4"></a>  <span class="at">data =</span> exercise,</span>
+<span id="cb41-5"><a href="" aria-label="5"></a>  <span class="at">family =</span> stats<span class="sc">::</span><span class="fu">gaussian</span>(<span class="at">link =</span> <span class="st">"identity"</span>),</span>
+<span id="cb41-6"><a href="" aria-label="6"></a>  <span class="at">prior =</span> part6_priors,</span>
+<span id="cb41-7"><a href="" aria-label="7"></a>  <span class="at">backend =</span> <span class="st">"rstan"</span>,</span>
+<span id="cb41-8"><a href="" aria-label="8"></a>  <span class="at">chains =</span> <span class="dv">4</span>, <span class="at">iter =</span> <span class="dv">3000</span>, <span class="at">warmup =</span> <span class="dv">1000</span>,</span>
+<span id="cb41-9"><a href="" aria-label="9"></a>  <span class="at">seed =</span> <span class="dv">84735</span>, <span class="at">refresh =</span> <span class="dv">0</span></span>
+<span id="cb41-10"><a href="" aria-label="10"></a>)</span>
+<span id="cb41-11"><a href="" aria-label="11"></a></span>
+<span id="cb41-12"><a href="" aria-label="12"></a><span class="fu">summary</span>(fit5_brms)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 </section>
-<section id="模型-5补全生成量" class="slide level2">
-<h2>模型 5：补全生成量</h2>
-<p>按该模型的线性预测式生成后验预测值并计算逐点对数似然。</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb37-1"><a href="" aria-label="1"></a><span class="kw">generated quantities</span> {</span>
-<span id="cb37-2"><a href="" aria-label="2"></a>  <span class="dt">vector</span>[N] y_rep;             <span class="co">// 后验预测</span></span>
-<span id="cb37-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] log_lik;         <span class="co">// 逐点对数似然</span></span>
-<span id="cb37-4"><a href="" aria-label="4"></a></span>
-<span id="cb37-5"><a href="" aria-label="5"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
-<span id="cb37-6"><a href="" aria-label="6"></a>    <span class="co">// 后验预测值</span></span>
-<span id="cb37-7"><a href="" aria-label="7"></a>    y_rep[n] = normal_rng(...);</span>
-<span id="cb37-8"><a href="" aria-label="8"></a>    <span class="co">// 逐点对数似然</span></span>
-<span id="cb37-9"><a href="" aria-label="9"></a>    log_lik[n] = normal_lpdf(y[n] | ...);</span>
-<span id="cb37-10"><a href="" aria-label="10"></a>  }</span>
-<span id="cb37-11"><a href="" aria-label="11"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="模型-5提取后验预测与逐点对数似然" class="slide level2">
+<h2>模型 5：提取后验预测与逐点对数似然</h2>
+<p><strong>练习任务</strong>　参照模型 4 补全两行提取代码，再按被试计算后验预测均值。</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="" aria-label="1"></a><span class="co"># 从 fit5_brms 提取后验预测抽样。</span></span>
+<span id="cb42-2"><a href="" aria-label="2"></a>y_rep5 <span class="ot">&lt;-</span> ...</span>
+<span id="cb42-3"><a href="" aria-label="3"></a></span>
+<span id="cb42-4"><a href="" aria-label="4"></a><span class="co"># 从 fit5_brms 计算逐点对数似然。</span></span>
+<span id="cb42-5"><a href="" aria-label="5"></a>log_lik5 <span class="ot">&lt;-</span> ...</span>
+<span id="cb42-6"><a href="" aria-label="6"></a></span>
+<span id="cb42-7"><a href="" aria-label="7"></a><span class="co"># 对每一列取均值，得到每位被试的预测值。</span></span>
+<span id="cb42-8"><a href="" aria-label="8"></a>predicted5 <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(y_rep5)</span>
+<span id="cb42-9"><a href="" aria-label="9"></a>utils<span class="sc">::</span><span class="fu">head</span>(predicted5, <span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><code>predicted5</code> 可与实际分数 <code>exercise$scontrol</code> 逐一配对，用于计算 Part 5 的样本内 MedAE。</p>
 </section>
 <section id="模型-6加入压力与吸烟的交互" class="slide level2">
 <h2>模型 6：加入压力与吸烟的交互</h2>
-<p>补全参数类型、先验和似然。R 数据列表应包含 N、y、X1、X2。</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb38-1"><a href="" aria-label="1"></a><span class="kw">data</span> {</span>
-<span id="cb38-2"><a href="" aria-label="2"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;</span>
-<span id="cb38-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] y;              <span class="co">// scontrol</span></span>
-<span id="cb38-4"><a href="" aria-label="4"></a>  <span class="dt">vector</span>[N] X1;             <span class="co">// 连续变量: stress</span></span>
-<span id="cb38-5"><a href="" aria-label="5"></a>  <span class="dt">vector</span>[N] X2;             <span class="co">// 二分类变量: smoke</span></span>
-<span id="cb38-6"><a href="" aria-label="6"></a>}</span>
-<span id="cb38-7"><a href="" aria-label="7"></a></span>
-<span id="cb38-8"><a href="" aria-label="8"></a><span class="kw">parameters</span> {</span>
-<span id="cb38-9"><a href="" aria-label="9"></a>  ... beta_0;                   <span class="co">// 截距</span></span>
-<span id="cb38-10"><a href="" aria-label="10"></a>  ... beta_1;                   <span class="co">// stress的斜率</span></span>
-<span id="cb38-11"><a href="" aria-label="11"></a>  ... beta_2;                   <span class="co">// smoke的斜率</span></span>
-<span id="cb38-12"><a href="" aria-label="12"></a>  ... beta_3;                   <span class="co">// 压力与吸烟的交互效应</span></span>
-<span id="cb38-13"><a href="" aria-label="13"></a>  ... sigma;                    <span class="co">// 误差标准差</span></span>
-<span id="cb38-14"><a href="" aria-label="14"></a>}</span>
-<span id="cb38-15"><a href="" aria-label="15"></a></span>
-<span id="cb38-16"><a href="" aria-label="16"></a><span class="kw">model</span> {</span>
-<span id="cb38-17"><a href="" aria-label="17"></a>  ...</span>
-<span id="cb38-18"><a href="" aria-label="18"></a></span>
-<span id="cb38-19"><a href="" aria-label="19"></a>  <span class="co">// 似然函数</span></span>
-<span id="cb38-20"><a href="" aria-label="20"></a>  ... ~ ...</span>
-<span id="cb38-21"><a href="" aria-label="21"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>练习任务</strong>　补全两个主效应及其交互项，拟合后解释交互系数怎样表示两组压力斜率之差。</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="" aria-label="1"></a>fit6_brms <span class="ot">&lt;-</span> brms<span class="sc">::</span><span class="fu">brm</span>(</span>
+<span id="cb43-2"><a href="" aria-label="2"></a>  <span class="co"># 用 * 同时纳入两个主效应和交互项。</span></span>
+<span id="cb43-3"><a href="" aria-label="3"></a>  <span class="at">formula =</span> scontrol <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Intercept <span class="sc">+</span> ...,</span>
+<span id="cb43-4"><a href="" aria-label="4"></a>  <span class="at">data =</span> exercise,</span>
+<span id="cb43-5"><a href="" aria-label="5"></a>  <span class="at">family =</span> stats<span class="sc">::</span><span class="fu">gaussian</span>(<span class="at">link =</span> <span class="st">"identity"</span>),</span>
+<span id="cb43-6"><a href="" aria-label="6"></a>  <span class="at">prior =</span> part6_priors,</span>
+<span id="cb43-7"><a href="" aria-label="7"></a>  <span class="at">backend =</span> <span class="st">"rstan"</span>,</span>
+<span id="cb43-8"><a href="" aria-label="8"></a>  <span class="at">chains =</span> <span class="dv">4</span>, <span class="at">iter =</span> <span class="dv">3000</span>, <span class="at">warmup =</span> <span class="dv">1000</span>,</span>
+<span id="cb43-9"><a href="" aria-label="9"></a>  <span class="at">seed =</span> <span class="dv">84735</span>, <span class="at">refresh =</span> <span class="dv">0</span></span>
+<span id="cb43-10"><a href="" aria-label="10"></a>)</span>
+<span id="cb43-11"><a href="" aria-label="11"></a></span>
+<span id="cb43-12"><a href="" aria-label="12"></a><span class="fu">summary</span>(fit6_brms)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 </section>
-<section id="模型-6补全生成量" class="slide level2">
-<h2>模型 6：补全生成量</h2>
-<p>按该模型的线性预测式生成后验预测值并计算逐点对数似然。</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb39-1"><a href="" aria-label="1"></a><span class="kw">generated quantities</span> {</span>
-<span id="cb39-2"><a href="" aria-label="2"></a>  <span class="dt">vector</span>[N] y_rep;             <span class="co">// 后验预测</span></span>
-<span id="cb39-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] log_lik;         <span class="co">// 逐点对数似然</span></span>
-<span id="cb39-4"><a href="" aria-label="4"></a></span>
-<span id="cb39-5"><a href="" aria-label="5"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
-<span id="cb39-6"><a href="" aria-label="6"></a>    <span class="co">// 后验预测值  (计算 MAE 需要)</span></span>
-<span id="cb39-7"><a href="" aria-label="7"></a>    y_rep[n] = normal_rng(...);</span>
-<span id="cb39-8"><a href="" aria-label="8"></a>    <span class="co">// 逐点对数似然 (计算 loo 和 DIC 需要)</span></span>
-<span id="cb39-9"><a href="" aria-label="9"></a>    log_lik[n] = normal_lpdf(y[n] | ...);</span>
-<span id="cb39-10"><a href="" aria-label="10"></a>  }</span>
-<span id="cb39-11"><a href="" aria-label="11"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="模型-6提取后验预测与逐点对数似然" class="slide level2">
+<h2>模型 6：提取后验预测与逐点对数似然</h2>
+<p><strong>练习任务</strong>　独立补全两行提取代码，并指出计算 MedAE 和进行留一预测评估各需要哪一种结果。</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="" aria-label="1"></a><span class="co"># 从 fit6_brms 提取后验预测抽样。</span></span>
+<span id="cb44-2"><a href="" aria-label="2"></a>y_rep6 <span class="ot">&lt;-</span> ...</span>
+<span id="cb44-3"><a href="" aria-label="3"></a></span>
+<span id="cb44-4"><a href="" aria-label="4"></a><span class="co"># 从 fit6_brms 计算逐点对数似然。</span></span>
+<span id="cb44-5"><a href="" aria-label="5"></a>log_lik6 <span class="ot">&lt;-</span> ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><code>y_rep6</code> 用于计算预测均值和样本内 MedAE，<code>log_lik6</code> 则提供估计 ELPD-LOO 所需的逐点对数似然。</p>
 </section>
 <section id="总结" class="slide level2">
 <h2>总结</h2>
@@ -1652,160 +1712,160 @@ p_D=\overline{D}-D(\bar{\theta}),\quad
 </section>
 <section id="反应时模型-1数据参数与似然" class="slide level2">
 <h2>反应时模型 1：数据、参数与似然</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb40-1"><a href="" aria-label="1"></a><span class="kw">data</span> {</span>
-<span id="cb40-2"><a href="" aria-label="2"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;            <span class="co">// 数据点数量</span></span>
-<span id="cb40-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] y;               <span class="co">// 观测数据</span></span>
-<span id="cb40-4"><a href="" aria-label="4"></a>  <span class="dt">vector</span>[N] X1;              <span class="co">// Friend</span></span>
-<span id="cb40-5"><a href="" aria-label="5"></a>  <span class="dt">vector</span>[N] X2;              <span class="co">// Stranger</span></span>
-<span id="cb40-6"><a href="" aria-label="6"></a>}</span>
-<span id="cb40-7"><a href="" aria-label="7"></a></span>
-<span id="cb40-8"><a href="" aria-label="8"></a><span class="kw">parameters</span> {</span>
-<span id="cb40-9"><a href="" aria-label="9"></a>  <span class="dt">real</span> beta_0;                   <span class="co">// 截距</span></span>
-<span id="cb40-10"><a href="" aria-label="10"></a>  <span class="dt">real</span> beta_1;                   <span class="co">// Friend 的斜率</span></span>
-<span id="cb40-11"><a href="" aria-label="11"></a>  <span class="dt">real</span> beta_2;                   <span class="co">// Stranger 的斜率</span></span>
-<span id="cb40-12"><a href="" aria-label="12"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;           <span class="co">// 误差标准差</span></span>
-<span id="cb40-13"><a href="" aria-label="13"></a>}</span>
-<span id="cb40-14"><a href="" aria-label="14"></a></span>
-<span id="cb40-15"><a href="" aria-label="15"></a><span class="kw">model</span> {</span>
-<span id="cb40-16"><a href="" aria-label="16"></a>  beta_0 ~ normal(<span class="dv">5</span>, <span class="dv">2</span>);         <span class="co">// 截距的先验分布</span></span>
-<span id="cb40-17"><a href="" aria-label="17"></a>  beta_1 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);         <span class="co">// Friend 的斜率的先验分布</span></span>
-<span id="cb40-18"><a href="" aria-label="18"></a>  beta_2 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);         <span class="co">// Stranger 的斜率的先验分布</span></span>
-<span id="cb40-19"><a href="" aria-label="19"></a>  sigma ~ exponential(<span class="fl">0.3</span>);      <span class="co">// 误差标准差的先验分布</span></span>
-<span id="cb40-20"><a href="" aria-label="20"></a>  <span class="co">// 似然函数</span></span>
-<span id="cb40-21"><a href="" aria-label="21"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
-<span id="cb40-22"><a href="" aria-label="22"></a>    y[n] ~ normal(beta_0 + beta_1 * X1[n] + beta_2 * X2[n], sigma);</span>
-<span id="cb40-23"><a href="" aria-label="23"></a>  }</span>
-<span id="cb40-24"><a href="" aria-label="24"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb45-1"><a href="" aria-label="1"></a><span class="kw">data</span> {</span>
+<span id="cb45-2"><a href="" aria-label="2"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;            <span class="co">// 数据点数量</span></span>
+<span id="cb45-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] y;               <span class="co">// 观测数据</span></span>
+<span id="cb45-4"><a href="" aria-label="4"></a>  <span class="dt">vector</span>[N] X1;              <span class="co">// Friend</span></span>
+<span id="cb45-5"><a href="" aria-label="5"></a>  <span class="dt">vector</span>[N] X2;              <span class="co">// Stranger</span></span>
+<span id="cb45-6"><a href="" aria-label="6"></a>}</span>
+<span id="cb45-7"><a href="" aria-label="7"></a></span>
+<span id="cb45-8"><a href="" aria-label="8"></a><span class="kw">parameters</span> {</span>
+<span id="cb45-9"><a href="" aria-label="9"></a>  <span class="dt">real</span> beta_0;                   <span class="co">// 截距</span></span>
+<span id="cb45-10"><a href="" aria-label="10"></a>  <span class="dt">real</span> beta_1;                   <span class="co">// Friend 的斜率</span></span>
+<span id="cb45-11"><a href="" aria-label="11"></a>  <span class="dt">real</span> beta_2;                   <span class="co">// Stranger 的斜率</span></span>
+<span id="cb45-12"><a href="" aria-label="12"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;           <span class="co">// 误差标准差</span></span>
+<span id="cb45-13"><a href="" aria-label="13"></a>}</span>
+<span id="cb45-14"><a href="" aria-label="14"></a></span>
+<span id="cb45-15"><a href="" aria-label="15"></a><span class="kw">model</span> {</span>
+<span id="cb45-16"><a href="" aria-label="16"></a>  beta_0 ~ normal(<span class="dv">5</span>, <span class="dv">2</span>);         <span class="co">// 截距的先验分布</span></span>
+<span id="cb45-17"><a href="" aria-label="17"></a>  beta_1 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);         <span class="co">// Friend 的斜率的先验分布</span></span>
+<span id="cb45-18"><a href="" aria-label="18"></a>  beta_2 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);         <span class="co">// Stranger 的斜率的先验分布</span></span>
+<span id="cb45-19"><a href="" aria-label="19"></a>  sigma ~ exponential(<span class="fl">0.3</span>);      <span class="co">// 误差标准差的先验分布</span></span>
+<span id="cb45-20"><a href="" aria-label="20"></a>  <span class="co">// 似然函数</span></span>
+<span id="cb45-21"><a href="" aria-label="21"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb45-22"><a href="" aria-label="22"></a>    y[n] ~ normal(beta_0 + beta_1 * X1[n] + beta_2 * X2[n], sigma);</span>
+<span id="cb45-23"><a href="" aria-label="23"></a>  }</span>
+<span id="cb45-24"><a href="" aria-label="24"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="反应时模型-1后验预测和逐点对数似然" class="slide level2">
 <h2>反应时模型 1：后验预测和逐点对数似然</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb41-1"><a href="" aria-label="1"></a><span class="kw">generated quantities</span> {</span>
-<span id="cb41-2"><a href="" aria-label="2"></a>  <span class="dt">vector</span>[N] y_rep;             <span class="co">// 后验预测</span></span>
-<span id="cb41-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] log_lik;         <span class="co">// 逐点对数似然</span></span>
-<span id="cb41-4"><a href="" aria-label="4"></a></span>
-<span id="cb41-5"><a href="" aria-label="5"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
-<span id="cb41-6"><a href="" aria-label="6"></a>    <span class="co">// 后验预测值</span></span>
-<span id="cb41-7"><a href="" aria-label="7"></a>    y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n], sigma);</span>
-<span id="cb41-8"><a href="" aria-label="8"></a>    <span class="co">// 逐点对数似然</span></span>
-<span id="cb41-9"><a href="" aria-label="9"></a>    log_lik[n] = normal_lpdf(y[n] | beta_0 + beta_1 * X1[n] + beta_2 * X2[n], sigma);</span>
-<span id="cb41-10"><a href="" aria-label="10"></a>  }</span>
-<span id="cb41-11"><a href="" aria-label="11"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb46-1"><a href="" aria-label="1"></a><span class="kw">generated quantities</span> {</span>
+<span id="cb46-2"><a href="" aria-label="2"></a>  <span class="dt">vector</span>[N] y_rep;             <span class="co">// 后验预测</span></span>
+<span id="cb46-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] log_lik;         <span class="co">// 逐点对数似然</span></span>
+<span id="cb46-4"><a href="" aria-label="4"></a></span>
+<span id="cb46-5"><a href="" aria-label="5"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb46-6"><a href="" aria-label="6"></a>    <span class="co">// 后验预测值</span></span>
+<span id="cb46-7"><a href="" aria-label="7"></a>    y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n], sigma);</span>
+<span id="cb46-8"><a href="" aria-label="8"></a>    <span class="co">// 逐点对数似然</span></span>
+<span id="cb46-9"><a href="" aria-label="9"></a>    log_lik[n] = normal_lpdf(y[n] | beta_0 + beta_1 * X1[n] + beta_2 * X2[n], sigma);</span>
+<span id="cb46-10"><a href="" aria-label="10"></a>  }</span>
+<span id="cb46-11"><a href="" aria-label="11"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="反应时模型-1r-数据列表" class="slide level2">
 <h2>反应时模型 1：R 数据列表</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="" aria-label="1"></a>X1 <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(rt<span class="sc">$</span>Label <span class="sc">==</span> <span class="st">"Friend"</span>)</span>
-<span id="cb42-2"><a href="" aria-label="2"></a>X2 <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(rt<span class="sc">$</span>Label <span class="sc">==</span> <span class="st">"Stranger"</span>)</span>
-<span id="cb42-3"><a href="" aria-label="3"></a>Matching <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(rt<span class="sc">$</span>Matching <span class="sc">==</span> <span class="st">"Nonmatching"</span>)</span>
-<span id="cb42-4"><a href="" aria-label="4"></a>data_list1 <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">N =</span> <span class="fu">nrow</span>(rt), <span class="at">y =</span> rt<span class="sc">$</span>RT_sec, <span class="at">X1 =</span> X1, <span class="at">X2 =</span> X2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="" aria-label="1"></a>X1 <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(rt<span class="sc">$</span>Label <span class="sc">==</span> <span class="st">"Friend"</span>)</span>
+<span id="cb47-2"><a href="" aria-label="2"></a>X2 <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(rt<span class="sc">$</span>Label <span class="sc">==</span> <span class="st">"Stranger"</span>)</span>
+<span id="cb47-3"><a href="" aria-label="3"></a>Matching <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(rt<span class="sc">$</span>Matching <span class="sc">==</span> <span class="st">"Nonmatching"</span>)</span>
+<span id="cb47-4"><a href="" aria-label="4"></a>data_list1 <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">N =</span> <span class="fu">nrow</span>(rt), <span class="at">y =</span> rt<span class="sc">$</span>RT_sec, <span class="at">X1 =</span> X1, <span class="at">X2 =</span> X2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="反应时模型-2数据参数与似然" class="slide level2">
 <h2>反应时模型 2：数据、参数与似然</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb43-1"><a href="" aria-label="1"></a><span class="kw">data</span> {</span>
-<span id="cb43-2"><a href="" aria-label="2"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;             <span class="co">// 样本数量</span></span>
-<span id="cb43-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] y;                <span class="co">// 响应变量</span></span>
-<span id="cb43-4"><a href="" aria-label="4"></a>  <span class="dt">vector</span>[N] X1;               <span class="co">// 哑变量1（Friend）</span></span>
-<span id="cb43-5"><a href="" aria-label="5"></a>  <span class="dt">vector</span>[N] X2;               <span class="co">// 哑变量2（Stranger）</span></span>
-<span id="cb43-6"><a href="" aria-label="6"></a>  <span class="dt">vector</span>[N] Matching;         <span class="co">// 哑变量（Matching条件）</span></span>
-<span id="cb43-7"><a href="" aria-label="7"></a>}</span>
-<span id="cb43-8"><a href="" aria-label="8"></a></span>
-<span id="cb43-9"><a href="" aria-label="9"></a><span class="kw">parameters</span> {</span>
-<span id="cb43-10"><a href="" aria-label="10"></a>  <span class="dt">real</span> beta_0;                <span class="co">// 截距</span></span>
-<span id="cb43-11"><a href="" aria-label="11"></a>  <span class="dt">real</span> beta_1;                <span class="co">// Friend的主效应</span></span>
-<span id="cb43-12"><a href="" aria-label="12"></a>  <span class="dt">real</span> beta_2;                <span class="co">// Stranger的主效应</span></span>
-<span id="cb43-13"><a href="" aria-label="13"></a>  <span class="dt">real</span> beta_3;                <span class="co">// Matching的主效应</span></span>
-<span id="cb43-14"><a href="" aria-label="14"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;        <span class="co">// 误差项的标准差</span></span>
-<span id="cb43-15"><a href="" aria-label="15"></a>}</span>
-<span id="cb43-16"><a href="" aria-label="16"></a></span>
-<span id="cb43-17"><a href="" aria-label="17"></a><span class="kw">model</span> {</span>
-<span id="cb43-18"><a href="" aria-label="18"></a>  <span class="co">// 先验分布</span></span>
-<span id="cb43-19"><a href="" aria-label="19"></a>  beta_0 ~ normal(<span class="dv">5</span>, <span class="dv">2</span>);</span>
-<span id="cb43-20"><a href="" aria-label="20"></a>  beta_1 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
-<span id="cb43-21"><a href="" aria-label="21"></a>  beta_2 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
-<span id="cb43-22"><a href="" aria-label="22"></a>  beta_3 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
-<span id="cb43-23"><a href="" aria-label="23"></a>  sigma ~ exponential(<span class="fl">0.3</span>);</span>
-<span id="cb43-24"><a href="" aria-label="24"></a></span>
-<span id="cb43-25"><a href="" aria-label="25"></a>  <span class="co">// 似然函数</span></span>
-<span id="cb43-26"><a href="" aria-label="26"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
-<span id="cb43-27"><a href="" aria-label="27"></a>    y[n] ~ normal(beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n], sigma);</span>
-<span id="cb43-28"><a href="" aria-label="28"></a>  }</span>
-<span id="cb43-29"><a href="" aria-label="29"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb48-1"><a href="" aria-label="1"></a><span class="kw">data</span> {</span>
+<span id="cb48-2"><a href="" aria-label="2"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;             <span class="co">// 样本数量</span></span>
+<span id="cb48-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] y;                <span class="co">// 响应变量</span></span>
+<span id="cb48-4"><a href="" aria-label="4"></a>  <span class="dt">vector</span>[N] X1;               <span class="co">// 哑变量1（Friend）</span></span>
+<span id="cb48-5"><a href="" aria-label="5"></a>  <span class="dt">vector</span>[N] X2;               <span class="co">// 哑变量2（Stranger）</span></span>
+<span id="cb48-6"><a href="" aria-label="6"></a>  <span class="dt">vector</span>[N] Matching;         <span class="co">// 哑变量（Matching条件）</span></span>
+<span id="cb48-7"><a href="" aria-label="7"></a>}</span>
+<span id="cb48-8"><a href="" aria-label="8"></a></span>
+<span id="cb48-9"><a href="" aria-label="9"></a><span class="kw">parameters</span> {</span>
+<span id="cb48-10"><a href="" aria-label="10"></a>  <span class="dt">real</span> beta_0;                <span class="co">// 截距</span></span>
+<span id="cb48-11"><a href="" aria-label="11"></a>  <span class="dt">real</span> beta_1;                <span class="co">// Friend的主效应</span></span>
+<span id="cb48-12"><a href="" aria-label="12"></a>  <span class="dt">real</span> beta_2;                <span class="co">// Stranger的主效应</span></span>
+<span id="cb48-13"><a href="" aria-label="13"></a>  <span class="dt">real</span> beta_3;                <span class="co">// Matching的主效应</span></span>
+<span id="cb48-14"><a href="" aria-label="14"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;        <span class="co">// 误差项的标准差</span></span>
+<span id="cb48-15"><a href="" aria-label="15"></a>}</span>
+<span id="cb48-16"><a href="" aria-label="16"></a></span>
+<span id="cb48-17"><a href="" aria-label="17"></a><span class="kw">model</span> {</span>
+<span id="cb48-18"><a href="" aria-label="18"></a>  <span class="co">// 先验分布</span></span>
+<span id="cb48-19"><a href="" aria-label="19"></a>  beta_0 ~ normal(<span class="dv">5</span>, <span class="dv">2</span>);</span>
+<span id="cb48-20"><a href="" aria-label="20"></a>  beta_1 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb48-21"><a href="" aria-label="21"></a>  beta_2 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb48-22"><a href="" aria-label="22"></a>  beta_3 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb48-23"><a href="" aria-label="23"></a>  sigma ~ exponential(<span class="fl">0.3</span>);</span>
+<span id="cb48-24"><a href="" aria-label="24"></a></span>
+<span id="cb48-25"><a href="" aria-label="25"></a>  <span class="co">// 似然函数</span></span>
+<span id="cb48-26"><a href="" aria-label="26"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb48-27"><a href="" aria-label="27"></a>    y[n] ~ normal(beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n], sigma);</span>
+<span id="cb48-28"><a href="" aria-label="28"></a>  }</span>
+<span id="cb48-29"><a href="" aria-label="29"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="反应时模型-2后验预测和逐点对数似然" class="slide level2">
 <h2>反应时模型 2：后验预测和逐点对数似然</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb44-1"><a href="" aria-label="1"></a><span class="kw">generated quantities</span> {</span>
-<span id="cb44-2"><a href="" aria-label="2"></a>  <span class="dt">vector</span>[N] y_rep;              <span class="co">// 后验预测值</span></span>
-<span id="cb44-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] log_lik;          <span class="co">// 逐点对数似然</span></span>
-<span id="cb44-4"><a href="" aria-label="4"></a></span>
-<span id="cb44-5"><a href="" aria-label="5"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
-<span id="cb44-6"><a href="" aria-label="6"></a>    <span class="co">// 后验预测值</span></span>
-<span id="cb44-7"><a href="" aria-label="7"></a>    y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n], sigma);</span>
-<span id="cb44-8"><a href="" aria-label="8"></a>    <span class="co">// 逐点对数似然</span></span>
-<span id="cb44-9"><a href="" aria-label="9"></a>    log_lik[n] = normal_lpdf(y[n] | beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n], sigma);</span>
-<span id="cb44-10"><a href="" aria-label="10"></a>  }</span>
-<span id="cb44-11"><a href="" aria-label="11"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb49-1"><a href="" aria-label="1"></a><span class="kw">generated quantities</span> {</span>
+<span id="cb49-2"><a href="" aria-label="2"></a>  <span class="dt">vector</span>[N] y_rep;              <span class="co">// 后验预测值</span></span>
+<span id="cb49-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] log_lik;          <span class="co">// 逐点对数似然</span></span>
+<span id="cb49-4"><a href="" aria-label="4"></a></span>
+<span id="cb49-5"><a href="" aria-label="5"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb49-6"><a href="" aria-label="6"></a>    <span class="co">// 后验预测值</span></span>
+<span id="cb49-7"><a href="" aria-label="7"></a>    y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n], sigma);</span>
+<span id="cb49-8"><a href="" aria-label="8"></a>    <span class="co">// 逐点对数似然</span></span>
+<span id="cb49-9"><a href="" aria-label="9"></a>    log_lik[n] = normal_lpdf(y[n] | beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n], sigma);</span>
+<span id="cb49-10"><a href="" aria-label="10"></a>  }</span>
+<span id="cb49-11"><a href="" aria-label="11"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="反应时模型-2r-数据列表" class="slide level2">
 <h2>反应时模型 2：R 数据列表</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="" aria-label="1"></a>data_list2 <span class="ot">&lt;-</span> <span class="fu">c</span>(data_list1, <span class="fu">list</span>(<span class="at">Matching =</span> Matching))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="" aria-label="1"></a>data_list2 <span class="ot">&lt;-</span> <span class="fu">c</span>(data_list1, <span class="fu">list</span>(<span class="at">Matching =</span> Matching))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="反应时模型-3数据参数与似然" class="slide level2">
 <h2>反应时模型 3：数据、参数与似然</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb46-1"><a href="" aria-label="1"></a><span class="kw">data</span> {</span>
-<span id="cb46-2"><a href="" aria-label="2"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;                 <span class="co">// 样本数量</span></span>
-<span id="cb46-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] y;                    <span class="co">// 响应变量</span></span>
-<span id="cb46-4"><a href="" aria-label="4"></a>  <span class="dt">vector</span>[N] X1;                   <span class="co">// 哑变量1（Friend）</span></span>
-<span id="cb46-5"><a href="" aria-label="5"></a>  <span class="dt">vector</span>[N] X2;                   <span class="co">// 哑变量2（Stranger）</span></span>
-<span id="cb46-6"><a href="" aria-label="6"></a>  <span class="dt">vector</span>[N] Matching;             <span class="co">// 哑变量（Matching条件）</span></span>
-<span id="cb46-7"><a href="" aria-label="7"></a>  <span class="dt">vector</span>[N] Interaction_1;        <span class="co">// Friend 和 Matching 的交互</span></span>
-<span id="cb46-8"><a href="" aria-label="8"></a>  <span class="dt">vector</span>[N] Interaction_2;        <span class="co">// Stranger 和 Matching 的交互</span></span>
-<span id="cb46-9"><a href="" aria-label="9"></a>}</span>
-<span id="cb46-10"><a href="" aria-label="10"></a></span>
-<span id="cb46-11"><a href="" aria-label="11"></a><span class="kw">parameters</span> {</span>
-<span id="cb46-12"><a href="" aria-label="12"></a>  <span class="dt">real</span> beta_0;                    <span class="co">// 截距</span></span>
-<span id="cb46-13"><a href="" aria-label="13"></a>  <span class="dt">real</span> beta_1;                    <span class="co">// Friend的主效应</span></span>
-<span id="cb46-14"><a href="" aria-label="14"></a>  <span class="dt">real</span> beta_2;                    <span class="co">// Stranger的主效应</span></span>
-<span id="cb46-15"><a href="" aria-label="15"></a>  <span class="dt">real</span> beta_3;                    <span class="co">// Matching的主效应</span></span>
-<span id="cb46-16"><a href="" aria-label="16"></a>  <span class="dt">real</span> beta_4;                    <span class="co">// Friend与Matching的交互效应</span></span>
-<span id="cb46-17"><a href="" aria-label="17"></a>  <span class="dt">real</span> beta_5;                    <span class="co">// Stranger与Matching的交互效应</span></span>
-<span id="cb46-18"><a href="" aria-label="18"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;            <span class="co">// 误差项的标准差</span></span>
-<span id="cb46-19"><a href="" aria-label="19"></a>}</span>
-<span id="cb46-20"><a href="" aria-label="20"></a></span>
-<span id="cb46-21"><a href="" aria-label="21"></a><span class="kw">model</span> {</span>
-<span id="cb46-22"><a href="" aria-label="22"></a>  <span class="co">// 先验分布</span></span>
-<span id="cb46-23"><a href="" aria-label="23"></a>  beta_0 ~ normal(<span class="dv">5</span>, <span class="dv">2</span>);</span>
-<span id="cb46-24"><a href="" aria-label="24"></a>  beta_1 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
-<span id="cb46-25"><a href="" aria-label="25"></a>  beta_2 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
-<span id="cb46-26"><a href="" aria-label="26"></a>  beta_3 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
-<span id="cb46-27"><a href="" aria-label="27"></a>  beta_4 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
-<span id="cb46-28"><a href="" aria-label="28"></a>  beta_5 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
-<span id="cb46-29"><a href="" aria-label="29"></a>  sigma ~ exponential(<span class="fl">0.3</span>);</span>
-<span id="cb46-30"><a href="" aria-label="30"></a></span>
-<span id="cb46-31"><a href="" aria-label="31"></a>  <span class="co">// 似然函数</span></span>
-<span id="cb46-32"><a href="" aria-label="32"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
-<span id="cb46-33"><a href="" aria-label="33"></a>    y[n] ~ normal(beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n] + beta_4 * Interaction_1[n] + beta_5 * Interaction_2[n], sigma);</span>
-<span id="cb46-34"><a href="" aria-label="34"></a>  }</span>
-<span id="cb46-35"><a href="" aria-label="35"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb51-1"><a href="" aria-label="1"></a><span class="kw">data</span> {</span>
+<span id="cb51-2"><a href="" aria-label="2"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;                 <span class="co">// 样本数量</span></span>
+<span id="cb51-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] y;                    <span class="co">// 响应变量</span></span>
+<span id="cb51-4"><a href="" aria-label="4"></a>  <span class="dt">vector</span>[N] X1;                   <span class="co">// 哑变量1（Friend）</span></span>
+<span id="cb51-5"><a href="" aria-label="5"></a>  <span class="dt">vector</span>[N] X2;                   <span class="co">// 哑变量2（Stranger）</span></span>
+<span id="cb51-6"><a href="" aria-label="6"></a>  <span class="dt">vector</span>[N] Matching;             <span class="co">// 哑变量（Matching条件）</span></span>
+<span id="cb51-7"><a href="" aria-label="7"></a>  <span class="dt">vector</span>[N] Interaction_1;        <span class="co">// Friend 和 Matching 的交互</span></span>
+<span id="cb51-8"><a href="" aria-label="8"></a>  <span class="dt">vector</span>[N] Interaction_2;        <span class="co">// Stranger 和 Matching 的交互</span></span>
+<span id="cb51-9"><a href="" aria-label="9"></a>}</span>
+<span id="cb51-10"><a href="" aria-label="10"></a></span>
+<span id="cb51-11"><a href="" aria-label="11"></a><span class="kw">parameters</span> {</span>
+<span id="cb51-12"><a href="" aria-label="12"></a>  <span class="dt">real</span> beta_0;                    <span class="co">// 截距</span></span>
+<span id="cb51-13"><a href="" aria-label="13"></a>  <span class="dt">real</span> beta_1;                    <span class="co">// Friend的主效应</span></span>
+<span id="cb51-14"><a href="" aria-label="14"></a>  <span class="dt">real</span> beta_2;                    <span class="co">// Stranger的主效应</span></span>
+<span id="cb51-15"><a href="" aria-label="15"></a>  <span class="dt">real</span> beta_3;                    <span class="co">// Matching的主效应</span></span>
+<span id="cb51-16"><a href="" aria-label="16"></a>  <span class="dt">real</span> beta_4;                    <span class="co">// Friend与Matching的交互效应</span></span>
+<span id="cb51-17"><a href="" aria-label="17"></a>  <span class="dt">real</span> beta_5;                    <span class="co">// Stranger与Matching的交互效应</span></span>
+<span id="cb51-18"><a href="" aria-label="18"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;            <span class="co">// 误差项的标准差</span></span>
+<span id="cb51-19"><a href="" aria-label="19"></a>}</span>
+<span id="cb51-20"><a href="" aria-label="20"></a></span>
+<span id="cb51-21"><a href="" aria-label="21"></a><span class="kw">model</span> {</span>
+<span id="cb51-22"><a href="" aria-label="22"></a>  <span class="co">// 先验分布</span></span>
+<span id="cb51-23"><a href="" aria-label="23"></a>  beta_0 ~ normal(<span class="dv">5</span>, <span class="dv">2</span>);</span>
+<span id="cb51-24"><a href="" aria-label="24"></a>  beta_1 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb51-25"><a href="" aria-label="25"></a>  beta_2 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb51-26"><a href="" aria-label="26"></a>  beta_3 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb51-27"><a href="" aria-label="27"></a>  beta_4 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb51-28"><a href="" aria-label="28"></a>  beta_5 ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb51-29"><a href="" aria-label="29"></a>  sigma ~ exponential(<span class="fl">0.3</span>);</span>
+<span id="cb51-30"><a href="" aria-label="30"></a></span>
+<span id="cb51-31"><a href="" aria-label="31"></a>  <span class="co">// 似然函数</span></span>
+<span id="cb51-32"><a href="" aria-label="32"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb51-33"><a href="" aria-label="33"></a>    y[n] ~ normal(beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n] + beta_4 * Interaction_1[n] + beta_5 * Interaction_2[n], sigma);</span>
+<span id="cb51-34"><a href="" aria-label="34"></a>  }</span>
+<span id="cb51-35"><a href="" aria-label="35"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="反应时模型-3后验预测和逐点对数似然" class="slide level2">
 <h2>反应时模型 3：后验预测和逐点对数似然</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb47-1"><a href="" aria-label="1"></a><span class="kw">generated quantities</span> {</span>
-<span id="cb47-2"><a href="" aria-label="2"></a>  <span class="dt">vector</span>[N] y_rep;                  <span class="co">// 后验预测值</span></span>
-<span id="cb47-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] log_lik;              <span class="co">// 逐点对数似然</span></span>
-<span id="cb47-4"><a href="" aria-label="4"></a></span>
-<span id="cb47-5"><a href="" aria-label="5"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
-<span id="cb47-6"><a href="" aria-label="6"></a>    <span class="co">// 后验预测值（原有）</span></span>
-<span id="cb47-7"><a href="" aria-label="7"></a>    y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n] +</span>
-<span id="cb47-8"><a href="" aria-label="8"></a>                          beta_4 * Interaction_1[n] + beta_5 * Interaction_2[n], sigma);</span>
-<span id="cb47-9"><a href="" aria-label="9"></a>    <span class="co">// 逐点对数似然（原有）</span></span>
-<span id="cb47-10"><a href="" aria-label="10"></a>    log_lik[n] = normal_lpdf(y[n] | beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n] +</span>
-<span id="cb47-11"><a href="" aria-label="11"></a>                            beta_4 * Interaction_1[n] + beta_5 * Interaction_2[n], sigma);</span>
-<span id="cb47-12"><a href="" aria-label="12"></a>  }</span>
-<span id="cb47-13"><a href="" aria-label="13"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb52-1"><a href="" aria-label="1"></a><span class="kw">generated quantities</span> {</span>
+<span id="cb52-2"><a href="" aria-label="2"></a>  <span class="dt">vector</span>[N] y_rep;                  <span class="co">// 后验预测值</span></span>
+<span id="cb52-3"><a href="" aria-label="3"></a>  <span class="dt">vector</span>[N] log_lik;              <span class="co">// 逐点对数似然</span></span>
+<span id="cb52-4"><a href="" aria-label="4"></a></span>
+<span id="cb52-5"><a href="" aria-label="5"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb52-6"><a href="" aria-label="6"></a>    <span class="co">// 后验预测值（原有）</span></span>
+<span id="cb52-7"><a href="" aria-label="7"></a>    y_rep[n] = normal_rng(beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n] +</span>
+<span id="cb52-8"><a href="" aria-label="8"></a>                          beta_4 * Interaction_1[n] + beta_5 * Interaction_2[n], sigma);</span>
+<span id="cb52-9"><a href="" aria-label="9"></a>    <span class="co">// 逐点对数似然（原有）</span></span>
+<span id="cb52-10"><a href="" aria-label="10"></a>    log_lik[n] = normal_lpdf(y[n] | beta_0 + beta_1 * X1[n] + beta_2 * X2[n] + beta_3 * Matching[n] +</span>
+<span id="cb52-11"><a href="" aria-label="11"></a>                            beta_4 * Interaction_1[n] + beta_5 * Interaction_2[n], sigma);</span>
+<span id="cb52-12"><a href="" aria-label="12"></a>  }</span>
+<span id="cb52-13"><a href="" aria-label="13"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="反应时模型-3r-数据列表" class="slide level2">
 <h2>反应时模型 3：R 数据列表</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="" aria-label="1"></a>data_list3 <span class="ot">&lt;-</span> <span class="fu">c</span>(data_list2, <span class="fu">list</span>(<span class="at">Interaction_1 =</span> X1 <span class="sc">*</span> Matching,</span>
-<span id="cb48-2"><a href="" aria-label="2"></a>                                <span class="at">Interaction_2 =</span> X2 <span class="sc">*</span> Matching))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="" aria-label="1"></a>data_list3 <span class="ot">&lt;-</span> <span class="fu">c</span>(data_list2, <span class="fu">list</span>(<span class="at">Interaction_1 =</span> X1 <span class="sc">*</span> Matching,</span>
+<span id="cb53-2"><a href="" aria-label="2"></a>                                <span class="at">Interaction_2 =</span> X2 <span class="sc">*</span> Matching))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 </section>
     </div>
@@ -2024,42 +2084,80 @@ p_D=\overline{D}-D(\bar{\theta}),\quad
       });
     </script>
     
+
     <script>
+
       // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+
       // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+
       // slide changes (different for each slide format).
+
       (function () {
+
         // dispatch for htmlwidgets
+
         function fireSlideEnter() {
+
           const event = window.document.createEvent("Event");
+
           event.initEvent("slideenter", true, true);
+
           window.document.dispatchEvent(event);
+
         }
+
+    
 
         function fireSlideChanged(previousSlide, currentSlide) {
+
           fireSlideEnter();
 
+    
+
           // dispatch for shiny
+
           if (window.jQuery) {
+
             if (previousSlide) {
+
               window.jQuery(previousSlide).trigger("hidden");
+
             }
+
             if (currentSlide) {
+
               window.jQuery(currentSlide).trigger("shown");
+
             }
+
           }
+
         }
+
+    
 
         // hookup for slidy
+
         if (window.w3c_slidy) {
+
           window.w3c_slidy.add_observer(function (slide_num) {
+
             // slide_num starts at position 1
+
             fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+
           });
+
         }
 
+    
+
       })();
+
     </script>
+
+    
 
     <script id="quarto-html-after-body" type="application/javascript">
       window.document.addEventListener("DOMContentLoaded", function (event) {

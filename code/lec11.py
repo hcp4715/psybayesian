@@ -1,8 +1,10 @@
 """第 11 讲：贝叶斯回归模型的评估与比较。
 
-在项目根目录运行 python lec11.py。加 --exercise 运行模型 4–6 的参考解答。
+在项目根目录运行 python code/lec11.py。加 --exercise 运行模型 4–6 的参考解答。
 核验环境使用 PyMC 5.16.2、ArviZ 0.20.0 与 statsmodels。
 """
+
+from __future__ import annotations
 
 import argparse
 import hashlib
@@ -20,8 +22,9 @@ import scipy.special as special
 import scipy.stats as stats
 import statsmodels.api as sm
 
-DATA = Path("data")
-CACHE = Path("tmpdata") / "lec11-python"
+_ROOT = Path(__file__).resolve().parents[1]
+DATA = _ROOT / "data"
+CACHE = _ROOT / "tmpdata" / "lec11-python"
 DRAWS = 2000
 TUNE = 1000
 CHAINS = 4
@@ -77,7 +80,7 @@ def read_exercise() -> pd.DataFrame:
 
 
 def exercise_designs(exercise: pd.DataFrame) -> dict[str, pd.DataFrame]:
-    """依次加入压力、吸烟状态和交互项。"""
+    """保留原始截距，依次纳入压力、吸烟状态和交互项。"""
     model4 = pd.DataFrame({"(Intercept)": 1, "stress": exercise["stress"]})
     model5 = model4.assign(smoke=exercise["smoke"])
     model6 = model5.assign(**{"stress:smoke": exercise["stress"] * exercise["smoke"]})
@@ -278,15 +281,47 @@ def main() -> None:
 
     exercise = read_exercise()
     print(exercise.head(4).to_string(index=False))
-    # 自行补全模型 5、6 的预测因子及三个指标的调用，再核对参考解答。
+    # Part 5–6：用 PyMC 拟合课件中的三个高斯回归模型。
     if args.exercise:
-        designs = exercise_designs(exercise)
-        observed = exercise["scontrol"]
-        fits = {
-            name: fit_gaussian(name, x, observed, 50, 10, 10, 0.6)
-            for name, x in designs.items()
+        exercise_matrices = exercise_designs(exercise)
+        exercise_observed = exercise["scontrol"]
+        exercise_fits = {
+            name: fit_gaussian(
+                name, design, exercise_observed,
+                intercept_mean=50, intercept_sd=10, slope_sd=10, sigma_rate=0.6,
+            )
+            for name, design in exercise_matrices.items()
         }
-        summarize_predictions(fits, designs, observed)
+
+        # Part 6：查看等尾可信区间、Rhat 与有效样本量。
+        for name, fit in exercise_fits.items():
+            summary = az.summary(
+                fit,
+                var_names=["beta", "sigma"],
+                stat_funcs={
+                    "2.5%": lambda draws: np.quantile(draws, 0.025),
+                    "97.5%": lambda draws: np.quantile(draws, 0.975),
+                },
+            )
+            columns = ["mean", "sd", "2.5%", "97.5%", "r_hat", "ess_bulk", "ess_tail"]
+            print(f"\n{name}\n{summary[columns].to_string()}")
+
+        model4 = exercise_fits["model4"]
+        y_rep4 = model4.posterior_predictive["y"].stack(sample=("chain", "draw"))
+        log_lik4 = model4.log_likelihood["y"].stack(sample=("chain", "draw"))
+        # 合并链后与 brms 的矩阵一致，每行是一次抽样，每列是一位被试。
+        print(pd.Series({
+            "y_rep4": y_rep4.transpose("sample", "observation").shape,
+            "log_lik4": log_lik4.transpose("sample", "observation").shape,
+            "n": len(exercise),
+        }).to_string())
+        predicted5 = exercise_fits["model5"].posterior_predictive["y"].mean(
+            dim=("chain", "draw")
+        )
+        print(pd.Series(predicted5.values, name="predicted5").head(4).to_string(index=False))
+
+        # Part 5：用各拟合对象的后验预测与逐点对数似然计算指标。
+        summarize_predictions(exercise_fits, exercise_matrices, exercise_observed)
 
 
 if __name__ == "__main__":
@@ -294,7 +329,7 @@ if __name__ == "__main__":
 
 
 # Python 代码核验说明
-# 使用课件的基线、数据筛选、先验及每链 2000 次保留抽样。替换原脚本的
-# 逐元素 DIC 计算，并以同一观测的配对差计算 ELPD 比较标准误。
-# PyMC 与 RStan 的采样实现、ArviZ 与 loo 的 PSIS 数值实现存在差异。
+# Part 5–6 使用与 brms 相同的原始截距、数据筛选、先验和采样次数。
+# PyMC 的逐点对数似然与后验预测分别用于 ELPD-LOO、DIC 和 MedAE。
+# PyMC 与 brms 的 Stan 后端、ArviZ 与 loo 的 PSIS 数值实现存在差异。
 # 相同随机种子下，各自的后验抽样及统计结果仍可有小幅差异。

@@ -1,6 +1,6 @@
 # 第 11 讲：贝叶斯回归模型的评估与比较
-# 在项目根目录运行 Rscript lec11.R。加 --exercise 可运行模型 4–6 的参考解答。
-# 模型结构、先验和逐行留出的单位与 lec11_new.qmd 一致。
+# 在项目根目录运行 Rscript code/lec11.R。加 --exercise 可运行模型 4–6 的参考解答。
+# 模型结构、先验和逐行留出的单位与 lec11.qmd 一致。
 
 pacman::p_load(dplyr, knitr, rstan, loo)
 
@@ -80,7 +80,7 @@ fit_models <- function(model_data, model_code, section, stan_model = NULL) {
     model_code, model_data, sampling, R.version.string,
     as.character(utils::packageVersion("rstan"))
   ))
-  cache_dir <- file.path("tmpdata", "lec11-r")
+  cache_dir <- here::here("tmpdata", "lec11-r")
   dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
   cache_file <- file.path(cache_dir, paste0(section, "-", key, ".rds"))
   if (file.exists(cache_file)) return(readRDS(cache_file))
@@ -217,28 +217,63 @@ exercise <- exercise_raw %>%
   dplyr::transmute(stress, scontrol, smoke = as.integer(smoke == 1L))
 utils::head(exercise, 4)
 
-# 练习：在模型 4 的基础上依次加入吸烟状态及其与压力的交互项。
-# 自行补全课件的公式和指标调用后，可使用 --exercise 运行以下参考解答。
+# Part 5–6：用 brms 拟合三个候选模型并提取后验结果。
 if ("--exercise" %in% commandArgs(trailingOnly = TRUE)) {
+  # 让截距先验对应原始压力为 0 时的预期分数，与课件一致。
   exercise_formulas <- list(
-    model4 = scontrol ~ stress,
-    model5 = scontrol ~ stress + smoke,
-    model6 = scontrol ~ stress * smoke
+    model4 = scontrol ~ 0 + Intercept + stress,
+    model5 = scontrol ~ 0 + Intercept + stress + smoke,
+    model6 = scontrol ~ 0 + Intercept + stress * smoke
   )
-  exercise_stan_data <- lapply(exercise_formulas, function(formula) {
-    X <- stats::model.matrix(formula, data = exercise)
-    list(N = nrow(X), K = ncol(X), X = X, y = exercise$scontrol,
-         prior_mean = c(50, rep(0, ncol(X) - 1)),
-         prior_sd = rep(10, ncol(X)), sigma_rate = 0.6)
+  exercise_priors <- c(
+    brms::set_prior("normal(0, 10)", class = "b"),
+    brms::set_prior("normal(50, 10)", class = "b", coef = "Intercept"),
+    brms::set_prior("exponential(0.6)", class = "sigma")
+  )
+  exercise_cache <- here::here("tmpdata", "lec11-brms")
+  dir.create(exercise_cache, recursive = TRUE, showWarnings = FALSE)
+  exercise_fits <- lapply(names(exercise_formulas), function(name) {
+    brms::brm(
+      formula = exercise_formulas[[name]],
+      data = exercise,
+      family = stats::gaussian(link = "identity"),
+      prior = exercise_priors,
+      backend = "rstan",
+      chains = 4, iter = 3000, warmup = 1000,
+      seed = 84735, refresh = 0,
+      file = file.path(exercise_cache, name),
+      file_refit = "on_change"
+    )
   })
-  exercise_fits <- fit_models(
-    exercise_stan_data, gaussian_stan, section = "self-control",
-    stan_model = rstan::get_stanmodel(rt_fits$model1)
-  )
-  exercise_medae <- vapply(exercise_fits, calculate_medae, numeric(1),
-                           observed = exercise$scontrol)
-  exercise_loo <- lapply(exercise_fits, calculate_loo)
-  exercise_dic <- mapply(calculate_dic, exercise_fits, exercise_stan_data)
+  names(exercise_fits) <- names(exercise_formulas)
+
+  # Part 6：按模型查看后验摘要，保留逐人预测和逐点对数似然。
+  for (name in names(exercise_fits)) {
+    cat("\n", name, "\n", sep = "")
+    print(summary(exercise_fits[[name]]))
+  }
+  set.seed(84735)
+  exercise_y_rep <- lapply(exercise_fits, brms::posterior_predict)
+  exercise_log_lik <- lapply(exercise_fits, brms::log_lik)
+  print(list(y_rep4 = dim(exercise_y_rep$model4),
+             log_lik4 = dim(exercise_log_lik$model4), n = nrow(exercise)))
+  print(utils::head(colMeans(exercise_y_rep$model5), 4))
+
+  # Part 5：比较样本内 MedAE、逐人 PSIS-LOO 与 DIC。
+  exercise_medae <- vapply(exercise_y_rep, function(draws) {
+    stats::median(abs(exercise$scontrol - colMeans(draws)))
+  }, numeric(1))
+  exercise_loo <- lapply(exercise_fits, loo::loo)
+  exercise_dic <- vapply(names(exercise_fits), function(name) {
+    fit <- exercise_fits[[name]]
+    mean_deviance <- mean(-2 * rowSums(exercise_log_lik[[name]]))
+    mean_mu <- colMeans(brms::posterior_epred(fit))
+    sigma_draws <- posterior::as_draws_df(fit, variable = "sigma")
+    plug_in_deviance <- -2 * sum(stats::dnorm(
+      exercise$scontrol, mean = mean_mu, sd = mean(sigma_draws$sigma), log = TRUE
+    ))
+    2 * mean_deviance - plug_in_deviance
+  }, numeric(1))
   print(knitr::kable(data.frame(
     模型 = names(exercise_fits), MedAE = unname(exercise_medae), DIC = unname(exercise_dic)
   ), digits = 4))
