@@ -28,7 +28,7 @@ execute:
 #| label: setup
 #| include: false
 
-pacman::p_load(dplyr, knitr, rstan, loo)
+pacman::p_load(dplyr, knitr, rstan, loo, brms)
 ```
 
 ## 学习目标
