@@ -1,492 +1,300 @@
-# 导入 pymc 模型包，和 arviz 等分析工具 
-import pymc as pm
-import arviz as az
-import seaborn as sns
-import scipy.stats as st
-import numpy as np
-import matplotlib.pyplot as plt
-import xarray as xr
-import pandas as pd
-import os
+"""第 11 讲：贝叶斯回归模型的评估与比较。
 
-# 忽略不必要的警告
+在项目根目录运行 python lec11.py。加 --exercise 运行模型 4–6 的参考解答。
+核验环境使用 PyMC 5.16.2、ArviZ 0.20.0 与 statsmodels。
+"""
+
+import argparse
+import hashlib
+import inspect
+import json
+import tempfile
 import warnings
-warnings.filterwarnings("ignore")
+from pathlib import Path
 
-try:
-  df_raw = pd.read_csv('/home/mw/input/bayes3797/Kolvoort_2020_HBM_Exp1_Clean.csv')
-except:
-  df_raw = pd.read_csv('/data/Kolvoort_2020_HBM_Exp1_Clean.csv')
-
-df = df_raw.groupby(['Subject','Label', 'Matching'], as_index=False)['RT_sec'].mean()
-
-# 将 Label 列的数字编码转为文字标签
-df['Label'] = df['Label'].replace({1: 'Self', 2: 'Friend', 3: 'Stranger'})
-
-df['Matching'] = df['Matching'].replace({'Matching': 'matching', 'Nonmatching': 'nonmatching'})
-
-# 设置索引
-df["index"] = range(len(df))
-df = df.set_index("index")
-
-# 将 Label 列转换为有序的分类变量
-df['Label'] = pd.Categorical(df['Label'], categories=['Self', 'Friend', 'Stranger'], ordered=True)
-
-# 将分类变量转换为哑变量
-X1 = (df['Label'] == 'Friend').astype(int)
-X2 = (df['Label'] == 'Stranger').astype(int)
-
-# Matching 条件的哑变量
-Matching = (df['Matching'] == 'matching').astype(int)  
-
-# Friend 和 Matching 的交互
-Interaction_1 = X1 * Matching  
-
-# Stranger 和 Matching 的交互
-Interaction_2 = X2 * Matching  
-
-# 建立模型1
-with pm.Model() as model1:
-    # 定义先验分布参数
-    beta_0 = pm.Normal('beta_0', mu=5, sigma=2)
-    beta_1 = pm.Normal('beta_1', mu=0, sigma=1)
-    beta_2 = pm.Normal('beta_2', mu=0, sigma=1)
-    sigma = pm.Exponential('sigma', lam=0.3)
-    
-    # 线性模型表达式
-    mu = beta_0 + beta_1 * X1 + beta_2 * X2
-    
-    # 观测数据的似然函数
-    likelihood = pm.Normal('Y_obs', mu=mu, sigma=sigma, observed=df['RT_sec'])
-
-# 建立模型2和模型3
-
-with pm.Model() as model2:
-    # 先验分布
-    beta_0 = pm.Normal('beta_0', mu=5, sigma=2)  
-    beta_1 = pm.Normal('beta_1', mu=0, sigma=1)  
-    beta_2 = pm.Normal('beta_2', mu=0, sigma=1)  
-    beta_3 = pm.Normal('beta_3', mu=0, sigma=1)  
-    sigma = pm.Exponential('sigma', lam=0.3)  
-    
-    # 线性模型
-    mu = beta_0 + beta_1 * X1 + beta_2 * X2 + beta_3 * Matching
-    
-    # 观测数据的似然函数
-    likelihood = pm.Normal('Y_obs', mu=mu, sigma=sigma, observed=df['RT_sec'])
-
-with pm.Model() as model3:
-    # 定义先验分布
-    beta_0 = pm.Normal('beta_0', mu=5, sigma=2)  
-    beta_1 = pm.Normal('beta_1', mu=0, sigma=1) 
-    beta_2 = pm.Normal('beta_2', mu=0, sigma=1)  
-    beta_3 = pm.Normal('beta_3', mu=0, sigma=1)  
-    beta_4 = pm.Normal('beta_4', mu=0, sigma=1) 
-    beta_5 = pm.Normal('beta_5', mu=0, sigma=1)  
-    sigma = pm.Exponential('sigma', lam=0.3)  
-    
-    # 线性模型
-    mu = (beta_0 + beta_1 * X1 + beta_2 * X2 + beta_3 * Matching +
-          beta_4 * Interaction_1 + beta_5 * Interaction_2)
-    
-    # 观测数据的似然函数
-    likelihood = pm.Normal('Y_obs', mu=mu, sigma=sigma, observed=df['RT_sec'])
-
-#===========================
-#     注意！！！以下代码可能需要运行3分钟左右
-#===========================
-
-def run_model_sampling(save_name, model=None, draws=5000, tune=1000, chains=4, random_seed=84735):
-    """
-    运行模型采样，并在结果不存在时进行采样，存在时直接加载结果。
-
-    Parameters:
-    - save_name: 用于保存或加载结果的文件名（无扩展名）
-    - model: pymc 模型
-    - draws: 采样次数 (默认5000)
-    - tune: 调整采样策略的次数 (默认1000)
-    - chains: 链数 (默认4)
-    - random_seed: 随机种子 (默认84735)
-
-    Returns:
-    - trace: 采样结果
-    """
-    
-    # 检查是否存在保存的.nc文件
-    nc_file = f"{save_name}.nc"
-    if os.path.exists(nc_file):
-        print(f"加载现有的采样结果：{nc_file}")
-        # 如果文件存在，则加载采样结果
-        trace = az.from_netcdf(nc_file)
-    else:
-
-        assert model is not None, "模型未定义，请先定义模型"
-
-        print(f"没有找到现有的采样结果，正在执行采样：{save_name}")
-        # 如果文件不存在，则进行采样计算
-        with model:
-            trace = pm.sample_prior_predictive(draws=draws, random_seed=random_seed)
-            idata = pm.sample(draws=draws,                   # 使用mcmc方法进行采样，draws为采样次数
-                              tune=tune,                    # tune为调整采样策略的次数
-                              chains=chains,                # 链数
-                              discard_tuned_samples=True,   # tune的结果将在采样结束后被丢弃
-                              idata_kwargs={"log_likelihood": True},
-                              random_seed=random_seed)      # 后验采样
-
-            trace.extend(idata)
-            # 进行后验预测并扩展推断数据
-            pm.sample_posterior_predictive(trace, extend_inferencedata=True, random_seed=random_seed)
-            
-            # 保存结果到指定文件
-        trace.to_netcdf(nc_file)
-        
-    return trace
-
-# 运行所有三个模型
-model1_trace = run_model_sampling("lec10_model1",model1)
-model2_trace = run_model_sampling("lec10_model2",model2)
-model3_trace = run_model_sampling("lec10_model3",model3)
-
+import arviz as az
+import numpy as np
+import pandas as pd
+import pymc as pm
+import scipy.special as special
+import scipy.stats as stats
 import statsmodels.api as sm
 
-# 构建设计矩阵
-X = sm.add_constant(
-    pd.DataFrame({
-        'X1': X1, 
-        'X2': X2, 
-        'Matching': Matching,
-        'Interaction_1': Interaction_1,
-        'Interaction_2': Interaction_2
-    })
-)
-y = df['RT_sec']
-
-# 传统线性回归模型
-model0 = sm.OLS(y, X).fit()
-
-# 打印回归结果
-model0.summary()
-
-# 注意，可以通过 az.plot_bf() 函数来计算贝叶斯因子（Bayes Factor）。
-az.summary(model3_trace, hdi_prob=0.95)
-
-# 从采样结果中提取后验预测样本
-posterior_predictive = model1_trace.posterior_predictive["Y_obs"]
-
-# 在draw 和 chain 两个维度上计算后验均值
-posterior_mean = posterior_predictive.mean(dim=["chain", "draw"])
-
-posterior_mean.head()
-
-# 计算 MAE（观测值和后验均值的绝对误差的中位数）
-mae = np.median(np.abs(df["RT_sec"] - posterior_mean))
-
-print(f"MAE: {mae}")
-
-def calculate_mae(trace, observed_data, dv = "Y_obs"):
-    """
-    计算后验预测均值和 MAE (Median Absolute Error)。
-    
-    Parameters:
-    - trace: PyMC 模型的采样结果 (InferenceData 对象)。
-    - observed_data: 包含真实观测值的 Pandas DataFrame。
-    - dv: 需要计算 MAE 的数据列名，默认为 "Y_obs"。
-
-    Returns:
-    - posterior_mean: 后验预测值的均值。
-    - mae: 后验预测均值与观测值之间的 MAE。
-    """
-
-    # 提取后验预测值
-    posterior_predictive = trace.posterior_predictive[dv]
-    
-    # 计算后验预测均值（在 draw 和 chain 两个维度上取平均值）
-    posterior_mean = posterior_predictive.mean(dim=["chain", "draw"])
-    
-    # 计算 MAE（绝对误差的中位数）
-    mae = np.median(np.abs(observed_data - posterior_mean))
-    
-    return mae
-
-pd.DataFrame({
-    "Model 1": [calculate_mae(model1_trace, df["RT_sec"], "Y_obs")],
-    "Model 2": [calculate_mae(model2_trace, df["RT_sec"], "Y_obs")],
-    "Model 3": [calculate_mae(model3_trace, df["RT_sec"], "Y_obs")],
-})
-
-# 以 model 3 为例计算elpd_loo
-
-az.loo(model3_trace)
-
-comparison_list = {
-    "model1":model1_trace,
-    "model2":model2_trace,
-    "model3":model3_trace,
-}
-az.compare(comparison_list)
-
-def calculate_dic(log_likelihood):
-    """
-    根据 log-likelihood 计算 DIC (Deviance Information Criterion)。 参考 Evans, N. J. (2019). Assessing the practical differences between model selection methods in inferences about choice response time tasks. Psychonomic Bulletin & Review, 26(4), 1070–1098. https://doi.org/10.3758/s13423-018-01563-9
-    
-    Parameters:
-    - log_likelihood: xarray 数据集，包含每个链和样本的 log-likelihood 值。
-    
-    Returns:
-    - dic: 计算得到的 DIC 值。
-    """
-    # 计算每个样本的Deviance
-    deviance_samples = -2 * log_likelihood
-    
-    # 计算平均Deviance
-    D_bar = deviance_samples.mean()
-    
-    # 计算有效自由度 p_D
-    p_D = deviance_samples.max() - D_bar
-    
-    # 计算DIC
-    DIC = -2 * (D_bar - p_D)
-    
-    return DIC["Y_obs"].values
-  
-# 调用 compute_dic 函数
-dic_value = calculate_dic(model1_trace.log_likelihood)
-print(f"DIC 值: {dic_value}")
-
-pd.DataFrame({
-    "Model 1": [calculate_dic(model1_trace.log_likelihood)],
-    "Model 2": [calculate_dic(model2_trace.log_likelihood)],
-    "Model 3": [calculate_dic(model3_trace.log_likelihood)],
-})
-
-# 下面是练习部分
-
-# 导入 pymc 模型包，和 arviz 等分析工具 
-import pymc as pm
-import arviz as az
-import seaborn as sns
-import scipy.stats as st
-import numpy as np
-import matplotlib.pyplot as plt
-import xarray as xr
-import pandas as pd
-import os
-
-# 忽略不必要的警告
-import warnings
-warnings.filterwarnings("ignore")
-
-# 通过 pd.read_csv 加载数据 Data_Sum_HPP_Multi_Site_Share.csv
-try:
-  df_re = pd.read_csv('/home/mw/input/bayes3797/Data_Sum_HPP_Multi_Site_Share.csv')
-except:
-  df_re = pd.read_csv('data/Data_Sum_HPP_Multi_Site_Share.csv')
+DATA = Path("data")
+CACHE = Path("tmpdata") / "lec11-python"
+DRAWS = 2000
+TUNE = 1000
+CHAINS = 4
+SEED = 84735
 
 
-# 筛选站点为"Tsinghua"的数据
-df = df_re[df_re["Site"] == "Tsinghua"]
-
-df = df[["stress","scontrol","smoke"]]
-
-#1 表示吸烟，2表示不吸烟
-df["smoke"] =  np.where(df['smoke'] == 2, 0, 1)
-df["smoke_recode"] =  np.where(df['smoke'] == 1, "yes", "no")
-
-
-#设置索引
-df["index"] = range(len(df))
-df = df.set_index("index")
-
-##-------------------------------------------------
-#     定义模型4、5、6，补全...部分
-#---------------------------------------------------
+def read_rt() -> pd.DataFrame:
+    """汇总每名被试在各标签和匹配条件下的平均反应时。"""
+    trials = pd.read_csv(DATA / "Kolvoort_2020_HBM_Exp1_Clean.csv")
+    rt = trials.groupby(["Subject", "Label", "Matching"], as_index=False).agg(
+        RT_sec=("RT_sec", lambda values: values.mean(skipna=False))
+    )
+    rt["Label"] = pd.Categorical.from_codes(
+        rt["Label"].astype(int) - 1, categories=["Self", "Friend", "Stranger"]
+    )
+    rt["Matching"] = pd.Categorical(
+        rt["Matching"], categories=["Matching", "Nonmatching"]
+    )
+    return rt
 
 
-with pm.Model() as model4:
-
-    beta_0 = pm.Normal("beta_0", mu=..., sigma=...)            
-    beta_1 = pm.Normal("beta_1", mu=..., sigma=...)        
-    sigma = pm.Exponential("sigma", ...)               
-
-    x = pm.MutableData("smoke",df.stress)                   
-    mu = pm.Deterministic("mu", beta_0 + beta_1*x)          
-
-    likelihood = pm.Normal("y_est", mu=mu, sigma=sigma, observed=df.scontrol)
-
-
-with pm.Model() as model5:
-
-    beta_0 = pm.Normal("beta_0", mu=..., sigma=...)                
-    beta_1 = pm.Normal("beta_1", mu=..., sigma=...)          
-    beta_2 = pm.Normal("beta_2", mu=..., sigma=...)           
-    sigma = pm.Exponential("sigma", ...)                   
-
-    stress = pm.MutableData("stress",df.stress)                          
-    smoke = pm.MutableData("smoke",df.smoke)                              
-    mu = pm.Deterministic("mu", beta_0 + beta_1*stress + beta_2*smoke)    
-
-    likelihood = pm.Normal("y_est", mu=mu, sigma=sigma, observed=df.scontrol) 
-
-with pm.Model() as model6:
-    beta_0 = pm.Normal("beta_0", mu=..., sigma=...)        
-    beta_1 = pm.Normal("beta_1", mu=..., sigma=...)        
-    beta_2 = pm.Normal("beta_2", mu=..., sigma=...)        
-    beta_3 = pm.Normal("beta_3", mu=..., sigma=...)          
-    sigma = pm.Exponential("sigma", ...)                 
-
-    stress = pm.MutableData("stress",df.stress)      
-    smoke = pm.MutableData("smoke",df.smoke)         
-    mu = pm.Deterministic("mu", beta_0 + 
-                                beta_1*stress + 
-                                beta_2*smoke +
-                                beta_3*stress*smoke)      
-
-    likelihood = pm.Normal("y_est", mu=mu, sigma=sigma, observed=df.scontrol) 
-
-#========================================
-#     注意！！！以下代码可能需要运行 5 分钟左右,直接运行即可
-#     直接运行即可，无需修改
-#========================================
-
-def run_model_sampling(save_name, model=None, draws=2000, tune=1000, chains=4, random_seed=84735):
-    """
-    运行模型采样，并在结果不存在时进行采样，存在时直接加载结果。
-
-    Parameters:
-    - save_name: 用于保存或加载结果的文件名（无扩展名）
-    - model: pymc 模型
-    - draws: 采样次数 (默认5000)
-    - tune: 调整采样策略的次数 (默认1000)
-    - chains: 链数 (默认4)
-    - random_seed: 随机种子 (默认84735)
-
-    Returns:
-    - trace: 采样结果
-    """
-    
-    # 检查是否存在保存的.nc文件
-    nc_file = f"{save_name}.nc"
-    if os.path.exists(nc_file):
-        print(f"加载现有的采样结果：{nc_file}")
-        # 如果文件存在，则加载采样结果
-        trace = az.from_netcdf(nc_file)
-    else:
-
-        assert model is not None, "模型未定义，请先定义模型"
-
-        print(f"没有找到现有的采样结果，正在执行采样：{save_name}")
-        # 如果文件不存在，则进行采样计算
-        with model:
-            trace = pm.sample_prior_predictive(draws=draws, random_seed=random_seed)
-            idata = pm.sample(draws=draws,                   # 使用mcmc方法进行采样，draws为采样次数
-                              tune=tune,                    # tune为调整采样策略的次数
-                              chains=chains,                # 链数
-                              discard_tuned_samples=True,   # tune的结果将在采样结束后被丢弃
-                              idata_kwargs={"log_likelihood": True},
-                              random_seed=random_seed)      # 后验采样
-
-            trace.extend(idata)
-            # 进行后验预测并扩展推断数据
-            pm.sample_posterior_predictive(trace, extend_inferencedata=True, random_seed=random_seed)
-            
-            # 保存结果到指定文件
-        trace.to_netcdf(nc_file)
-        
-    return trace
+def rt_designs(rt: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """按课件的处理对比建立三个嵌套设计矩阵。"""
+    friend = rt["Label"].eq("Friend").astype(int)
+    stranger = rt["Label"].eq("Stranger").astype(int)
+    nonmatching = rt["Matching"].eq("Nonmatching").astype(int)
+    model1 = pd.DataFrame(
+        {"(Intercept)": 1, "LabelFriend": friend, "LabelStranger": stranger},
+        index=rt.index,
+    )
+    model2 = model1.assign(MatchingNonmatching=nonmatching)
+    model3 = model2.assign(
+        **{
+            "LabelFriend:MatchingNonmatching": friend * nonmatching,
+            "LabelStranger:MatchingNonmatching": stranger * nonmatching,
+        }
+    )
+    return {"model1": model1, "model2": model2, "model3": model3}
 
 
-# 运行所有三个模型
-model4_trace = run_model_sampling("lec10_model4",model4)
-model5_trace = run_model_sampling("lec10_model5",model5)
-model6_trace = run_model_sampling("lec10_model6",model6)
+def read_exercise() -> pd.DataFrame:
+    """保留清华站点的有效观测，并以不吸烟为基线。"""
+    data = pd.read_csv(DATA / "Data_Sum_HPP_Multi_Site_Share.csv")
+    valid = (
+        data["Site"].eq("Tsinghua")
+        & data["smoke"].isin([1, 2])
+        & np.isfinite(data["stress"])
+        & np.isfinite(data["scontrol"])
+    )
+    exercise = data.loc[valid, ["stress", "scontrol", "smoke"]].reset_index(drop=True)
+    exercise["smoke"] = exercise["smoke"].eq(1).astype(int)
+    return exercise
 
-# 直接运行即可，无需修改
-# 将3个模型中的inference data 中的 y_est 统一改为 Y_obs
 
-model4_trace = model4_trace.rename({"y_est": "Y_obs"})
-model5_trace = model5_trace.rename({"y_est": "Y_obs"})
-model6_trace = model6_trace.rename({"y_est": "Y_obs"})
+def exercise_designs(exercise: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """依次加入压力、吸烟状态和交互项。"""
+    model4 = pd.DataFrame({"(Intercept)": 1, "stress": exercise["stress"]})
+    model5 = model4.assign(smoke=exercise["smoke"])
+    model6 = model5.assign(**{"stress:smoke": exercise["stress"] * exercise["smoke"]})
+    return {"model4": model4, "model5": model5, "model6": model6}
 
-# 直接运行即可，无需修改
-def calculate_mae(trace, observed_data, dv = "Y_obs"):
-    """
-    计算后验预测均值和 MAE (Median Absolute Error)。
-    
-    Parameters:
-    - trace: PyMC 模型的采样结果 (InferenceData 对象)。
-    - observed_data: 包含真实观测值的 Pandas DataFrame。
-    - dv: 需要计算 MAE 的数据列名，默认为 "Y_obs"。
 
-    Returns:
-    - posterior_mean: 后验预测值的均值。
-    - mae: 后验预测均值与观测值之间的 MAE。
-    """
+def fit_gaussian(
+    name: str,
+    design: pd.DataFrame,
+    observed: pd.Series,
+    intercept_mean: float,
+    intercept_sd: float,
+    slope_sd: float,
+    sigma_rate: float,
+) -> az.InferenceData:
+    """拟合课件的高斯回归，保存后验预测抽样和逐点对数似然。"""
+    x = design.to_numpy(dtype=float)
+    y = observed.to_numpy(dtype=float)
+    if not design.index.equals(observed.index):
+        raise ValueError("设计矩阵和观测值的索引不一致。")
+    prior_mean = np.r_[intercept_mean, np.zeros(x.shape[1] - 1)]
+    prior_sd = np.r_[intercept_sd, np.full(x.shape[1] - 1, slope_sd)]
 
-    # 提取后验预测值
-    posterior_predictive = trace.posterior_predictive[dv]
-    
-    # 计算后验预测均值（在 draw 和 chain 两个维度上取平均值）
-    posterior_mean = posterior_predictive.mean(dim=["chain", "draw"])
-    
-    # 计算 MAE（绝对误差的中位数）
-    mae = np.median(np.abs(observed_data - posterior_mean))
-    
-    return mae
-  
-##================================================
-#                练习，修改... 部分
-#                
-#================================================
+    # 数据、先验、采样设置或实现变化时使用不同的缓存。
+    metadata = json.dumps(
+        [design.columns.tolist(), x.shape, sigma_rate, DRAWS, TUNE, CHAINS, SEED,
+         pm.__version__, az.__version__]
+    )
+    key = hashlib.sha256(inspect.getsource(fit_gaussian).encode("utf-8"))
+    key.update(metadata.encode("utf-8"))
+    for array in (x, y, prior_mean, prior_sd):
+        key.update(array.tobytes())
+    CACHE.mkdir(parents=True, exist_ok=True)
+    filename = CACHE / f"{name}-{key.hexdigest()[:20]}.nc"
+    if filename.is_file():
+        return az.from_netcdf(filename)
 
-pd.DataFrame({
-    "Model 4": [calculate_mae(model4_trace, df["..."], "...")],
-    "Model 5": [calculate_mae(model5_trace, df["..."], "...")],
-    "Model 6": [calculate_mae(model6_trace, df["..."], "...")],
-})
+    coords = {"coefficient": design.columns.tolist(), "observation": design.index}
+    with pm.Model(coords=coords):
+        beta = pm.Normal("beta", mu=prior_mean, sigma=prior_sd, dims="coefficient")
+        sigma = pm.Exponential("sigma", lam=sigma_rate)
+        pm.Normal("y", mu=pm.math.dot(x, beta), sigma=sigma, observed=y, dims="observation")
+        fit = pm.sample(
+            draws=DRAWS, tune=TUNE, chains=CHAINS, cores=1,
+            random_seed=SEED, idata_kwargs={"log_likelihood": True},
+        )
+        pm.sample_posterior_predictive(
+            fit, var_names=["y"], extend_inferencedata=True, random_seed=SEED
+        )
 
-##================================================
-#                练习，修改... 部分       
-#================================================
+    with tempfile.NamedTemporaryFile(dir=CACHE, suffix=".nc", delete=False) as file:
+        temp = Path(file.name)
+    try:
+        fit.to_netcdf(temp)
+        temp.replace(filename)
+    finally:
+        temp.unlink(missing_ok=True)
+    return fit
 
-comparison_list = {
-    "model4(contiunous)":...,
-    "model5(multivariate )":...,
-    "model6(interaction)":...,
-}
-az.compare(comparison_list)
 
-# 直接运行即可，无需修改
-def calculate_dic(log_likelihood):
-    """
-    根据 log-likelihood 计算 DIC (Deviance Information Criterion)。 参考 Evans, N. J. (2019). Assessing the practical differences between model selection methods in inferences about choice response time tasks. Psychonomic Bulletin & Review, 26(4), 1070–1098. https://doi.org/10.3758/s13423-018-01563-9
-    
-    Parameters:
-    - log_likelihood: xarray 数据集，包含每个链和样本的 log-likelihood 值。
-    
-    Returns:
-    - dic: 计算得到的 DIC 值。
-    """
-    # 计算每个样本的Deviance
-    deviance_samples = -2 * log_likelihood
-    
-    # 计算平均Deviance
-    D_bar = deviance_samples.mean()
-    
-    # 计算有效自由度 p_D
-    p_D = deviance_samples.max() - D_bar
-    
-    # 计算DIC
-    DIC = -2 * (D_bar - p_D)
-    
-    return DIC["Y_obs"].values
-  
-##================================================
-#                练习，修改... 部分
-#                
-#================================================
+def calculate_medae(fit: az.InferenceData, observed: pd.Series) -> float:
+    """计算观测值与后验预测均值之间的样本内绝对误差中位数。"""
+    predicted = fit.posterior_predictive["y"].mean(dim=("chain", "draw"))
+    return float(np.median(np.abs(observed.to_numpy() - predicted.values)))
 
-DIC_list = {
-    "m4_dic_value":calculate_dic(...),
-    "m5_dic_value":calculate_dic(...),
-    "m6_dic_value":calculate_dic(...),
-}
+
+def calculate_loo(fit: az.InferenceData) -> pd.DataFrame:
+    """使用各观测似然的相对 ESS 计算逐行 PSIS-LOO。"""
+    log_lik = fit.log_likelihood["y"].transpose("observation", "chain", "draw")
+    sample_count = log_lik.sizes["chain"] * log_lik.sizes["draw"]
+    # 在保留链维度时先计算相对 ESS。按观测缩放似然，避免指数下溢。
+    lik = np.exp(log_lik - log_lik.max(dim=("chain", "draw")))
+    r_eff = az.ess(lik, method="mean", relative=True)["y"].values
+    samples = log_lik.values.reshape(-1, sample_count)
+    elpd = np.empty(len(samples))
+    pareto_k = np.empty(len(samples))
+    for i, row in enumerate(samples):
+        weights, pareto_k[i] = az.psislw(-row, reff=float(r_eff[i]))
+        elpd[i] = special.logsumexp(row + weights)
+    threshold = min(0.7, 1.0 - 1.0 / np.log10(sample_count))
+    if np.any(pareto_k > threshold):
+        warnings.warn("部分观测的 Pareto k 超过阈值，需检查 PSIS 近似。", stacklevel=2)
+
+    lppd = special.logsumexp(samples, axis=1) - np.log(sample_count)
+    return pd.DataFrame(
+        {"elpd_loo": elpd, "p_loo": lppd - elpd, "looic": -2 * elpd, "pareto_k": pareto_k},
+        index=log_lik["observation"].values,
+    )
+
+
+def compare_loo(model_loo: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """以逐点配对差计算相对首个模型的 ELPD 差及标准误。"""
+    points = pd.DataFrame({name: loo["elpd_loo"] for name, loo in model_loo.items()})
+    ranked = points.sum().sort_values(ascending=False).index
+    difference = points.loc[:, ranked].subtract(points[ranked[0]], axis=0)
+    return pd.DataFrame(
+        {"elpd_diff": difference.sum(), "se_diff": difference.std(ddof=1) * np.sqrt(len(points))}
+    )
+
+
+def calculate_dic(fit: az.InferenceData, design: pd.DataFrame, observed: pd.Series) -> float:
+    """计算后验平均偏差加上有效参数个数。"""
+    log_lik = fit.log_likelihood["y"]
+    mean_deviance = float(-2 * log_lik.sum("observation").mean())
+    coefficient_mean = fit.posterior["beta"].mean(dim=("chain", "draw")).values
+    sigma_mean = float(fit.posterior["sigma"].mean())
+    plug_in_mean = design.to_numpy() @ coefficient_mean
+    plug_in_deviance = float(
+        -2 * stats.norm.logpdf(observed, loc=plug_in_mean, scale=sigma_mean).sum()
+    )
+    return 2 * mean_deviance - plug_in_deviance
+
+
+def summarize_regression(
+    fit: az.InferenceData, design: pd.DataFrame, observed: pd.Series
+) -> None:
+    """用同一设计矩阵比较贝叶斯回归和 OLS 系数。"""
+    ols = sm.OLS(observed, design).fit()
+    beta = fit.posterior["beta"]
+    beta_ci = beta.quantile([0.025, 0.975], dim=("chain", "draw")).values
+    ols_ci = ols.conf_int().to_numpy()
+    coef = pd.DataFrame(
+        {
+            "后验均值": beta.mean(dim=("chain", "draw")).values,
+            "后验SD": beta.std(dim=("chain", "draw"), ddof=1).values,
+            "可信区间下限": beta_ci[0],
+            "可信区间上限": beta_ci[1],
+            "OLS估计": ols.params.to_numpy(),
+            "OLS标准误": ols.bse.to_numpy(),
+            "置信区间下限": ols_ci[:, 0],
+            "置信区间上限": ols_ci[:, 1],
+        },
+        index=design.columns,
+    )
+    print(coef.round(3).to_string())
+
+    sigma = fit.posterior["sigma"].values
+    sigma_ci = np.quantile(sigma, [0.025, 0.975])
+    print(
+        f"残差SD的后验均值 = {sigma.mean():.3f}，后验标准差 = {sigma.std(ddof=1):.3f}，"
+        f"95% 等尾可信区间 = [{sigma_ci[0]:.3f}, {sigma_ci[1]:.3f}]"
+    )
+    # R 的 AIC、BIC 额外计入残差方差这一参数。
+    parameter_count = len(ols.params) + 1
+    aic = -2 * ols.llf + 2 * parameter_count
+    bic = -2 * ols.llf + np.log(ols.nobs) * parameter_count
+    print(pd.Series(
+        {"R2": ols.rsquared, "调整后R2": ols.rsquared_adj, "F": ols.fvalue,
+         "p": ols.f_pvalue, "对数似然": ols.llf, "AIC": aic, "BIC": bic}
+    ).round(4).to_string())
+
+
+def summarize_predictions(
+    fits: dict[str, az.InferenceData], designs: dict[str, pd.DataFrame], observed: pd.Series
+) -> None:
+    """输出 MedAE、ELPD 差与标准误、DIC 及 Pareto k。"""
+    model_loo = {name: calculate_loo(fit) for name, fit in fits.items()}
+    loo_comparison = compare_loo(model_loo)
+    metrics = pd.DataFrame(
+        {
+            "MedAE": {name: calculate_medae(fit, observed) for name, fit in fits.items()},
+            "DIC": {
+                name: calculate_dic(fit, designs[name], observed)
+                for name, fit in fits.items()
+            },
+            "最大Pareto k": {name: loo["pareto_k"].max() for name, loo in model_loo.items()},
+        }
+    )
+    print(metrics.join(loo_comparison).round(4).to_string())
+    if "model3" in model_loo:
+        estimates = model_loo["model3"][["elpd_loo", "p_loo", "looic"]]
+        print(pd.DataFrame(
+            {"Estimate": estimates.sum(), "SE": estimates.std(ddof=1) * np.sqrt(len(estimates))}
+        ).round(4).to_string())
+
+
+def main() -> None:
+    """运行课堂示例，按需运行练习参考解答。"""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--exercise", action="store_true", help="运行模型 4–6 的参考解答")
+    args = parser.parse_args()
+
+    rt = read_rt()
+    designs = rt_designs(rt)
+    observed = rt["RT_sec"]
+    print(rt.head(3).to_string(index=False))
+    print(designs["model3"].head(3).to_string(index=False))
+    fits = {
+        name: fit_gaussian(name, x, observed, 5, 2, 1, 0.3)
+        for name, x in designs.items()
+    }
+    summarize_regression(fits["model3"], designs["model3"], observed)
+    predicted = fits["model1"].posterior_predictive["y"].mean(dim=("chain", "draw"))
+    print(pd.DataFrame(
+        {"observed": observed, "predicted": predicted.values}
+    ).head(4).to_string(index=False))
+    summarize_predictions(fits, designs, observed)
+
+    exercise = read_exercise()
+    print(exercise.head(4).to_string(index=False))
+    # 自行补全模型 5、6 的预测因子及三个指标的调用，再核对参考解答。
+    if args.exercise:
+        designs = exercise_designs(exercise)
+        observed = exercise["scontrol"]
+        fits = {
+            name: fit_gaussian(name, x, observed, 50, 10, 10, 0.6)
+            for name, x in designs.items()
+        }
+        summarize_predictions(fits, designs, observed)
+
+
+if __name__ == "__main__":
+    main()
+
+
+# Python 代码核验说明
+# 使用课件的基线、数据筛选、先验及每链 2000 次保留抽样。替换原脚本的
+# 逐元素 DIC 计算，并以同一观测的配对差计算 ELPD 比较标准误。
+# PyMC 与 RStan 的采样实现、ArviZ 与 loo 的 PSIS 数值实现存在差异。
+# 相同随机种子下，各自的后验抽样及统计结果仍可有小幅差异。
