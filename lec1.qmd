@@ -41,7 +41,7 @@ dir.create("tmpdata", showWarnings = FALSE)  # brms file= 缓存目录 (已被 .
 
 **原因1：人类认知与行为本身的复杂性**
 
-![](figs/lec1/science_questions.gif)
+![](assets/figs/lec1/science_questions.gif)
 
 Source: <https://www.science.org/toc/science/309/5731>
 
@@ -55,7 +55,7 @@ Source: <https://www.science.org/toc/science/309/5731>
 
 **Example 1: Webb telescope (韦伯望远镜)** —— *equipment*
 
-![](figs/lec1/webb_telescope.png)
+![](assets/figs/lec1/webb_telescope.png)
 
 ## 物理学中的方法 (Methods in Physics)
 
@@ -67,19 +67,19 @@ Source: <https://www.science.org/toc/science/309/5731>
 
 ### AI
 
-![](figs/lec1/ai_net.png)
+![](assets/figs/lec1/ai_net.png)
 
 ## 意识研究在过去十多年中的方法
 
 ### 整合信息理论 (Integrated Information Theory, IIT)
 
-![](figs/lec1/IIT.png)
+![](assets/figs/lec1/IIT.png)
 
 ## 心理科学的研究方法 (What do psychological scientists have?)
 
 > 你们能够想到的研究方法包括哪些？
 
-![](figs/lec1/psych_methods.png)
+![](assets/figs/lec1/psych_methods.png)
 
 ## 心理科学的方法清单
 
@@ -127,13 +127,13 @@ Source: <https://www.science.org/toc/science/309/5731>
 
 ## 1.1 原因3：贝叶斯是认知建模的主流模型之一
 
-![](figs/lec1/bayes_mainstream.png)
+![](assets/figs/lec1/bayes_mainstream.png)
 
 ## 1.2 确实有更好的统计方法与工具
 
 ### 贝叶斯统计 (Bayesian statistics)
 
-![](figs/lec1/bayes_stat.png)
+![](assets/figs/lec1/bayes_stat.png)
 
 ## 贝叶斯统计的特点
 
@@ -155,7 +155,7 @@ Source: <https://www.science.org/toc/science/309/5731>
 
 大部分情况下，开发者使用它可以轻松地定义概率模型，然后程序会自动地求解模型。
 
-![](figs/lec1/PPL_fig.png)
+![](assets/figs/lec1/PPL_fig.png)
 
 Source: <https://towardsdatascience.com/intro-to-probabilistic-programming-b47c4e926ec5>
 
@@ -585,7 +585,7 @@ Haines et al. (2025), *Psychological Methods*
 :::
 ::: {.column width="42%"}
 <div style="text-align: center;">
-<img src="figs/lec1/flanker_fig.png" alt="Flanker Example" width="430">
+<img src="assets/figs/lec1/flanker_fig.png" alt="Flanker Example" width="430">
 <p style="font-size:12px">图源: <a href="https://www.testable.org/experiment-guides/executive-function/flanker-task">Testable</a></p>
 </div>
 :::
@@ -1020,7 +1020,7 @@ Haines et al. (2025), *Psychological Methods*
 - 例如：个体是否愿意**牺牲更多的反应时间**去获得一个**更准确的判断**？
 - **认知模型**能有效弥补这一问题，例如漂移扩散模型（drift-diffusion model, DDM, Pan et al., 2025）。
 
-![DDM](figs/lec1/DDM_fig.jpg)
+![DDM](assets/figs/lec1/DDM_fig.jpg)
 
 ::: {style="font-size:12px; margin-top:0.5em"}
 Pan et al. (2025), *Advances in Methods and Practices in Psychological Science*
@@ -1126,17 +1126,17 @@ Pan et al. (2025), *Advances in Methods and Practices in Psychological Science*
 
 **英文教材：**
 
-![](figs/lec1/book_eng.png)
+![](assets/figs/lec1/book_eng.png)
 
 ## 2.5 参考书（续）
 
 **中文教材：**
 
-![](figs/lec1/book_cn.png)
+![](assets/figs/lec1/book_cn.png)
 
 ## 推荐的补充资源
 
-![](figs/lec1/McElreath.png)
+![](assets/figs/lec1/McElreath.png)
 
 Prof. Richard McElreath
 
@@ -1223,11 +1223,8 @@ plt.rcParams.update({
     'ytick.labelright': False      # 禁用y轴标签右侧显示
 })
 
-# 导入数据, 注意在和鲸和在自己电脑（本地）时有差异）
-try:
-  SMS_data = pd.read_csv('/home/mw/input/bayes3797/SMS_Well_being.csv')
-except:
-  SMS_data = pd.read_csv('data/SMS_Well_being.csv')
+# 导入数据（路径相对仓库根）
+SMS_data = pd.read_csv('data/SMS_Well_being.csv')
 # 选择需要的列
 SMS_data = SMS_data[['uID','variable','factor','Country']]
 # 查看数据
@@ -1431,10 +1428,7 @@ plt.show()
 
 ```python
 # 导入例2数据
-try:
-  df_flanker = pd.read_csv('/home/mw/input/bayes3797/flanker_1.csv')
-except:
-  df_flanker = pd.read_csv('data/flanker_1.csv')
+df_flanker = pd.read_csv('data/flanker_1.csv')
 
 # 分层模型数据预处理
 df_model = df_flanker.copy()

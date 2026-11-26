@@ -117,21 +117,21 @@ pacman::p_load("tidyverse", "papaja", "gridExtra")
 - 这个结果就是我们的**数据 (data)**；
 - 与通常的概率题不同：这里袋中蓝色小球的占比 $\theta$ 是**未知的**，我们要做的，是从数据出发**反推** $\theta$ 更可能是什么。
 
-![](figs/lec2/sup_rhq5eluxp1.png){width=52%}
+![](assets/figs/lec2/sup_rhq5eluxp1.png){width=52%}
 
 ## 计数 ①：全部可能的路径 — $4^3 = 64$ 条
 
 - 假如袋中真是“蓝白白白”（1 蓝 3 白）：每次从 4 颗小球中等可能地抽 1 颗，抽 3 次共有 $4^3 = 64$ 条可能路径；
 - 图中从内到外每个圆弧代表一次抽取。
 
-![](figs/lec2/sup_rhq5irv465.png){width=62%}
+![](assets/figs/lec2/sup_rhq5irv465.png){width=62%}
 
 ## 计数 ②：删除与数据不一致的路径
 
 - 我们观察到的是“蓝白蓝”：**第 1、3 次必须是蓝，第 2 次必须是白**；
 - 把所有不符合这一模式的路径删掉后，64 条中只剩下 **3 条**。
 
-![](figs/lec2/sup_rhq5mj9g4e.png){width=60%}
+![](assets/figs/lec2/sup_rhq5mj9g4e.png){width=60%}
 
 （在“蓝白白白”下：第 1 次蓝有 1 种 × 第 2 次白有 3 种 × 第 3 次蓝有 1 种 = **3 种方式**）
 
@@ -139,11 +139,11 @@ pacman::p_load("tidyverse", "papaja", "gridExtra")
 
 同样的计数方法，对 5 种推测各做一遍：在每种推测下，能产生“蓝白蓝”这一数据的方式有多少种？
 
-![](figs/lec2/sup_rhq5v48hnv.png){width=72%}
+![](assets/figs/lec2/sup_rhq5v48hnv.png){width=72%}
 
 ## 计数 ④：各推测的“方式数” (ways)
 
-![](figs/lec2/sup_rhq5w22f0x.png){width=40%}
+![](assets/figs/lec2/sup_rhq5w22f0x.png){width=40%}
 
 ::: {style="font-size:0.82em"}
 - 例如“蓝白白白”：1（蓝）× 3（白）× 1（蓝）= **3 种方式**；
@@ -156,7 +156,7 @@ pacman::p_load("tidyverse", "papaja", "gridExtra")
 - 例：“蓝蓝白白”：产生“蓝白蓝”有 8 种方式，第 4 次抽到蓝再乘 2 → **8 × 2 = 16 种**；
 - 各推测更新为：**0 / 3 / 16 / 27 / 0** —— 数据越积越多，对“高蓝比例”的推测越来越有利。
 
-![](figs/lec2/sup_rhq60vh4kd.png){width=68%}
+![](assets/figs/lec2/sup_rhq60vh4kd.png){width=68%}
 
 ## 从计数到概率：归一化 (normalizing)
 
@@ -165,7 +165,7 @@ pacman::p_load("tidyverse", "papaja", "gridExtra")
 - 每一种推测的 plausibility = 该推测的计数 ÷ 所有推测计数之和；
 - 例：看到“蓝白蓝”后，“蓝白白白”（$\theta = 0.25$）的 plausibility = 3 ÷ 20 = **0.15**。
 
-![](figs/lec2/sup_rhq6qm3ucu.png){width=42%}
+![](assets/figs/lec2/sup_rhq6qm3ucu.png){width=42%}
 
 ## 推测的先验概率：$P(\theta)$ (Prior)
 
@@ -173,7 +173,7 @@ pacman::p_load("tidyverse", "papaja", "gridExtra")
 - 看到数据之前，我们默认 5 种推测**等可能**：每个 $\theta$ 的先验概率 $P(\theta) = 1/5 = 0.2$；
 - **先验 (prior)**：观察数据之前，对每个假设为真的初始信念。
 
-![](figs/lec2/sup_rhq738pxrx.jpg){width=46%}
+![](assets/figs/lec2/sup_rhq738pxrx.jpg){width=46%}
 
 ## 用“计数”理解贝叶斯四个关键术语
 
@@ -196,11 +196,11 @@ $$
 - 分母：0×0.2 + 3×0.2 + 8×0.2 + 9×0.2 + 0×0.2 = 0.6 + 1.6 + 1.8 = **4.0**；
 - 后验：1.6 ÷ 4.0 = **0.40**，即看到“蓝白蓝”后，$\theta=0.5$ 的 plausibility。
 
-![](figs/lec2/sup_rhq79hsbrl.png){width=74%}
+![](assets/figs/lec2/sup_rhq79hsbrl.png){width=74%}
 
 ## 第 4 次抽到蓝：计数 vs 概率（对照）
 
-![](figs/lec2/sup_rhq60vh4kd.png){width=56%}
+![](assets/figs/lec2/sup_rhq60vh4kd.png){width=56%}
 
 | $\theta$ | 似然 $P(\text{蓝}\mid\theta)=\theta$ | 新先验（= 旧后验） | 乘积 | 新后验 |
 |---|---|---|---|---|
@@ -241,7 +241,7 @@ $$
 
 :::
 
-![](figs/lec2/sup_rhqayo7s64.png){width=32%}
+![](assets/figs/lec2/sup_rhqayo7s64.png){width=32%}
 
 ## Part 3: 随机变量的贝叶斯模型 (Bayesian models with random variables)
 
@@ -645,7 +645,7 @@ ggplot(rbind(exact_post, sim_post), aes(x = factor(theta), y = proportion, fill 
 
 ### 同一份数据，两种结论：ECMO 临床试验
 
-![](figs/lec2/sjzj8nd4te.png){width=39%}
+![](assets/figs/lec2/sjzj8nd4te.png){width=39%}
 
 ::: {style="font-size:0.66em"}
 - **频率学派**：计划 331 名患者，因中期分析未能证明获益而提前停止（249 人）。干预组死亡率 35% vs 对照组 46%，但 $p = 0.09 > 0.05$ → “证据不足，不能证明 ECMO 有效”；
@@ -679,9 +679,9 @@ ggplot(rbind(exact_post, sim_post), aes(x = factor(theta), y = proportion, fill 
 - **Pierre-Simon Laplace (1749–1827)**：法国数学家；独立重新发现该定理，并给出今天通用的形式（含先验/归一化表述）。
 
 ::: {layout-ncol="2"}
-![](figs/lec2/thomas_bayes.jpg){width=50%}
+![](assets/figs/lec2/thomas_bayes.jpg){width=50%}
 
-![](figs/lec2/pierre_laplace.jpg){width=42%}
+![](assets/figs/lec2/pierre_laplace.jpg){width=42%}
 :::
 
 ## 两个学派的差异对比
@@ -722,7 +722,7 @@ ggplot(rbind(exact_post, sim_post), aes(x = factor(theta), y = proportion, fill 
 
 ## 不同的先验/似然 → 不同的后验
 
-![](figs/lec2/rhqcb9gji7.png){width=34%}
+![](assets/figs/lec2/rhqcb9gji7.png){width=34%}
 
 - 后验 = 先验 × 似然（再归一化）：**先验与似然都会塑造后验**；
 - 先验差异大时，后验的差异也会明显——因此贝叶斯分析要求**先验要透明、理由要充分**；

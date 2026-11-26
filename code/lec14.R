@@ -8,11 +8,7 @@ pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","patchwork","papaja", 
 options(warn = -1)  # 抑制警告
 
 # 导入示例数据
-df_raw <- tryCatch({
-  read.csv('/home/mw/input/bayes3797/evans2020JExpPsycholLearn_exp1_full_data.csv')
-}, error = function(e) {
-  read.csv('data/evans2020JExpPsycholLearn_exp1_full_data.csv')
-})
+df_raw <- read.csv(here::here("data", "evans2020JExpPsycholLearn_exp1_full_data.csv"))
 
 df_raw[1:10, c("subject", "RT")] # 显示前十行的数据
 
@@ -890,11 +886,7 @@ pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","patchwork","papaja", 
 options(warn = -1)  # 抑制警告
 
 # 导入数据
-df_raw <- tryCatch({
-  read.csv('/home/mw/input/bayes3797/Data_Sum_HPP_Multi_Site_Share.csv')
-}, error = function(e) {
-  read.csv('data/Data_Sum_HPP_Multi_Site_Share.csv')
-})
+df_raw <- read.csv(here::here("data", "Data_Sum_HPP_Multi_Site_Share.csv"))
 
 df_raw[1:10, c("Site","scontrol")] # 显示前十行的数据
 

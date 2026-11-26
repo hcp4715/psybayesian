@@ -304,7 +304,7 @@ ols_f <- ols_summary$fstatistic
 
 这一讲要问，增加预测因子或交互项，能否改善对所关心的新数据的预测？
 
-![](figs/lec11/bayesian-workflow-model-evaluation.png){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="原稿的模型比较引导图"}
+![](assets/figs/lec11/bayesian-workflow-model-evaluation.png){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="原稿的模型比较引导图"}
 
 ---
 
@@ -349,7 +349,7 @@ ols_f <- ols_summary$fstatistic
 
 例如，开发缓解压力药物的厂商资助研究时，研究者可能面临选择有利于预期结果的被试、提前透露实验目的等影响。
 
-![](figs/lec11/misleading-research-graph.webp){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="原稿的研究目的讨论配图"}
+![](assets/figs/lec11/misleading-research-graph.webp){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="原稿的研究目的讨论配图"}
 
 ---
 
@@ -377,7 +377,7 @@ Bettache (2024) 与 Ghai 等人 (2024) 分别讨论了心理学研究中的隐�
 
 从图中能发现哪些覆盖差异？[Ghai, Forscher, & Hu (2024), *Nature Human Behaviour*, 8, 1053–1056](https://doi.org/10.1038/s41562-024-01902-y)
 
-![](figs/lec11/sample-composition-and-generalizability.png){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="大团队研究与可推广性的原稿配图"}
+![](assets/figs/lec11/sample-composition-and-generalizability.png){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="大团队研究与可推广性的原稿配图"}
 
 ---
 
@@ -395,7 +395,7 @@ Bettache (2024) 与 Ghai 等人 (2024) 分别讨论了心理学研究中的隐�
 
 讨论选择性报告、*p*-hacking 和 HARKing 如何影响证据。[胡传鹏等人（2016）](https://doi.org/10.3724/SP.J.1042.2016.01504)
 
-![](figs/lec11/researcher-degrees-of-freedom.webp){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="心理学研究可重复性的原稿配图"}
+![](assets/figs/lec11/researcher-degrees-of-freedom.webp){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="心理学研究可重复性的原稿配图"}
 
 ---
 
@@ -428,7 +428,7 @@ $$
 
 ## 随机截距怎样表达被试差异
 
-![](figs/lec11/participant-random-intercepts.png){width=62% style="max-height: 450px; object-fit: contain;" fig-alt="总体线性回归与包含被试随机截距的回归比较"}
+![](assets/figs/lec11/participant-random-intercepts.png){width=62% style="max-height: 450px; object-fit: contain;" fig-alt="总体线性回归与包含被试随机截距的回归比较"}
 
 实线表示群体趋势。加入随机截距后，模型允许不同被试有不同的基线 RT。[Brown (2021)](https://doi.org/10.1177/2515245920960351)
 
@@ -442,7 +442,7 @@ $$
 
 ## 非线性与异方差
 
-![](figs/lec11/nonlinearity-heteroscedasticity-and-posterior-prediction.png){width=65% style="max-height: 465px; object-fit: contain;" fig-alt="线性模型对非线性且异方差数据的拟合和后验预测检验"}
+![](assets/figs/lec11/nonlinearity-heteroscedasticity-and-posterior-prediction.png){width=65% style="max-height: 465px; object-fit: contain;" fig-alt="线性模型对非线性且异方差数据的拟合和后验预测检验"}
 
 左图中，均值随预测变量呈非线性变化，反应的变异也随预测变量增加。右图用后验预测检验比较模型生成的数据与观测数据。
 
@@ -481,13 +481,13 @@ $$
 ::: {.column width="50%"}
 **原始尺度**
 
-![](figs/lec11/nonlinearity-heteroscedasticity-and-posterior-prediction.png){width=95% style="max-height: 315px; object-fit: contain;" fig-alt="变换前的线性拟合与后验预测"}
+![](assets/figs/lec11/nonlinearity-heteroscedasticity-and-posterior-prediction.png){width=95% style="max-height: 315px; object-fit: contain;" fig-alt="变换前的线性拟合与后验预测"}
 :::
 
 ::: {.column width="50%"}
 **对数尺度**
 
-![](figs/lec11/log-transformation-and-posterior-prediction.png){width=95% style="max-height: 315px; object-fit: contain;" fig-alt="变换后的线性拟合与后验预测"}
+![](assets/figs/lec11/log-transformation-and-posterior-prediction.png){width=95% style="max-height: 315px; object-fit: contain;" fig-alt="变换后的线性拟合与后验预测"}
 :::
 
 ::::
@@ -522,7 +522,7 @@ $$
 
 例如，用理工科学生的数据拟合后，在心理学学生中检验预测。留出方式取决于研究希望推广到的人群。
 
-![](figs/lec11/training-test-split.webp){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="从样本中留出部分数据进行验证的原稿示意图"}
+![](assets/figs/lec11/training-test-split.webp){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="从样本中留出部分数据进行验证的原稿示意图"}
 
 ---
 
@@ -540,7 +540,7 @@ $$
 
 ## 五折交叉验证示意
 
-![](figs/lec11/five-fold-cross-validation.webp){width=68% style="max-height: 520px; object-fit: contain;" fig-alt="每轮轮换留出一折进行验证"}
+![](assets/figs/lec11/five-fold-cross-validation.webp){width=68% style="max-height: 520px; object-fit: contain;" fig-alt="每轮轮换留出一折进行验证"}
 
 每一折恰好作为验证集一次。
 
@@ -550,7 +550,7 @@ $$
 
 原图以留一组为例。当每折只有一个观测时，就是逐点留一。
 
-![](figs/lec11/leave-one-out-cross-validation.webp){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="每次留出一个验证单位的原稿配图"}
+![](assets/figs/lec11/leave-one-out-cross-validation.webp){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="每次留出一个验证单位的原稿配图"}
 
 ---
 
@@ -580,7 +580,7 @@ PSIS-LOO 用全数据拟合的后验样本近似这一步。对于同一批观�
 
 每轮用其余数据拟合模型，预测留出单位，最后汇总各轮的对数预测得分。
 
-![](figs/lec11/elpd-loo-calculation.png){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="逐次拟合并汇总预测得分的原稿配图"}
+![](assets/figs/lec11/elpd-loo-calculation.png){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="逐次拟合并汇总预测得分的原稿配图"}
 
 ---
 
@@ -615,7 +615,7 @@ PSIS-LOO 用全数据拟合的后验样本近似这一步。对于同一批观�
 
 [郭鸣谦、潘晚坷、胡传鹏（2024），认知建模中模型比较的方法](https://doi.org/10.3724/SP.J.1042.2024.01736)
 
-![](figs/lec11/cognitive-model-comparison-criteria.png){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="郭鸣谦等人的认知模型比较方法图"}
+![](assets/figs/lec11/cognitive-model-comparison-criteria.png){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="郭鸣谦等人的认知模型比较方法图"}
 
 ---
 
@@ -626,7 +626,7 @@ PSIS-LOO 用全数据拟合的后验样本近似这一步。对于同一批观�
 - **欠拟合**时，模型可能遗漏真实的非线性趋势或交互作用。
 - **过拟合**时，模型把当前样本的偶然波动当成可推广的规律。
 
-![](figs/lec11/model-complexity-and-prediction-error.png){width=52% style="max-height: 340px; object-fit: contain;" fig-alt="模型复杂度与训练误差、样本外误差的关系"}
+![](assets/figs/lec11/model-complexity-and-prediction-error.png){width=52% style="max-height: 340px; object-fit: contain;" fig-alt="模型复杂度与训练误差、样本外误差的关系"}
 
 ---
 
@@ -643,7 +643,7 @@ PSIS-LOO 用全数据拟合的后验样本近似这一步。对于同一批观�
 
 ## 欠拟合、适当拟合与过拟合示意
 
-![](figs/lec11/underfitting-adequate-fit-and-overfitting.png){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="原稿中的三种拟合程度示意图"}
+![](assets/figs/lec11/underfitting-adequate-fit-and-overfitting.png){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="原稿中的三种拟合程度示意图"}
 
 ---
 
@@ -831,7 +831,7 @@ knitr::kable(
 ## 预测与模型选择：课堂思考
 
 
-![](figs/lec11/occams-razor-model-comparison.png){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="奥卡姆剃刀用于反应时模型比较的课堂示意图"}
+![](assets/figs/lec11/occams-razor-model-comparison.png){width=78% style="max-height: 475px; object-fit: contain;" fig-alt="奥卡姆剃刀用于反应时模型比较的课堂示意图"}
 
 ---
 
@@ -1101,7 +1101,7 @@ generated quantities {
 
 ## 贝叶斯分析流程回顾
 
-![](figs/lec11/bayesian-analysis-workflow.png){width=78% style="max-height: 520px; object-fit: contain;" fig-alt="第 11 讲原稿的贝叶斯分析流程回顾图"}
+![](assets/figs/lec11/bayesian-analysis-workflow.png){width=78% style="max-height: 520px; object-fit: contain;" fig-alt="第 11 讲原稿的贝叶斯分析流程回顾图"}
 
 ---
 

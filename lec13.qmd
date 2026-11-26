@@ -37,7 +37,7 @@ jupyter: ir
 #| slideshow: {slide_type: slide}
 #| trusted: true
 #| hide_input: false
-df <- tryCatch({  read.csv('/home/mw/input/Eisenberg20193801/brief_self_control_survey.csv')}, error = function(e) {  read.csv('data/brief_self_control_survey.csv')})# 查看数据基本结构（关键：确认被试ID、项目列、作答分数列）cat("数据维度：", dim(df), "\n")  # 输出数据行数（被试数×项目数）和列数head(df, 3)  # 查看前3行数据
+df <- read.csv('data/brief_self_control_survey.csv')# 查看数据基本结构（关键：确认被试ID、项目列、作答分数列）cat("数据维度：", dim(df), "\n")  # 输出数据行数（被试数×项目数）和列数head(df, 3)  # 查看前3行数据
 ```
 
 ```{r}
@@ -195,7 +195,7 @@ summary(irt_fit)
 #| slideshow: {slide_type: slide}
 #| trusted: true
 #| hide_input: false
-df_raw <- tryCatch({  read.csv('/home/mw/input/Data_HPP_Multi13781378/Data_Raw_HPP_Multi_Site_Share.csv')}, error = function(e) {  read.csv('data/Data_Raw_HPP_Multi_Site_Share.csv')})# 筛选站点为"Tsinghua"的数据df <- df_raw %>%  filter(Site == "Tsinghua") df
+df_raw <- read.csv('data/Data_Raw_HPP_Multi_Site_Share.csv')# 筛选站点为"Tsinghua"的数据df <- df_raw %>%  filter(Site == "Tsinghua") df
 ```
 
 ```{r}
@@ -317,7 +317,7 @@ summary(irt_fit_1pl)
 #| slideshow: {slide_type: slide}
 #| trusted: true
 #| hide_input: false
-# 统一可视化风格为APA格式（papaja包的theme_apa()）theme_set(papaja::theme_apa())# 加载模型#fit_1pl <- readRDS("/home/mw/project/irt_fit_grm_clean.rds")#fit_2pl <- readRDS("/home/mw/project/fit_2pl_grm_clean.rds")# 核心参数提取（用于模型评估可视化）param_1pl <- c("sd_item__Intercept", "sd_subject__Intercept")param_2pl <- c("sd_item__Intercept", "sd_subject__Intercept", "sd_item__disc_Intercept")# 核心数据提取（用于后续对比）clean_data <- irt_fit$data  # 两种模型使用同一数据，保证对比公平性n_subj <- n_distinct(clean_data$subject)n_item <- n_distinct(clean_data$item)cat(sprintf("分析数据：被试数=%d，项目数=%d，作答记录数=%d\n",             n_subj, n_item, nrow(clean_data)))
+# 统一可视化风格为APA格式（papaja包的theme_apa()）theme_set(papaja::theme_apa())# 加载模型#fit_1pl <- readRDS("tmpdata/irt_fit_grm_clean.rds")#fit_2pl <- readRDS("tmpdata/fit_2pl_grm_clean.rds")# 核心参数提取（用于模型评估可视化）param_1pl <- c("sd_item__Intercept", "sd_subject__Intercept")param_2pl <- c("sd_item__Intercept", "sd_subject__Intercept", "sd_item__disc_Intercept")# 核心数据提取（用于后续对比）clean_data <- irt_fit$data  # 两种模型使用同一数据，保证对比公平性n_subj <- n_distinct(clean_data$subject)n_item <- n_distinct(clean_data$item)cat(sprintf("分析数据：被试数=%d，项目数=%d，作答记录数=%d\n",             n_subj, n_item, nrow(clean_data)))
 ```
 
 ```{r}

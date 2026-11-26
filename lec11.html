@@ -218,7 +218,7 @@
 <section id="学习目标" class="slide level2">
 <h2>学习目标</h2>
 <ul>
-<li>用自我匹配实验的反应时数据，对照贝叶斯回归和普通最小二乘回归（OLS）的参数估计。</li>
+<li>用真实实验的数据，对照贝叶斯回归和普通最小二乘回归（OLS）的参数估计。</li>
 <li>区分研究设计的公正性、模型假设的适切性和样本外预测表现。</li>
 <li>计算绝对误差的中位数（MedAE）、ELPD-LOO 和 DIC，并说明它们各自回答的问题。</li>
 </ul>
@@ -626,7 +626,7 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 <section id="从模型拟合到模型比较" class="slide level2">
 <h2>从模型拟合到模型比较</h2>
 <p>这一讲要问，增加预测因子或交互项，能否改善对所关心的新数据的预测？</p>
-<p><img data-src="figs/lec11/bayesian-workflow-model-evaluation.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="原稿的模型比较引导图"></p>
+<p><img data-src="assets/figs/lec11/bayesian-workflow-model-evaluation.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="原稿的模型比较引导图"></p>
 </section>
 <section id="三个评估问题" class="slide level2">
 <h2>三个评估问题</h2>
@@ -686,7 +686,7 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 <section id="研究目的与利益冲突" class="slide level2">
 <h2>研究目的与利益冲突</h2>
 <p>例如，开发缓解压力药物的厂商资助研究时，研究者可能面临选择有利于预期结果的被试、提前透露实验目的等影响。</p>
-<p><img data-src="figs/lec11/misleading-research-graph.webp" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="原稿的研究目的讨论配图"></p>
+<p><img data-src="assets/figs/lec11/misleading-research-graph.webp" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="原稿的研究目的讨论配图"></p>
 </section>
 <section id="隐含假设怎样影响心理学研究" class="slide level2">
 <h2>隐含假设怎样影响心理学研究</h2>
@@ -755,7 +755,7 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 <section id="数据由谁收集覆盖哪些人群" class="slide level2">
 <h2>数据由谁收集，覆盖哪些人群？</h2>
 <p>从图中能发现哪些覆盖差异？<a href="https://doi.org/10.1038/s41562-024-01902-y">Ghai, Forscher, &amp; Hu (2024), <em>Nature Human Behaviour</em>, 8, 1053–1056</a></p>
-<p><img data-src="figs/lec11/sample-composition-and-generalizability.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="大团队研究与可推广性的原稿配图"></p>
+<p><img data-src="assets/figs/lec11/sample-composition-and-generalizability.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="大团队研究与可推广性的原稿配图"></p>
 </section>
 <section id="分析选择与可重复性" class="slide level2">
 <h2>分析选择与可重复性</h2>
@@ -769,7 +769,7 @@ Y_i \mid \boldsymbol{\beta}, \sigma
 <section id="公正性与心理学研究的可重复性" class="slide level2">
 <h2>公正性与心理学研究的可重复性</h2>
 <p>讨论选择性报告、<em>p</em>-hacking 和 HARKing 如何影响证据。<a href="https://doi.org/10.3724/SP.J.1042.2016.01504">胡传鹏等人（2016）</a></p>
-<p><img data-src="figs/lec11/researcher-degrees-of-freedom.webp" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="心理学研究可重复性的原稿配图"></p>
+<p><img data-src="assets/figs/lec11/researcher-degrees-of-freedom.webp" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="心理学研究可重复性的原稿配图"></p>
 </section>
 <section id="模型可能有多错" class="slide level2">
 <h2>模型可能有多错？</h2>
@@ -802,7 +802,7 @@ Y_i \mid \beta_0, \beta_1, \sigma
 </section>
 <section id="随机截距怎样表达被试差异" class="slide level2">
 <h2>随机截距怎样表达被试差异</h2>
-<p><img data-src="figs/lec11/participant-random-intercepts.png" style="max-height: 450px; object-fit: contain;;width:62.0%" alt="总体线性回归与包含被试随机截距的回归比较"></p>
+<p><img data-src="assets/figs/lec11/participant-random-intercepts.png" style="max-height: 450px; object-fit: contain;;width:62.0%" alt="总体线性回归与包含被试随机截距的回归比较"></p>
 <p>实线表示群体趋势。加入随机截距后，模型允许不同被试有不同的基线 RT。<a href="https://doi.org/10.1177/2515245920960351">Brown (2021)</a></p>
 </section>
 <section id="怎样读随机截距示意图" class="slide level2">
@@ -815,7 +815,7 @@ Y_i \mid \beta_0, \beta_1, \sigma
 </section>
 <section id="非线性与异方差" class="slide level2">
 <h2>非线性与异方差</h2>
-<p><img data-src="figs/lec11/nonlinearity-heteroscedasticity-and-posterior-prediction.png" style="max-height: 465px; object-fit: contain;;width:65.0%" alt="线性模型对非线性且异方差数据的拟合和后验预测检验"></p>
+<p><img data-src="assets/figs/lec11/nonlinearity-heteroscedasticity-and-posterior-prediction.png" style="max-height: 465px; object-fit: contain;;width:65.0%" alt="线性模型对非线性且异方差数据的拟合和后验预测检验"></p>
 <p>左图中，均值随预测变量呈非线性变化，反应的变异也随预测变量增加。右图用后验预测检验比较模型生成的数据与观测数据。</p>
 </section>
 <section id="如何修改模型" class="slide level2">
@@ -866,10 +866,10 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <div class="columns">
 <div class="column" style="width:50%;">
 <p><strong>原始尺度</strong></p>
-<p><img data-src="figs/lec11/nonlinearity-heteroscedasticity-and-posterior-prediction.png" style="max-height: 315px; object-fit: contain;;width:95.0%" alt="变换前的线性拟合与后验预测"></p>
+<p><img data-src="assets/figs/lec11/nonlinearity-heteroscedasticity-and-posterior-prediction.png" style="max-height: 315px; object-fit: contain;;width:95.0%" alt="变换前的线性拟合与后验预测"></p>
 </div><div class="column" style="width:50%;">
 <p><strong>对数尺度</strong></p>
-<p><img data-src="figs/lec11/log-transformation-and-posterior-prediction.png" style="max-height: 315px; object-fit: contain;;width:95.0%" alt="变换后的线性拟合与后验预测"></p>
+<p><img data-src="assets/figs/lec11/log-transformation-and-posterior-prediction.png" style="max-height: 315px; object-fit: contain;;width:95.0%" alt="变换后的线性拟合与后验预测"></p>
 </div></div>
 <p>图中可比较变换前后的均值趋势与残差变异。后续课程将继续讨论不同反应分布的回归模型。</p>
 </section>
@@ -899,7 +899,7 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <section id="交叉验证的基本思路" class="slide level2">
 <h2>交叉验证的基本思路</h2>
 <p>例如，用理工科学生的数据拟合后，在心理学学生中检验预测。留出方式取决于研究希望推广到的人群。</p>
-<p><img data-src="figs/lec11/training-test-split.webp" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="从样本中留出部分数据进行验证的原稿示意图"></p>
+<p><img data-src="assets/figs/lec11/training-test-split.webp" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="从样本中留出部分数据进行验证的原稿示意图"></p>
 </section>
 <section id="交叉验证如何留出数据" class="slide level2">
 <h2>交叉验证如何留出数据</h2>
@@ -929,13 +929,13 @@ Y_i \mid \beta_0, \beta_1, \sigma
 </section>
 <section id="五折交叉验证示意" class="slide level2">
 <h2>五折交叉验证示意</h2>
-<p><img data-src="figs/lec11/five-fold-cross-validation.webp" style="max-height: 520px; object-fit: contain;;width:68.0%" alt="每轮轮换留出一折进行验证"></p>
+<p><img data-src="assets/figs/lec11/five-fold-cross-validation.webp" style="max-height: 520px; object-fit: contain;;width:68.0%" alt="每轮轮换留出一折进行验证"></p>
 <p>每一折恰好作为验证集一次。</p>
 </section>
 <section id="留一交叉验证示意" class="slide level2">
 <h2>留一交叉验证示意</h2>
 <p>原图以留一组为例。当每折只有一个观测时，就是逐点留一。</p>
-<p><img data-src="figs/lec11/leave-one-out-cross-validation.webp" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="每次留出一个验证单位的原稿配图"></p>
+<p><img data-src="assets/figs/lec11/leave-one-out-cross-validation.webp" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="每次留出一个验证单位的原稿配图"></p>
 </section>
 <section id="留出一条观测还是一名被试" class="slide level2">
 <h2>留出一条观测还是一名被试？</h2>
@@ -960,7 +960,7 @@ p(y_i \mid y_{-i})
 <section id="elpd-loo-的计算步骤" class="slide level2">
 <h2>ELPD-LOO 的计算步骤</h2>
 <p>每轮用其余数据拟合模型，预测留出单位，最后汇总各轮的对数预测得分。</p>
-<p><img data-src="figs/lec11/elpd-loo-calculation.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="逐次拟合并汇总预测得分的原稿配图"></p>
+<p><img data-src="assets/figs/lec11/elpd-loo-calculation.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="逐次拟合并汇总预测得分的原稿配图"></p>
 </section>
 <section id="其他常见的评估指标" class="slide level2">
 <h2>其他常见的评估指标</h2>
@@ -1058,7 +1058,7 @@ p(y_i \mid y_{-i})
 <section id="认知建模中的模型比较方法" class="slide level2">
 <h2>认知建模中的模型比较方法</h2>
 <p><a href="https://doi.org/10.3724/SP.J.1042.2024.01736">郭鸣谦、潘晚坷、胡传鹏（2024），认知建模中模型比较的方法</a></p>
-<p><img data-src="figs/lec11/cognitive-model-comparison-criteria.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="郭鸣谦等人的认知模型比较方法图"></p>
+<p><img data-src="assets/figs/lec11/cognitive-model-comparison-criteria.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="郭鸣谦等人的认知模型比较方法图"></p>
 </section>
 <section id="偏差与方差的权衡" class="slide level2">
 <h2>偏差与方差的权衡</h2>
@@ -1068,7 +1068,7 @@ p(y_i \mid y_{-i})
 <li><strong>欠拟合</strong>时，模型可能遗漏真实的非线性趋势或交互作用。</li>
 <li><strong>过拟合</strong>时，模型把当前样本的偶然波动当成可推广的规律。</li>
 </ul>
-<p><img data-src="figs/lec11/model-complexity-and-prediction-error.png" style="max-height: 340px; object-fit: contain;;width:52.0%" alt="模型复杂度与训练误差、样本外误差的关系"></p>
+<p><img data-src="assets/figs/lec11/model-complexity-and-prediction-error.png" style="max-height: 340px; object-fit: contain;;width:52.0%" alt="模型复杂度与训练误差、样本外误差的关系"></p>
 </section>
 <section id="欠拟合与过拟合的来源" class="slide level2">
 <h2>欠拟合与过拟合的来源</h2>
@@ -1102,7 +1102,7 @@ p(y_i \mid y_{-i})
 </section>
 <section id="欠拟合适当拟合与过拟合示意" class="slide level2">
 <h2>欠拟合、适当拟合与过拟合示意</h2>
-<p><img data-src="figs/lec11/underfitting-adequate-fit-and-overfitting.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="原稿中的三种拟合程度示意图"></p>
+<p><img data-src="assets/figs/lec11/underfitting-adequate-fit-and-overfitting.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="原稿中的三种拟合程度示意图"></p>
 </section>
 <section id="怎样处理欠拟合与过拟合" class="slide level2">
 <h2>怎样处理欠拟合与过拟合</h2>
@@ -1396,7 +1396,7 @@ p_D=\overline{D}-D(\bar{\theta}),\quad
 </section>
 <section id="预测与模型选择课堂思考" class="slide level2">
 <h2>预测与模型选择：课堂思考</h2>
-<p><img data-src="figs/lec11/occams-razor-model-comparison.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="奥卡姆剃刀用于反应时模型比较的课堂示意图"></p>
+<p><img data-src="assets/figs/lec11/occams-razor-model-comparison.png" style="max-height: 475px; object-fit: contain;;width:78.0%" alt="奥卡姆剃刀用于反应时模型比较的课堂示意图"></p>
 </section>
 <section id="part5练习压力吸烟与自我控制" class="slide level2">
 <h2>Part5：练习：压力、吸烟与自我控制</h2>
@@ -1645,7 +1645,7 @@ p_D=\overline{D}-D(\bar{\theta}),\quad
 </section>
 <section id="贝叶斯分析流程回顾" class="slide level2">
 <h2>贝叶斯分析流程回顾</h2>
-<p><img data-src="figs/lec11/bayesian-analysis-workflow.png" style="max-height: 520px; object-fit: contain;;width:78.0%" alt="第 11 讲原稿的贝叶斯分析流程回顾图"></p>
+<p><img data-src="assets/figs/lec11/bayesian-analysis-workflow.png" style="max-height: 520px; object-fit: contain;;width:78.0%" alt="第 11 讲原稿的贝叶斯分析流程回顾图"></p>
 </section>
 <section id="附录反应时模型的逐一写法" class="slide level2">
 <h2>附录：反应时模型的逐一写法</h2>

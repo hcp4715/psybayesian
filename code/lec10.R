@@ -10,7 +10,7 @@ options(warn = -1)  # 抑制警告
 # sessionInfo()
 
 # 导入数据
-df_raw <- utils::read.csv("data/Kolvoort_2020_HBM_Exp1_Clean.csv")
+df_raw <- utils::read.csv(here::here("data", "Kolvoort_2020_HBM_Exp1_Clean.csv"))
 # 显示数据前几行
 head(df_raw)    
 # 数据分组和计算均值

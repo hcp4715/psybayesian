@@ -56,7 +56,7 @@ knitr::opts_chunk$set(fig.path = "assets/figs/lec9/", fig.width = 12, fig.height
 
 ---
 
-![自我优先知觉匹配任务示意](figs/lec9/self-prioritization-task.png)
+![自我优先知觉匹配任务示意](assets/figs/lec9/self-prioritization-task.png)
 
 > Sui, J., He, X., & Humphreys, G. W. (2012). Perceptual effects of social salience: Evidence from self-prioritization effects on perceptual matching. Journal of Experimental Psychology: Human Perception and Performance, 38(5), 1105--1117. [https://doi.org/10.1037/a0029792](https://doi.org/10.1037/a0029792){target="_blank" rel="noopener noreferrer nofollow"}
 
@@ -66,7 +66,7 @@ Sui et al., (2012)已经发现，**与在"他人"条件相比，个体"自我"�
 
 在贝叶斯的框架下，应该如何建立模型并检验该研究假设？
 
-![贝叶斯建模流程](figs/lec9/bayesian-modeling-workflow.png)
+![贝叶斯建模流程](assets/figs/lec9/bayesian-modeling-workflow.png)
 
 ---
 
@@ -235,7 +235,7 @@ $$ \text{Data}: \text{被试的真实数据} $$
 
 - 从图上可以看到预测值和实际值 (即灰色的散点)之间存在出入，实际值会在预测值附近波动。那么实际值可以看作服从以$\mu_i$为均值，标准差为$\sigma$的正态分布，即：$Y_i \sim N(\mu_i, \sigma ^ 2)$
 
-![回归模型的正态似然示意](figs/lec9/regression-normal-likelihood.png)
+![回归模型的正态似然示意](assets/figs/lec9/regression-normal-likelihood.png)
 
 *(改编自：https://saylordotorg.github.io/text_introductory-statistics/s14-03-modelling-linear-relationships.html)*
 
@@ -1084,7 +1084,7 @@ prior_predictive_plot <- function(beta0_mean = 0.5, beta0_sd = 0.3,
 
 🤔请大家判断，下图的先验预测合理吗？
 
-![先验预测回归线](figs/lec9/prior-predictive-regression-lines.png)
+![先验预测回归线](assets/figs/lec9/prior-predictive-regression-lines.png)
 
 ---
 
@@ -2051,7 +2051,7 @@ print(lm1_brms)
 - 本节着重讨论了先验分布的设定和后验预测检查（PPC）的重要性，通过对比真实数据与预测分布，评估模型的合理性和对新数据的预测能力。
 - 最后，再次强调贝叶斯建模的关键步骤：从先验设定、模型拟合（依赖MCMC方法近似后验分布），到后验推断（如HDI区间、ROPE检验）与结果解释，完整覆盖了贝叶斯线性回归的核心流程，也进一步明确了MCMC方法在获取参数后验分布中的核心作用。
 
-![贝叶斯建模流程](figs/lec9/bayesian-modeling-workflow.png)
+![贝叶斯建模流程](assets/figs/lec9/bayesian-modeling-workflow.png)
 
 ---
 

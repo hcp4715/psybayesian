@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -5,7 +7,9 @@ import seaborn as sns
 from scipy.stats import beta as beta_dist
 from IPython.display import display
 
-data = pd.read_csv("data/evans2020JExpPsycholLearn_exp1_full_data.csv")
+_ROOT = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.cwd()
+
+data = pd.read_csv(_ROOT / "data" / "evans2020JExpPsycholLearn_exp1_full_data.csv")
 
 print("被试数量：", len(data.subject.unique()))
 data.groupby(["subject"])[["correct"]].mean().head(10)
@@ -305,7 +309,7 @@ plot_pdf(1, 1, ax=axs[2])
 plt.tight_layout()
 plt.show()
 
-data = pd.read_csv("data/evans2020JExpPsycholLearn_exp1_full_data.csv")
+data = pd.read_csv(_ROOT / "data" / "evans2020JExpPsycholLearn_exp1_full_data.csv")
 
 # 选取需要的列
 data = data[["subject", "percentCoherence", "correct", "RT"]]

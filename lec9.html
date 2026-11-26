@@ -239,7 +239,7 @@
 
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="figs/lec9/self-prioritization-task.png"></p>
+<p><img data-src="assets/figs/lec9/self-prioritization-task.png"></p>
 <figcaption>自我优先知觉匹配任务示意</figcaption>
 </figure>
 </div>
@@ -253,7 +253,7 @@
 <p>在贝叶斯的框架下，应该如何建立模型并检验该研究假设？</p>
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="figs/lec9/bayesian-modeling-workflow.png"></p>
+<p><img data-src="assets/figs/lec9/bayesian-modeling-workflow.png"></p>
 <figcaption>贝叶斯建模流程</figcaption>
 </figure>
 </div>
@@ -455,7 +455,7 @@
 </ul>
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="figs/lec9/regression-normal-likelihood.png"></p>
+<p><img data-src="assets/figs/lec9/regression-normal-likelihood.png"></p>
 <figcaption>回归模型的正态似然示意</figcaption>
 </figure>
 </div>
@@ -1239,7 +1239,7 @@ Y_i \mid \beta_0, \beta_1, \sigma
 <p>🤔请大家判断，下图的先验预测合理吗？</p>
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="figs/lec9/prior-predictive-regression-lines.png"></p>
+<p><img data-src="assets/figs/lec9/prior-predictive-regression-lines.png"></p>
 <figcaption>先验预测回归线</figcaption>
 </figure>
 </div>
@@ -1389,7 +1389,7 @@ beta0 0.71       0 0.04 0.64 0.69 0.71 0.74  0.78  1904    1
 beta1 0.15       0 0.05 0.06 0.12 0.15 0.18  0.24  1841    1
 sigma 0.23       0 0.02 0.20 0.22 0.23 0.24  0.27  2737    1
 
-Samples were drawn using NUTS(diag_e) at Thu Nov 12 17:22:12 2026.
+Samples were drawn using NUTS(diag_e) at Thu Nov 26 10:16:23 2026.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).</code></pre>
@@ -1457,17 +1457,17 @@ convergence, Rhat=1).</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>List of 6
- $ beta0  : num [1:4000(1d)] 0.738 0.71 0.733 0.734 0.713 ...
+ $ beta0  : num [1:4000(1d)] 0.693 0.707 0.693 0.748 0.761 ...
   ..- attr(*, "dimnames")=List of 1
- $ beta1  : num [1:4000(1d)] 0.143 0.177 0.137 0.102 0.123 ...
+ $ beta1  : num [1:4000(1d)] 0.1866 0.0911 0.1454 0.0284 0.0805 ...
   ..- attr(*, "dimnames")=List of 1
- $ sigma  : num [1:4000(1d)] 0.227 0.239 0.228 0.216 0.243 ...
+ $ sigma  : num [1:4000(1d)] 0.23 0.225 0.199 0.252 0.215 ...
   ..- attr(*, "dimnames")=List of 1
- $ y_rep  : num [1:4000, 1:105] 0.848 1.071 1.304 0.939 1.148 ...
+ $ y_rep  : num [1:4000, 1:105] 0.8907 0.8161 0.7428 0.0484 0.6761 ...
   ..- attr(*, "dimnames")=List of 2
- $ log_lik: num [1:4000, 1:105] 0.404 0.354 0.428 0.538 0.437 ...
+ $ log_lik: num [1:4000, 1:105] 0.398 0.552 0.605 0.453 0.532 ...
   ..- attr(*, "dimnames")=List of 2
- $ lp__   : num [1:4000(1d)] 98.8 98.7 99.1 98.4 98.6 ...
+ $ lp__   : num [1:4000(1d)] 98.9 96.9 96.5 94.4 97.6 ...
   ..- attr(*, "dimnames")=List of 1</code></pre>
 </div>
 </div>
@@ -1487,8 +1487,8 @@ convergence, Rhat=1).</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="" aria-label="1"></a><span class="fu">print</span>(<span class="fu">head</span>(beta0_posterior, <span class="dv">10</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 0.7377650 0.7100410 0.7325606 0.7344511 0.7131606 0.6695657 0.7468244
- [8] 0.6888675 0.7221824 0.6870610</code></pre>
+<pre><code> [1] 0.6932840 0.7071960 0.6926788 0.7480252 0.7610354 0.7363979 0.7041102
+ [8] 0.6716204 0.7346049 0.7338515</code></pre>
 </div>
 </div>
 </section>
@@ -1505,7 +1505,7 @@ convergence, Rhat=1).</code></pre>
 <span id="cb33-4"><a href="" aria-label="4"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"第1条链的第11个beta_0样本值：%.4f</span><span class="sc">\n</span><span class="st">"</span>, chain1_sample11))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>第1条链的第11个beta_0样本值：0.7009</code></pre>
+<pre><code>第1条链的第11个beta_0样本值：0.8337</code></pre>
 </div>
 </div>
 </section>
@@ -1632,13 +1632,13 @@ sigma 0.2417713 0.2672455 2737.290 0.9992968</code></pre>
 <span id="cb43-2"><a href="" aria-label="2"></a><span class="fu">head</span>(par_post)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>      beta0     beta1     sigma
-1 0.7377650 0.1431106 0.2274278
-2 0.7100410 0.1769220 0.2392774
-3 0.7325606 0.1374866 0.2279329
-4 0.7344511 0.1020250 0.2163216
-5 0.7131606 0.1225587 0.2432569
-6 0.6695657 0.2005250 0.2239860</code></pre>
+<pre><code>      beta0      beta1     sigma
+1 0.6932840 0.18655161 0.2301520
+2 0.7071960 0.09106498 0.2251017
+3 0.6926788 0.14544334 0.1986584
+4 0.7480252 0.02838008 0.2524944
+5 0.7610354 0.08052321 0.2153060
+6 0.7363979 0.18680911 0.2120000</code></pre>
 </div>
 </div>
 </section>
@@ -1956,13 +1956,13 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\l
 <span id="cb53-24"><a href="" aria-label="24"></a><span class="fu">head</span>(par_post)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>      beta0     beta1     sigma        mu     y_new
-1 0.7377650 0.1431106 0.2274278 0.8808756 1.0326229
-2 0.7100410 0.1769220 0.2392774 0.8869630 0.8573308
-3 0.7325606 0.1374866 0.2279329 0.8700471 1.0480325
-4 0.7344511 0.1020250 0.2163216 0.8364760 0.8877266
-5 0.7131606 0.1225587 0.2432569 0.8357193 1.0294761
-6 0.6695657 0.2005250 0.2239860 0.8700907 1.2247160</code></pre>
+<pre><code>      beta0      beta1     sigma        mu     y_new
+1 0.6932840 0.18655161 0.2301520 0.8798356 1.0334005
+2 0.7071960 0.09106498 0.2251017 0.7982610 0.7703843
+3 0.6926788 0.14544334 0.1986584 0.8381221 0.9932480
+4 0.7480252 0.02838008 0.2524944 0.7764053 0.8362258
+5 0.7610354 0.08052321 0.2153060 0.8415586 1.0130523
+6 0.7363979 0.18680911 0.2120000 0.9232070 1.2588555</code></pre>
 </div>
 </div>
 </section>
@@ -2094,12 +2094,12 @@ Y_{\text{new}}^{(i)} = \mu^{(i)} + \epsilon^{(i)}, \quad \epsilon^{(i)} \sim N\l
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>          
-iterations      [,1]      [,2]      [,3]      [,4]      [,5]
-      [1,] 0.8479501 0.9106818 1.0319028 1.1820535 0.8512675
-      [2,] 1.0711613 1.2561505 1.5929087 1.4012612 0.7568110
-      [3,] 1.3040235 0.6776878 0.5734106 1.2492140 0.4091879
-      [4,] 0.9387724 0.8310315 1.0441571 0.9376880 0.7316389
-      [5,] 1.1480417 0.5151837 0.6596500 0.4175561 0.7676720</code></pre>
+iterations       [,1]      [,2]      [,3]      [,4]      [,5]
+      [1,] 0.89068382 0.8358637 0.6628233 1.0384614 1.2485209
+      [2,] 0.81608108 0.9909482 0.6854651 0.7459303 0.8758225
+      [3,] 0.74276228 0.7206943 0.9730295 0.7723272 1.1601230
+      [4,] 0.04844933 0.5087102 0.6267934 1.0676986 0.8111293
+      [5,] 0.67605339 0.7950358 1.0929221 0.8153032 0.9795316</code></pre>
 </div>
 </div>
 </section>
@@ -2430,7 +2430,7 @@ scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
 </ul>
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="figs/lec9/bayesian-modeling-workflow.png"></p>
+<p><img data-src="assets/figs/lec9/bayesian-modeling-workflow.png"></p>
 <figcaption>贝叶斯建模流程</figcaption>
 </figure>
 </div>

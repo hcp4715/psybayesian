@@ -13,11 +13,7 @@ pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja", "patchwork",
 options(warn = -1)  # 抑制警告
 
 # 导入数据
-df <- tryCatch({
-  read.csv('/home/mw/input/bayes3797/evans2020JExpPsycholLearn_exp1_full_data.csv')
-}, error = function(e) {
-  read.csv('data/evans2020JExpPsycholLearn_exp1_full_data.csv')
-})
+df <- read.csv(here::here("data", "evans2020JExpPsycholLearn_exp1_full_data.csv"))
 
 # 筛选 subject == 31727 且 percentCoherence 为 10 或 40 的数据
 
@@ -427,11 +423,7 @@ ppc_dens_overlay(y = df_clean$correct, yrep = posterior_predict(model, ndraws = 
   labs(title = "Posterior Predictive Check")
 
 # === 1. 数据加载 ===
-df_raw <- tryCatch({
-  read.csv("/home/mw/input/bayes3797/Data_Sum_HPP_Multi_Site_Share.csv")
-}, error = function(e) {
-  read.csv("data/Data_Sum_HPP_Multi_Site_Share.csv")
-})
+df_raw <- read.csv(here::here("data", "Data_Sum_HPP_Multi_Site_Share.csv"))
 
 # === 2. 数据筛选与清洗 ===
 df <- df_raw %>%
@@ -547,11 +539,7 @@ p_posterior_line <- ggplot(curve_df, aes(x = avoidance_r, y = pi, group = draw))
     y = "P(romantic = yes)"
   ) +
   # === 1. 数据加载 ===
-  df_raw <- tryCatch({
-    read.csv("/home/mw/input/bayes3797/Data_Sum_HPP_Multi_Site_Share.csv")
-  }, error = function(e) {
-    read.csv("data/Data_Sum_HPP_Multi_Site_Share.csv")
-  })
+  df_raw <- read.csv(here::here("data", "Data_Sum_HPP_Multi_Site_Share.csv"))
 
 # === 2. 数据筛选与清洗 ===
 df <- df_raw %>%

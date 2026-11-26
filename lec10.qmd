@@ -36,7 +36,7 @@ knitr::opts_chunk$set(fig.path = "assets/figs/lec10/", fig.width = 12, fig.heigh
 
 在前面的课程中，我们系统性地介绍了贝叶斯统计的核心概念，并通过一个简单的线性回归模型(*t*-test)展示了如何构建和应用一个相对简单的贝叶斯workflow。  
 
-![](figs/lec10/smkhdwv5zt.png)
+![](assets/figs/lec10/smkhdwv5zt.png)
 
 
 ---
@@ -46,11 +46,11 @@ knitr::opts_chunk$set(fig.path = "assets/figs/lec10/", fig.width = 12, fig.heigh
 :::: {.columns}
 
 ::: {.column width="58%"}
-![](figs/lec10/smipfxtgj4.png)
+![](assets/figs/lec10/smipfxtgj4.png)
 :::
 
 ::: {.column width="42%"}
-![](figs/lec10/smkijcu8co.png)
+![](assets/figs/lec10/smkijcu8co.png)
 :::
 
 ::::
@@ -127,7 +127,7 @@ cat("Label列共有", toString(unique(df$Label)), "这几类\n")
 
 通过查看数据可知，在自我匹配任务中，被试学习几何图形和身份标签的配对关系，例如，三角形代表自我（Self）；圆形代表朋友（Friend），正方形代表陌生人（Stranger），随后判断所呈现的几何图形和文字标签是否与之前学习的关系相匹配。“图形-身份”的关系在被试间平衡。
 
-![](figs/lec10/snajcrx0jy.png)  
+![](assets/figs/lec10/snajcrx0jy.png)  
 
 ::: {style="font-size: 0.55em;"}
 
@@ -304,7 +304,7 @@ $$
 为演示简便，我们使用一个简化的 workflow 流程。  
 
 <p align="center">  
-  <img src="figs/lec10/sm7veon5ei.png" alt="">  
+  <img src="assets/figs/lec10/sm7veon5ei.png" alt="">  
 </p>
 
 
@@ -1164,7 +1164,7 @@ p1 + p2
 如图所示，表中列出了 Treatment Coding 和 Sum Coding 两种常用的因子变量编码方式，并展示了它们在研究主效应和交互效应时的特点：  
 
 <div style="text-align: center;">  
-    <img src="figs/lec10/v2-f95e51b7e6e26feab9ca91077d9c244e_1440w.webp"  
+    <img src="assets/figs/lec10/v2-f95e51b7e6e26feab9ca91077d9c244e_1440w.webp"  
          alt="Image Description"  
          style="width: 80%; height: auto;">  
 </div>  
@@ -2015,7 +2015,7 @@ model {
  
 现在，我们可以假设，在不同的吸烟状况下，压力对自我控制的影响略有不同(体现在斜率上)  
 
-![](figs/lec10/s49oqb24we.png)
+![](assets/figs/lec10/s49oqb24we.png)
 
 
 ---
@@ -2181,7 +2181,7 @@ model {
 🤔虽然我们现在已经学习了使用不同的线性回归模型来拟合变量间的关系，但有些问题我们暂时忽略了：  
 1. 如何评估不同的模型？哪个模型最好？  
 2. 什么时候该使用什么模型？  
-![](figs/lec10/rkz1dqyo2e.png)
+![](assets/figs/lec10/rkz1dqyo2e.png)
 
 
 ---
@@ -2320,4 +2320,4 @@ model {
 
 ---
 
-![](figs/lec10/rkz1dqyo2e.png)
+![](assets/figs/lec10/rkz1dqyo2e.png)

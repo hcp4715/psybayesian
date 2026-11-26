@@ -319,8 +319,8 @@ print(p)
 <center>  
     <table>  
             <tr>  
-                <td><img src="figs/lec6/slozv1v2pv.png" alt="" style="max-height: 350px; width: auto; object-fit: contain;"></td>  
-                <td><img src="figs/lec6/slozv7t6h6.png" alt="" style="max-height: 350px; width: auto; object-fit: contain;"></td>  
+                <td><img src="assets/figs/lec6/slozv1v2pv.png" alt="" style="max-height: 350px; width: auto; object-fit: contain;"></td>  
+                <td><img src="assets/figs/lec6/slozv7t6h6.png" alt="" style="max-height: 350px; width: auto; object-fit: contain;"></td>  
             </tr>  
             <tr>  
                 <td></td>  

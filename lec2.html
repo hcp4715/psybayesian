@@ -319,7 +319,7 @@
 <li>这个结果就是我们的<strong>数据 (data)</strong>；</li>
 <li>与通常的概率题不同：这里袋中蓝色小球的占比 <span class="math inline">\(\theta\)</span> 是<strong>未知的</strong>，我们要做的，是从数据出发<strong>反推</strong> <span class="math inline">\(\theta\)</span> 更可能是什么。</li>
 </ul>
-<p><img data-src="figs/lec2/sup_rhq5eluxp1.png" style="width:52.0%"></p>
+<p><img data-src="assets/figs/lec2/sup_rhq5eluxp1.png" style="width:52.0%"></p>
 </section>
 <section id="计数-①全部可能的路径-43-64-条" class="slide level2">
 <h2>计数 ①：全部可能的路径 — <span class="math inline">\(4^3 = 64\)</span> 条</h2>
@@ -327,7 +327,7 @@
 <li>假如袋中真是“蓝白白白”（1 蓝 3 白）：每次从 4 颗小球中等可能地抽 1 颗，抽 3 次共有 <span class="math inline">\(4^3 = 64\)</span> 条可能路径；</li>
 <li>图中从内到外每个圆弧代表一次抽取。</li>
 </ul>
-<p><img data-src="figs/lec2/sup_rhq5irv465.png" style="width:62.0%"></p>
+<p><img data-src="assets/figs/lec2/sup_rhq5irv465.png" style="width:62.0%"></p>
 </section>
 <section id="计数-②删除与数据不一致的路径" class="slide level2">
 <h2>计数 ②：删除与数据不一致的路径</h2>
@@ -335,17 +335,17 @@
 <li>我们观察到的是“蓝白蓝”：<strong>第 1、3 次必须是蓝，第 2 次必须是白</strong>；</li>
 <li>把所有不符合这一模式的路径删掉后，64 条中只剩下 <strong>3 条</strong>。</li>
 </ul>
-<p><img data-src="figs/lec2/sup_rhq5mj9g4e.png" style="width:60.0%"></p>
+<p><img data-src="assets/figs/lec2/sup_rhq5mj9g4e.png" style="width:60.0%"></p>
 <p>（在“蓝白白白”下：第 1 次蓝有 1 种 × 第 2 次白有 3 种 × 第 3 次蓝有 1 种 = <strong>3 种方式</strong>）</p>
 </section>
 <section id="计数-③对-5-种推测逐一计数" class="slide level2">
 <h2>计数 ③：对 5 种推测逐一计数</h2>
 <p>同样的计数方法，对 5 种推测各做一遍：在每种推测下，能产生“蓝白蓝”这一数据的方式有多少种？</p>
-<p><img data-src="figs/lec2/sup_rhq5v48hnv.png" style="width:72.0%"></p>
+<p><img data-src="assets/figs/lec2/sup_rhq5v48hnv.png" style="width:72.0%"></p>
 </section>
 <section id="计数-④各推测的方式数-ways" class="slide level2">
 <h2>计数 ④：各推测的“方式数” (ways)</h2>
-<p><img data-src="figs/lec2/sup_rhq5w22f0x.png" style="width:40.0%"></p>
+<p><img data-src="assets/figs/lec2/sup_rhq5w22f0x.png" style="width:40.0%"></p>
 <div style="font-size:0.82em">
 <ul>
 <li>例如“蓝白白白”：1（蓝）× 3（白）× 1（蓝）= <strong>3 种方式</strong>；</li>
@@ -360,7 +360,7 @@
 <li>例：“蓝蓝白白”：产生“蓝白蓝”有 8 种方式，第 4 次抽到蓝再乘 2 → <strong>8 × 2 = 16 种</strong>；</li>
 <li>各推测更新为：<strong>0 / 3 / 16 / 27 / 0</strong> —— 数据越积越多，对“高蓝比例”的推测越来越有利。</li>
 </ul>
-<p><img data-src="figs/lec2/sup_rhq60vh4kd.png" style="width:68.0%"></p>
+<p><img data-src="assets/figs/lec2/sup_rhq60vh4kd.png" style="width:68.0%"></p>
 </section>
 <section id="从计数到概率归一化-normalizing" class="slide level2">
 <h2>从计数到概率：归一化 (normalizing)</h2>
@@ -369,7 +369,7 @@
 <li>每一种推测的 plausibility = 该推测的计数 ÷ 所有推测计数之和；</li>
 <li>例：看到“蓝白蓝”后，“蓝白白白”（<span class="math inline">\(\theta = 0.25\)</span>）的 plausibility = 3 ÷ 20 = <strong>0.15</strong>。</li>
 </ul>
-<p><img data-src="figs/lec2/sup_rhq6qm3ucu.png" style="width:42.0%"></p>
+<p><img data-src="assets/figs/lec2/sup_rhq6qm3ucu.png" style="width:42.0%"></p>
 </section>
 <section id="推测的先验概率ptheta-prior" class="slide level2">
 <h2>推测的先验概率：<span class="math inline">\(P(\theta)\)</span> (Prior)</h2>
@@ -378,7 +378,7 @@
 <li>看到数据之前，我们默认 5 种推测<strong>等可能</strong>：每个 <span class="math inline">\(\theta\)</span> 的先验概率 <span class="math inline">\(P(\theta) = 1/5 = 0.2\)</span>；</li>
 <li><strong>先验 (prior)</strong>：观察数据之前，对每个假设为真的初始信念。</li>
 </ul>
-<p><img data-src="figs/lec2/sup_rhq738pxrx.jpg" style="width:46.0%"></p>
+<p><img data-src="assets/figs/lec2/sup_rhq738pxrx.jpg" style="width:46.0%"></p>
 </section>
 <section id="用计数理解贝叶斯四个关键术语" class="slide level2">
 <h2>用“计数”理解贝叶斯四个关键术语</h2>
@@ -430,11 +430,11 @@ P(\theta \mid D) = \frac{P(D\mid \theta)\, P(\theta)}{P(D)} = \frac{\text{ways} 
 <li>分母：0×0.2 + 3×0.2 + 8×0.2 + 9×0.2 + 0×0.2 = 0.6 + 1.6 + 1.8 = <strong>4.0</strong>；</li>
 <li>后验：1.6 ÷ 4.0 = <strong>0.40</strong>，即看到“蓝白蓝”后，<span class="math inline">\(\theta=0.5\)</span> 的 plausibility。</li>
 </ul>
-<p><img data-src="figs/lec2/sup_rhq79hsbrl.png" style="width:74.0%"></p>
+<p><img data-src="assets/figs/lec2/sup_rhq79hsbrl.png" style="width:74.0%"></p>
 </section>
 <section id="第-4-次抽到蓝计数-vs-概率对照" class="slide level2">
 <h2>第 4 次抽到蓝：计数 vs 概率（对照）</h2>
-<p><img data-src="figs/lec2/sup_rhq60vh4kd.png" style="width:56.0%"></p>
+<p><img data-src="assets/figs/lec2/sup_rhq60vh4kd.png" style="width:56.0%"></p>
 <table class="caption-top">
 <colgroup>
 <col style="width: 20%">
@@ -525,7 +525,7 @@ P(\theta \mid D) = \frac{P(D\mid \theta)\, P(\theta)}{P(D)} = \frac{\text{ways} 
 <li>当模型的假设与现实相近时，贝叶斯模型在大世界中也会表现良好。</li>
 </ul>
 </div>
-<p><img data-src="figs/lec2/sup_rhqayo7s64.png" style="width:32.0%"></p>
+<p><img data-src="assets/figs/lec2/sup_rhqayo7s64.png" style="width:32.0%"></p>
 </section>
 <section id="part-3-随机变量的贝叶斯模型-bayesian-models-with-random-variables" class="slide level2">
 <h2>Part 3: 随机变量的贝叶斯模型 (Bayesian models with random variables)</h2>
@@ -1127,7 +1127,7 @@ f(\theta | y) = \frac{f(\theta)L(\theta|y)}{f(y)} \;\propto\; f(\theta)\,L(\thet
 <section id="part-4-频率学派与贝叶斯学派的对比-frequentist-vs.-bayesian" class="slide level2">
 <h2>Part 4: 频率学派与贝叶斯学派的对比 (Frequentist vs.&nbsp;Bayesian)</h2>
 <h3 id="同一份数据两种结论ecmo-临床试验">同一份数据，两种结论：ECMO 临床试验</h3>
-<p><img data-src="figs/lec2/sjzj8nd4te.png" style="width:39.0%"></p>
+<p><img data-src="assets/figs/lec2/sjzj8nd4te.png" style="width:39.0%"></p>
 <div style="font-size:0.66em">
 <ul>
 <li><strong>频率学派</strong>：计划 331 名患者，因中期分析未能证明获益而提前停止（249 人）。干预组死亡率 35% vs 对照组 46%，但 <span class="math inline">\(p = 0.09 &gt; 0.05\)</span> → “证据不足，不能证明 ECMO 有效”；</li>
@@ -1167,10 +1167,10 @@ f(\theta | y) = \frac{f(\theta)L(\theta|y)}{f(y)} \;\propto\; f(\theta)\,L(\thet
 <div class="quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell" style="flex-basis: 54.3%;justify-content: center;">
-<p><img data-src="figs/lec2/thomas_bayes.jpg"></p>
+<p><img data-src="assets/figs/lec2/thomas_bayes.jpg"></p>
 </div>
 <div class="quarto-layout-cell" style="flex-basis: 45.7%;justify-content: center;">
-<p><img data-src="figs/lec2/pierre_laplace.jpg"></p>
+<p><img data-src="assets/figs/lec2/pierre_laplace.jpg"></p>
 </div>
 </div>
 </div>
@@ -1241,7 +1241,7 @@ f(\theta | y) = \frac{f(\theta)L(\theta|y)}{f(y)} \;\propto\; f(\theta)\,L(\thet
 </section>
 <section id="不同的先验似然-不同的后验" class="slide level2">
 <h2>不同的先验/似然 → 不同的后验</h2>
-<p><img data-src="figs/lec2/rhqcb9gji7.png" style="width:34.0%"></p>
+<p><img data-src="assets/figs/lec2/rhqcb9gji7.png" style="width:34.0%"></p>
 <ul>
 <li>后验 = 先验 × 似然（再归一化）：<strong>先验与似然都会塑造后验</strong>；</li>
 <li>先验差异大时，后验的差异也会明显——因此贝叶斯分析要求<strong>先验要透明、理由要充分</strong>；</li>

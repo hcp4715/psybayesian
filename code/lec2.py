@@ -12,10 +12,14 @@ Lecture 2: Bayes' Rule — Python 对照代码
 运行: python lec2.py
 """
 
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats as st
+
+_ROOT = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.cwd()
 
 # ---------- Part 2: 计数例 (4 颗小球, 蓝/白数量未知) ----------
 # 5 种推测: 蓝球占比 theta = [0, 0.25, 0.5, 0.75, 1]
@@ -36,10 +40,7 @@ print("顺序更新后验 ('蓝白蓝蓝') =", post2.round(4))   # [0, .065, .34
 print("证据 (归一化分母) =", round(product.sum(), 4))
 
 # ---------- 0. 延伸练习: 读取数据 (Herzenstein 2024, 可重复性) ----------
-try:
-    df = pd.read_csv("/home/mw/input/bayes3797/replicated_language_cleaned.csv")  # 和鲸平台路径
-except FileNotFoundError:
-    df = pd.read_csv("data/replicated_language_cleaned.csv")                      # 本地路径
+df = pd.read_csv(_ROOT / "data" / "replicated_language_cleaned.csv")
 
 print("数据规模:", df.shape)
 print(df.head())

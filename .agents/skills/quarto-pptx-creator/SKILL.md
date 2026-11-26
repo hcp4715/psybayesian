@@ -31,6 +31,12 @@ Follow these steps to create a high-quality presentation:
   - **Summary**: Key takeaways and next steps.
 - **Math typography (mandatory)**: write Greek letters as LaTeX math — `$\theta$`, `$\alpha$`, `$\mu$` — never as literal Unicode glyphs (`θ`, `α`, `μ`) in prose, bullets, tables, captions or references. In code use ASCII identifiers (`theta`); in plot labels use the plotting library's math mode (R `expression(theta)`, matplotlib `r'$\theta$'`), falling back to a literal glyph only when the API cannot render math.
 
+## Repository Conventions (PsyBayesian)
+
+- **Images — one folder only**: every image, whether hand-made or a rendered chunk output, lives in `assets/figs/lec{id}/`. There is no separate top-level `figs/` directory. Reference images from `.qmd` as `assets/figs/lec{id}/name.png`; in knitr chapters set `knitr::opts_chunk$set(fig.path = "assets/figs/lec{id}/")` in the setup chunk so rendered figures land in the same folder.
+- **No hard-coded directories**: never write absolute paths into `.qmd`, scripts, or docs. R code resolves data/cache with `here::here("data", ...)`; Python code uses a `_ROOT` constant derived from `__file__` (falling back to `Path.cwd()` outside a script); `.qmd` chunks use project-root-relative paths such as `data/...` and `tmpdata/...`.
+- **Shared libraries**: revealjs libraries are stored once in `assets/libs/`, configured through `_quarto.yml` (`project: lib-dir`), and are not copied per chapter.
+
 ## Resources
 
 - **Template**: See [`references/template.qmd`](references/template.qmd) for the required YAML and slide structure.

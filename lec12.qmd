@@ -42,7 +42,7 @@ jupyter: ir
 #| tags: []
 #| notebookId: 6915b3c48456fe3212cfa784
 #| trusted: true
-# 导入数据df <- tryCatch({  read.csv('/home/mw/input/bayes3797/evans2020JExpPsycholLearn_exp1_full_data.csv')}, error = function(e) {  read.csv('data/evans2020JExpPsycholLearn_exp1_full_data.csv')})# 筛选 subject == 31727 且 percentCoherence 为 10 或 40 的数据df_clean <- df %>%  filter(subject == 31727, percentCoherence %in% c(10, 40)) %>%  select(subject, percentCoherence, correct)# 显示结果df_clean
+# 导入数据df <- read.csv('data/evans2020JExpPsycholLearn_exp1_full_data.csv')# 筛选 subject == 31727 且 percentCoherence 为 10 或 40 的数据df_clean <- df %>%  filter(subject == 31727, percentCoherence %in% c(10, 40)) %>%  select(subject, percentCoherence, correct)# 显示结果df_clean
 ```
 
 ```{r}
@@ -303,7 +303,7 @@ library(brms)# 1. 准备数据：确保 percentCoherence 是因子df_clean <- df
 #| tags: []
 #| slideshow: {slide_type: slide}
 #| trusted: true
-# === 1. 数据加载 ===df_raw <- tryCatch({  read.csv("/home/mw/input/bayes3797/Data_Sum_HPP_Multi_Site_Share.csv")}, error = function(e) {  read.csv("data/Data_Sum_HPP_Multi_Site_Share.csv")})# === 2. 数据筛选与清洗 ===df <- df_raw %>%  filter(Site == "Tsinghua") %>%  select(romantic, avoidance_r, sex) %>%  mutate(    romantic = ifelse(romantic == 2, 0, 1),  # 2 → "no" → 0; 1 → "yes" → 1    romantic = factor(romantic, levels = c(0, 1), labels = c("no", "yes")),  # 转换为因子    index = 1:n()  # 设置索引（1 到 n）  )# === 3. 绘制raincloud图 ===p_raincloud <- ggplot(df, aes(x = romantic, y = avoidance_r, fill = romantic)) +  geom_rain(alpha = 0.6, rain.side = "l", point.args = list(alpha = 0.4)) +  scale_fill_manual(values = c("no" = "red", "yes" = "blue")) +  labs(    x = "Romantic Relationship",    y = "Avoidance (Reversed)",    fill = "Romantic"  ) +  theme_apa() +  theme(legend.position = "none")p_raincloud
+# === 1. 数据加载 ===df_raw <- read.csv("data/Data_Sum_HPP_Multi_Site_Share.csv")# === 2. 数据筛选与清洗 ===df <- df_raw %>%  filter(Site == "Tsinghua") %>%  select(romantic, avoidance_r, sex) %>%  mutate(    romantic = ifelse(romantic == 2, 0, 1),  # 2 → "no" → 0; 1 → "yes" → 1    romantic = factor(romantic, levels = c(0, 1), labels = c("no", "yes")),  # 转换为因子    index = 1:n()  # 设置索引（1 到 n）  )# === 3. 绘制raincloud图 ===p_raincloud <- ggplot(df, aes(x = romantic, y = avoidance_r, fill = romantic)) +  geom_rain(alpha = 0.6, rain.side = "l", point.args = list(alpha = 0.4)) +  scale_fill_manual(values = c("no" = "red", "yes" = "blue")) +  labs(    x = "Romantic Relationship",    y = "Avoidance (Reversed)",    fill = "Romantic"  ) +  theme_apa() +  theme(legend.position = "none")p_raincloud
 ```
 
 <h2>模型定义</h2><p>$$ \begin{array}{lcrl} \text{data:} &amp; \hspace{.01in} &amp; Y_i|\beta_0,\beta_1 &amp; \stackrel{ind}{\sim} \text{Bern}(\pi_i) \;\; \text{ with } \;\; \pi_i = \frac{e^{\beta_0 + \beta_1 X_{i1}}}{1 + e^{\beta_0 + \beta_1 X_{i1}}} \\ \text{priors:} &amp; &amp; \beta_{0} &amp; \sim N\left(0, 0.5^2 \right) \\ &amp; &amp; \beta_1 &amp; \sim N\left(0, 0.5^2 \right)\\ \end{array} $$</p>

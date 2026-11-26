@@ -68,7 +68,7 @@ options(warn = -1)
 
 ::: {.column width="50%"}
 <center>
-<img src="figs/lec3/rdk_10.gif" style="height:360px;">
+<img src="assets/figs/lec3/rdk_10.gif" style="height:360px;">
 
 一致性 10%
 </center>
@@ -76,7 +76,7 @@ options(warn = -1)
 
 ::: {.column width="50%"}
 <center>
-<img src="figs/lec3/rdk_60.gif" style="height:360px;">
+<img src="assets/figs/lec3/rdk_60.gif" style="height:360px;">
 
 一致性 60%
 </center>
@@ -609,7 +609,7 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
   
 > 动态演示：后验随着新数据逐步更新（课堂演示环节）。  
 
-<center><img src='figs/lec4/skex9x185z_2x.gif' style='height:360px;'></center>  
+<center><img src='assets/figs/lec4/skex9x185z_2x.gif' style='height:360px;'></center>  
 
 
 ---
@@ -801,7 +801,7 @@ Q: 这里与我们在研究中所反对的“收集数据直到$p$值显著为�
 ---
 
 
-<center><img src='figs/lec4/fig1_lrg.jpg' style='height:480px;'></center>  
+<center><img src='assets/figs/lec4/fig1_lrg.jpg' style='height:480px;'></center>  
 
 > Shooshtari, et al (2019). *Neuroscience*, doi:10.1016/j.neuroscience.2019.03.031  
 > Evans, et al., (2020). *Journal of Experimental Psychology: Learning, Memory, and Cognition*, doi: 10.1037/xlm0000725 
@@ -1083,7 +1083,7 @@ $$
 
 ---
 
-<center><img src='figs/lec4/ch4-stubborn-plot-1.png' style='height:420px;'></center>
+<center><img src='assets/figs/lec4/ch4-stubborn-plot-1.png' style='height:420px;'></center>
 
 ```{r}
 #| include: false
@@ -1166,7 +1166,7 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 Tips：如何避免令人遗憾的先验模型  
 	- 确保对每个可能的$\theta$值都分配非零的可信度，即使这个可信度接近于零。例如，如果$\theta$是一个可以从 0 到 1 的比例，那么你的先验模型也应该在这个连续范围内进行定义。  
 
-![](figs/lec2/rhqcb9gji7.png){height=360} 
+![](assets/figs/lec2/rhqcb9gji7.png){height=360} 
 
 
 ---
@@ -1380,7 +1380,7 @@ gridExtra::grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, ncol = 3)
 练习 4.2（将图形与代码配对）。  
 
 下面的绘图函数更可能使用了哪些参数生成了下面的图形？  
-![](figs/lec4/unnamed-chunk-142-1.png){width=48%}  
+![](assets/figs/lec4/unnamed-chunk-142-1.png){width=48%}  
 - a) $\alpha$ = 2, $\beta$ = 2, y = 8, n = 11  
 - b) $\alpha$ = 2, $\beta$ = 2, y = 3, n = 11  
 - c) $\alpha$ = 3, $\beta$ = 8, y = 2, n = 6  

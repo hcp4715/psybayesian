@@ -62,7 +62,7 @@ model {
 "
 
 # 进行采样（结果缓存到 tmpdata/，重复渲染直接读取；改模型后删掉该 .rds 即可重跑）
-fit_bb <- cache_rds("tmpdata/lec8_fit_bb.rds",
+fit_bb <- cache_rds(here::here("tmpdata", "lec8_fit_bb.rds"),
   stan(
     model_code = stan_model_code,      # 定义的模型或模型文件路径
     data = stan_data,                  # 输入数据
@@ -252,7 +252,7 @@ model {
 prior_model <- stan_model(model_code = stan_prior_code)
 
 # 从先验采样（使用虚拟数据；结果同样缓存到 tmpdata/）
-fit_prior <- cache_rds("tmpdata/lec8_fit_prior.rds",
+fit_prior <- cache_rds(here::here("tmpdata", "lec8_fit_prior.rds"),
   sampling(
     prior_model,
     data = stan_data,  # 虚拟

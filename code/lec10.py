@@ -7,13 +7,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import xarray as xr
 import pandas as pd
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.cwd()
 
 # 忽略不必要的警告
 import warnings
 
 warnings.filterwarnings("ignore")
 
-df_raw = pd.read_csv("data/Kolvoort_2020_HBM_Exp1_Clean.csv")
+df_raw = pd.read_csv(_ROOT / "data" / "Kolvoort_2020_HBM_Exp1_Clean.csv")
 
 df = df_raw.groupby(['Subject', 'Label', 'Matching'], as_index=False)['RT_sec'].mean()
 

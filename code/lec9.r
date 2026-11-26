@@ -1,7 +1,7 @@
 # Synchronized from lec9.qmd. Run from the project root.
 
 # lec9.qmd R chunk 1
-knitr::opts_chunk$set(fig.path = "figs/lec9/", fig.width = 12, fig.height = 5, dpi = 144)
+knitr::opts_chunk$set(fig.path = "assets/figs/lec9/", fig.width = 12, fig.height = 5, dpi = 144)
 
 # lec9.qmd R chunk 2
 # 导入所需库
@@ -1107,7 +1107,7 @@ lm1_brms <- brms::brm(
     cores = 4,                 # 并行计算核心数（加速采样）
     seed = 84735,              # 随机种子，确保结果可重复
     refresh = 0,               # 不输出采样过程信息
-    file = "tmpdata/lec9_brms_fit",
+    file = here::here("tmpdata", "lec9_brms_fit"),
     file_refit = "never"
 )
 print(lm1_brms)

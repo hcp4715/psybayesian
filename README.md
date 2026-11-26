@@ -64,16 +64,16 @@ PyBayesian/
 │   ├── SMS_Well_being.csv       # SMS心理幸福感数据
 │   └── ...                      # 各讲课件用到的其他数据
 │
-├── figs/                        # 存放课件使用的图片（figs/lec{id}/ 按章节分目录）
+├── code/                        # 各讲配套的 R/Python 脚本（code/lec{id}.R / code/lec{id}.py）
+├── assets/                      # 图片与库：figs/lec{id}/（手工素材 + 渲染图）+ libs/（全课共享库）
+├── archive/                     # 历史归档：旧版 .ipynb 课件与旧 Dockerfile
+├── tmpdata/                     # 贝叶斯模型的采样缓存（.rds/.RData，不入库）
 ├── 闯关题/                      # 课堂练习（闯关题）
 ├── 教学大纲及相关内容/          # 课程大纲（docx/pdf）等教学文档
 ├── .gitignore                   # Git忽略文件
-├── dockerfile                   # Docker配置文件
 ├── _quarto.yml                  # Quarto 项目配置（lib-dir: assets/libs 指定共享库目录）
-├── assets/                      # 渲染产物：libs/（全课共享库）+ figs/lec{id}/（各讲的图）
 ├── lec{id}.qmd / .html          # 课件源码与渲染结果（Quarto revealjs，浏览器放映）
-├── lec{id}.R / lec{id}.py       # 课件配套的 R/Python 代码
-├── lec{id}.ipynb                # Jupyter Notebook 版本课件
+├── lec.css                      # 全课共用的幻灯片样式
 ├── LICENSE                      # 许可证文件
 └── README.md                    # 本仓库说明文件
 ```

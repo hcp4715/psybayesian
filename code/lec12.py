@@ -8,16 +8,16 @@ import matplotlib.pyplot as plt
 import xarray as xr
 import pandas as pd
 import ipywidgets
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.cwd()
 
 # 忽略不必要的警告
 import warnings
 warnings.filterwarnings("ignore")
 
 # 使用 pandas 导入示例数据
-try:
-  df = pd.read_csv("/home/mw/input/bayes3797/evans2020JExpPsycholLearn_exp1_full_data.csv") 
-except:
-  df = pd.read_csv('data/evans2020JExpPsycholLearn_exp1_full_data.csv')
+df = pd.read_csv(_ROOT / "data" / "evans2020JExpPsycholLearn_exp1_full_data.csv")
 
 # 筛选编号为 31727 的数据，并且筛选出两个不同的 percentCoherence
 df_clean = df[(df['subject'] == 31727) & (df['percentCoherence'].isin([10, 40]))]
@@ -236,10 +236,7 @@ az.plot_ppc(model_fitted, num_pp_samples=50)
 sns.despine()
 
 # 通过 pd.read_csv 加载数据 Data_Sum_HPP_Multi_Site_Share.csv
-try:
-  df_raw = pd.read_csv('/home/mw/input/bayes3797/Data_Sum_HPP_Multi_Site_Share.csv')
-except:
-  df_raw = pd.read_csv('data/Data_Sum_HPP_Multi_Site_Share.csv')
+df_raw = pd.read_csv(_ROOT / "data" / "Data_Sum_HPP_Multi_Site_Share.csv")
 
 # 选取清华站点的数据
 df = df_raw[df_raw["Site"] == "Tsinghua"]

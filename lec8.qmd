@@ -54,7 +54,7 @@ hdi_txt <- function(x) paste0("[", fmt_bf(x$CI_low), ", ", fmt_bf(x$CI_high), "]
 
 ---
 
-![](figs/lec8/sm7veon5ei.png)
+![](assets/figs/lec8/sm7veon5ei.png)
 
 ---
 
@@ -80,7 +80,7 @@ hdi_txt <- function(x) paste0("[", fmt_bf(x$CI_low), ", ", fmt_bf(x$CI_high), "]
 
 ---
 
-![](figs/lec8/1762500850308_1.png)
+![](assets/figs/lec8/1762500850308_1.png)
 
 ---
 
@@ -124,7 +124,7 @@ NHST的核心概念还包括：
 
     4.  **无法为直接为零假设提供支持**：不显著结果不代表零假设为真。
 
-![](figs/lec8/smw36cj13b.png)
+![](assets/figs/lec8/smw36cj13b.png)
 
 > 胡传鹏等(2018). 贝叶斯因子及其在JASP中的实现. *心理科学进展*\
 > 吴凡, 顾全, 施壮华, 高在峰, 沈模卫. (2018). 跳出传统假设检验方法的陷阱------贝叶斯因子在心理学研究领域的应用. *应用心理学*
@@ -955,7 +955,7 @@ JASP（Jeffreys\'s Amazing Statistics Program）通过图形界面完成贝叶�
 
 ---
 
-![](figs/lec8/1762414215845_1.jpg)
+![](assets/figs/lec8/1762414215845_1.jpg)
 
 ---
 

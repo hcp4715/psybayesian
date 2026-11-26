@@ -88,7 +88,7 @@ $P(\theta \mid D) = \frac{P(D\mid \theta)P(\theta)}{P(D)}$
 
 ::: {.column width="50%"}
 <center>
-<img src="figs/lec3/rdk_10.gif" style="height:360px;">
+<img src="assets/figs/lec3/rdk_10.gif" style="height:360px;">
 
 一致性 10%
 </center>
@@ -96,7 +96,7 @@ $P(\theta \mid D) = \frac{P(D\mid \theta)P(\theta)}{P(D)}$
 
 ::: {.column width="50%"}
 <center>
-<img src="figs/lec3/rdk_60.gif" style="height:360px;">
+<img src="assets/figs/lec3/rdk_60.gif" style="height:360px;">
 
 一致性 60%
 </center>

@@ -6,7 +6,7 @@ pacman::p_load(dplyr, knitr, rstan, loo)
 
 # 汇总自我匹配实验的反应时并建立三个设计矩阵。
 
-rt_trials <- utils::read.csv("data/Kolvoort_2020_HBM_Exp1_Clean.csv")
+rt_trials <- utils::read.csv(here::here("data", "Kolvoort_2020_HBM_Exp1_Clean.csv"))
 rt <- rt_trials %>%
   dplyr::group_by(Subject, Label, Matching) %>%
   dplyr::summarise(RT_sec = mean(RT_sec), .groups = "drop") %>%
@@ -210,7 +210,7 @@ print(knitr::kable(
 
 # 练习数据与课件使用同一筛选规则。
 
-exercise_raw <- utils::read.csv("data/Data_Sum_HPP_Multi_Site_Share.csv")
+exercise_raw <- utils::read.csv(here::here("data", "Data_Sum_HPP_Multi_Site_Share.csv"))
 exercise <- exercise_raw %>%
   dplyr::filter(Site == "Tsinghua", smoke %in% c(1L, 2L),
                 is.finite(stress), is.finite(scontrol)) %>%

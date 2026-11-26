@@ -37,7 +37,6 @@ set.seed(84735)
 fmt <- function(x, digits = 3) formatC(x, digits = digits, format = "f")
 ```
 
-
 ## 回顾：从先验到后验
 
 前面的课程中，我们介绍了如下几个知识点：  
@@ -165,7 +164,7 @@ PPL 框架以及当前的贝叶斯推断的生态提供了其他更多的功能�
 
 ## 本节课：获得后验之后 {.smaller}
 
-![后验推断工作流](figs/lec7/inference-overview.png){height=300px}
+![后验推断工作流](assets/figs/lec7/inference-overview.png){height=300px}
 
 ⭐ 通常，通过 Stan 等概率编程语言(PPL) 得到后验之后，需要首先确保MCMC的后验是有效的，然后进行推断。  
 
@@ -289,7 +288,7 @@ sample_theta <- draws$theta
 
 ## 正常的轨迹图
 
-![良好的采样轨迹图](figs/lec7/trace-good.png){height=480px}
+![良好的采样轨迹图](assets/figs/lec7/trace-good.png){height=480px}
 
 我们先来看一下正常的轨迹图是什么样：
 
@@ -303,7 +302,7 @@ sample_theta <- draws$theta
 ## 轨迹图问题 A：持续趋势 {.smaller}
 
 
-![持续趋势](figs/lec7/trace-problems.png){height=480px}
+![持续趋势](assets/figs/lec7/trace-problems.png){height=480px}
 
 - 5000 次迭代后仍有下降趋势，只探索了局部参数范围。
 - 持续趋势和强自相关表明链尚未充分探索后验。
@@ -314,7 +313,7 @@ sample_theta <- draws$theta
 ## 轨迹图问题 B：链在局部停滞 {.smaller}
 
 
-![链在局部停滞](figs/lec7/trace-problems.png){height=480px}
+![链在局部停滞](assets/figs/lec7/trace-problems.png){height=480px}
 
 - 局部出现接近平直的轨迹，说明链可能停留在某些参数值附近。
 - 局部强相关会造成某些区域过度采样。
@@ -355,7 +354,7 @@ MCMC 的“无记忆性”指：给定当前状态后，下一状态不再依赖
 
 ## 快速衰减的自相关 {.smaller}
 
-![快速衰减的自相关](figs/lec7/acf-good.png){height=400px}
+![快速衰减的自相关](assets/figs/lec7/acf-good.png){height=400px}
 
 - 左侧为轨迹图，右侧为自相关图。
 - 滞后 0 的自相关为 1；滞后 1 时约为 0.5。
@@ -381,7 +380,7 @@ $$ (\theta_1,\ldots,\theta_{90})\quad\text{与}\quad(\theta_{11},\ldots,\theta_{
 ## 缓慢衰减的自相关
 
 
-![缓慢衰减的自相关](figs/lec7/acf-slow.png){height=300px}
+![缓慢衰减的自相关](assets/figs/lec7/acf-slow.png){height=300px}
 
 一个自相关糟糕的例子：  
 
@@ -419,11 +418,11 @@ $$ (\theta_1,\ldots,\theta_{90})\quad\text{与}\quad(\theta_{11},\ldots,\theta_{
 
 抽稀前：
 
-![抽稀前](figs/lec7/acf-slow.png){height=300px}
+![抽稀前](assets/figs/lec7/acf-slow.png){height=300px}
 
 每隔 10 个样本保留一个，抽稀后：
 
-![抽稀后](figs/lec7/acf-thinned.png){height=300px}
+![抽稀后](assets/figs/lec7/acf-thinned.png){height=300px}
 
 抽稀可能降低相邻保留样本的相关性，但也丢弃了 90% 的样本。
 
@@ -458,7 +457,7 @@ $$\tau=1+2\sum_{k=1}^{\infty}\rho_k,\qquad N_{\mathrm{eff}}\approx\frac{N}{\tau}
 
 ## 比较多条平行链 {.smaller}
 
-![比较多条平行链](figs/lec7/parallel-chains-good.png){height=300px}
+![比较多条平行链](assets/figs/lec7/parallel-chains-good.png){height=300px}
 
 自相关和有效样本量仅针对于描述一条MCMC链的有效性。有多条并行的马尔可夫链时，不仅链内要稳定，多条**链之间也需要有一致性**。  
 
@@ -472,7 +471,7 @@ $$\tau=1+2\sum_{k=1}^{\infty}\rho_k,\qquad N_{\mathrm{eff}}\approx\frac{N}{\tau}
 
 ## 迭代太少：链间密度仍有差别 {.smaller}
 
-![迭代太少](figs/lec7/parallel-chains-short.png){height=300px}
+![迭代太少](assets/figs/lec7/parallel-chains-short.png){height=300px}
 
 为了便于比较和展示一个不好的并行链，我们用更短的马尔可夫链模拟来演示。  
 
@@ -486,7 +485,7 @@ $$\tau=1+2\sum_{k=1}^{\infty}\rho_k,\qquad N_{\mathrm{eff}}\approx\frac{N}{\tau}
 
 ## 良好的链内与链间变异 {.smaller}
 
-![良好的链内与链间变异](figs/lec7/parallel-chains-good.png){height=300px}
+![良好的链内与链间变异](assets/figs/lec7/parallel-chains-good.png){height=300px}
 
 此外，不同链样本之间的变异性的一致性非常重要。  
 
@@ -499,7 +498,7 @@ $$\tau=1+2\sum_{k=1}^{\infty}\rho_k,\qquad N_{\mathrm{eff}}\approx\frac{N}{\tau}
 
 ## 相互冲突的平行链 {.smaller}
 
-![相互冲突的平行链](figs/lec7/parallel-chains-problems.png){height=300px}
+![相互冲突的平行链](assets/figs/lec7/parallel-chains-problems.png){height=300px}
 
 一个糟糕的例子：  
 
@@ -804,7 +803,7 @@ $$\theta\mid Y\sim\mathrm{Beta}(2+99,\ 2+118-99)=\mathrm{Beta}(101,21).$$
 ## 众数相近，不确定性不同
 
 
-![课程示意图](figs/lec7/posterior-comparison.png){height=300px}
+![课程示意图](assets/figs/lec7/posterior-comparison.png){height=300px}
 
 图中展示了这两种情况下的后验分布  
 
@@ -963,7 +962,7 @@ p1 + p2 + p3
 ## 最高密度区间（HDI） {.smaller}
 
 
-![ETI 与 HDI 的区别](figs/lec7/eti-versus-hdi.png){height=300px}
+![ETI 与 HDI 的区别](assets/figs/lec7/eti-versus-hdi.png){height=300px}
 
 最高密度区间（highest density interval, HDI）包含指定的后验概率质量，并优先纳入密度较高的值。
 
@@ -975,7 +974,7 @@ p1 + p2 + p3
 ## HDI 的密度阈值直觉 {.smaller}
 
 
-![HDI 的密度阈值直觉](figs/lec7/hdi-density-cutoff.png){height=400px}
+![HDI 的密度阈值直觉](assets/figs/lec7/hdi-density-cutoff.png){height=400px}
 
 直觉理解：想象有一根水平的线从后验概率密度最高点往下滑，如果是95%HDI，则意味着黄色部分的面积占曲线下面积的95%  
 
@@ -985,7 +984,7 @@ p1 + p2 + p3
 
 ## 95% CI 与 95% HDI
 
-![课程示意图](figs/lec7/interval-comparison.png){height=480px}
+![课程示意图](assets/figs/lec7/interval-comparison.png){height=480px}
 
 ---
 
@@ -1003,7 +1002,7 @@ p1 + p2 + p3
 
 :::: {.columns}
 ::: {.column width="53%"}
-![均值、中位数与众数](figs/lec7/mean-median-mode.png){height=480px}
+![均值、中位数与众数](assets/figs/lec7/mean-median-mode.png){height=480px}
 :::
 ::: {.column width="47%"}
 在对后验进行推断中，要注意非正态分布后验的平均值、中位数和众数并不相等。  
@@ -1270,7 +1269,7 @@ Bayes factor 依赖先验和区间设定；应用中应报告其敏感性。
 
 :::: {.columns}
 ::: {.column width="53%"}
-![成功概率低于 80% 的后验概率](figs/lec7/posterior-below-80.png){height=480px}
+![成功概率低于 80% 的后验概率](assets/figs/lec7/posterior-below-80.png){height=480px}
 :::
 ::: {.column width="47%"}
 直接计算成功概率低于 80% 的后验概率：

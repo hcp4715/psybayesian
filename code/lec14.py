@@ -9,16 +9,16 @@ import xarray as xr
 import pandas as pd
 import ipywidgets
 import bambi as bmb
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[1] if "__file__" in globals() else Path.cwd()
 
 # 忽略不必要的警告
 import warnings
 warnings.filterwarnings("ignore")
 
 # 使用 pandas 导入示例数据
-try:
-  df_raw  = pd.read_csv("/home/mw/input/bayes3797/evans2020JExpPsycholLearn_exp1_full_data.csv") 
-except:
-  df_raw  = pd.read_csv('data/evans2020JExpPsycholLearn_exp1_full_data.csv')
+df_raw  = pd.read_csv(_ROOT / "data" / "evans2020JExpPsycholLearn_exp1_full_data.csv")
 
 df_raw[["subject","RT"]]
 
@@ -551,10 +551,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # 通过 pd.read_csv 加载数据 Data_Sum_HPP_Multi_Site_Share.csv
-try:
-  df_raw = pd.read_csv('/home/mw/input/bayes3797/Data_Sum_HPP_Multi_Site_Share.csv')
-except:
-  df_raw = pd.read_csv('data/Data_Sum_HPP_Multi_Site_Share.csv')
+df_raw = pd.read_csv(_ROOT / "data" / "Data_Sum_HPP_Multi_Site_Share.csv")
 
 df_raw[["Site","scontrol"]]
 
