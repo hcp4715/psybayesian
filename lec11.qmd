@@ -850,6 +850,37 @@ knitr::kable(
 
 ---
 
+## 用brms拟合贝叶斯回归模型
+
+**brms** 是用于贝叶斯回归的 R 包。`brm()` 根据模型公式、响应分布和先验生成 Stan 代码，并调用 Stan 进行 MCMC 后验采样。
+
+以压力分数预测自我控制分数为例：
+
+```{r}
+#| label: exercise-brms-intro
+#| eval: false
+#| code-fold: false
+
+fit_intro <- brms::brm(
+  formula = scontrol ~ 0 + Intercept + stress, 
+  data = exercise,
+  family = stats::gaussian(),
+  prior = c(
+    brms::set_prior("normal(0, 10)", class = "b"),
+    brms::set_prior("normal(50, 10)", class = "b", coef = "Intercept"),
+    brms::set_prior("exponential(0.6)", class = "sigma")
+  ),
+  chains = 4, iter = 3000, warmup = 1000, seed = 84735
+)
+summary(fit_intro)
+```
+
+- **定义模型**　`formula` 指定用压力预测自我控制。`family` 指定在给定压力分数时，自我控制分数服从正态分布。
+- **设定先验**　`0 + Intercept` 显式保留原始截距。`prior` 分别设定斜率、截距与残差标准差的先验。
+- **采样并查看结果**　运行 4 条链，每条链迭代 3,000 次，前 1,000 次用于预热。`summary()` 查看后验估计、可信区间和收敛诊断。
+
+---
+
 ## 准备练习数据
 
 ```{r}
@@ -865,48 +896,57 @@ utils::head(exercise, 4)
 
 ## 练习一：定义候选模型
 
-补全模型公式。模型 6 可用 `*` 同时纳入两个主效应与交互项。也可用两个主效应加上预先计算的乘积列，得到同样的设计矩阵列。
+参照模型 4，补全模型 5 的两个主效应，以及模型 6 的两个主效应和交互项。
 
 ```{r}
 #| label: exercise-formulas
 #| eval: false
 
 exercise_formulas <- list(
-  model4 = scontrol ~ stress,
-  model5 = scontrol ~ ...,    # 补全主效应
-  model6 = scontrol ~ ...     # 补全主效应与交互项
+  model4 = scontrol ~ 0 + Intercept + stress,
+  model5 = 0 + Intercept + ...,    # 补全主效应
+  model6 = 0 + Intercept + ...     # 补全主效应与交互项
 )
 ```
 
 ---
 
-## 练习提示：在 R 或 Stan 中写交互项
+## 练习提示：如何写交互项
 
-- 在 R 中计算乘积列 `exercise$stress * exercise$smoke`，将其与两个主效应一起传给 Stan。
-- 在 Stan 中保留压力 `X1` 和吸烟 `X2`，在似然里计算向量逐元素乘积 `X1 .* X2`。在生成量中用 `X1[n] * X2[n]`。
+可以用下面两种方式来写交互项：
 
-~~~stan
-y ~ normal(beta_0 + beta_1 * X1 + beta_2 * X2
-           + beta_3 * (X1 .* X2), sigma);
-~~~
+```{r}
+scontrol ~ 0 + Intercept + stress + smoke + stress:smoke
+scontrol ~ 0 + Intercept + stress * smoke
+```
 
-## 练习二：将设计矩阵传给 Stan
+## 练习二：用 brms 拟合候选模型
 
-填好公式后运行。沿用反应时示例中编译的同一个高斯回归程序。
+用补齐的三个公式和课件指定的先验进行 MCMC 采样，并检查各模型的 $ \(\hat R\) $ 和ESS。
 
 ```{r}
 #| label: exercise-fit
 #| eval: false
 
-exercise_stan_data <- lapply(exercise_formulas, function(formula) {
-  X <- stats::model.matrix(formula, data = exercise)
-  list(N = nrow(X), K = ncol(X), X = X, y = exercise$scontrol,
-       prior_mean = c(50, rep(0, ncol(X) - 1)),
-       prior_sd = rep(10, ncol(X)), sigma_rate = 0.6)
-})
-exercise_fits <- lapply(exercise_stan_data, function(model_data) {
-  rstan::sampling(rt_stan_model, data = model_data, chains = 4,
-                  iter = 3000, warmup = 1000, seed = 84735, refresh = 0)
+exercise_priors <- c(
+  brms::set_prior("normal(0, 10)", class = "b"),
+  brms::set_prior("normal(50, 10)", class = "b", coef = "Intercept"),
+  brms::set_prior("exponential(0.6)", class = "sigma")
+)
+
+exercise_fits <- lapply(exercise_formulas, function(model_formula) {
+  brms::brm(
+    formula = model_formula,
+    data = exercise,
+    family = stats::gaussian(link = "identity"),
+    prior = exercise_priors,
+    backend = "rstan",
+    chains = 4,
+    iter = 3000,
+    warmup = 1000,
+    seed = 84735,
+    refresh = 0
+  )
 })
 ```
 
@@ -920,8 +960,14 @@ exercise_fits <- lapply(exercise_stan_data, function(model_data) {
 #| label: exercise-predictive-comparison
 #| eval: false
 
-vapply(exercise_fits, calculate_medae, numeric(1), observed = ...)
-exercise_loo <- lapply(exercise_fits, calculate_loo)
+calculate_medae_brms <- function(fit, observed) {
+  predicted <- colMeans(brms::posterior_predict(fit))
+  stats::median(abs(observed - predicted))
+}
+
+vapply(exercise_fits, calculate_medae_brms, numeric(1), observed = ...)
+
+exercise_loo <- lapply(exercise_fits, loo::loo)
 loo::loo_compare(exercise_loo)
 ```
 
@@ -935,158 +981,191 @@ loo::loo_compare(exercise_loo)
 #| label: exercise-dic
 #| eval: false
 
-mapply(calculate_dic, exercise_fits, ...)
+calculate_dic_brms <- function(fit, observed) {
+  log_lik_draws <- brms::log_lik(fit)
+  mean_deviance <- mean(-2 * rowSums(log_lik_draws))
+
+  mean_mu <- colMeans(brms::posterior_epred(fit))
+  sigma_draws <- posterior::as_draws_df(fit, variable = "sigma")
+  mean_sigma <- mean(sigma_draws$sigma)
+
+  plug_in_deviance <- -2 * sum(stats::dnorm(
+    observed, mean = mean_mu, sd = mean_sigma, log = TRUE
+  ))
+
+  2 * mean_deviance - plug_in_deviance
+}
+
+vapply(exercise_fits, calculate_dic_brms, numeric(1), observed = ...)
 ```
 
 如果 DIC 与 ELPD-LOO 的排序不同，两种准则分别支持怎样的结论？
 
 ---
 
-## Part6：补充练习：逐个写出 Stan 模型
+## Part6：补充练习：逐个用 brms 拟合模型
 
-沿用原稿逐个模型填写 Stan 的练习，补全下面的代码后再手动运行。前面的矩阵版提供了可对照的模型结构。
+沿用 Part 5 的练习数据 `exercise`。先运行下方的先验代码，再依次补全并运行模型 4、5、6 的代码。
 
-## 模型 4：只用压力
+**练习任务**　读出三条先验分别对应哪个参数，并在三个模型中使用相同的先验设定。
 
-补全参数类型、先验和似然。R 数据列表应包含 N、y、X。
+```{r}
+#| label: part6-brms-priors
+#| eval: false
+#| code-fold: false
 
-~~~stan
-data {
-  int<lower=0> N;
-  vector[N] y;                  // scontrol
-  vector[N] X;                  // 连续变量: stress
-}
+part6_priors <- c(
+  # 回归系数的通用先验，适用于主效应和交互项。
+  brms::set_prior("normal(0, 10)", class = "b"),
 
-parameters {
-  ... beta_0;                   // 截距
-  ... beta_1;                   // stress的斜率
-  ... sigma;                    // 误差标准差
-}
+  # 单独设定原始截距的先验，与手写 Stan 的截距对齐。
+  brms::set_prior("normal(50, 10)", class = "b", coef = "Intercept"),
 
-model {
-  ...
-
-  // 似然函数
-  ... ~ ...
-}
-~~~
+  # 自我控制分数的残差标准差采用率为 0.6 的指数先验。
+  brms::set_prior("exponential(0.6)", class = "sigma")
+)
+```
 
 ---
 
-## 模型 4：补全生成量
+## 模型 4：只用压力
 
-按该模型的线性预测式生成后验预测值并计算逐点对数似然。
+**练习任务**　补全压力预测项，拟合模型后从摘要中读出压力每增加 1 分时，预期自我控制分数改变多少。
 
-~~~stan
-generated quantities {
-  vector[N] y_rep;             // 后验预测
-  vector[N] log_lik;         // 逐点对数似然
+```{r}
+#| label: part6-brms-fit-model4
+#| eval: false
+#| code-fold: false
 
-  for (n in 1:N) {
-    // 后验预测值  (计算 MAE 需要)
-    y_rep[n] = normal_rng(...);
-    // 逐点对数似然 (计算 loo 和 DIC 需要)
-    log_lik[n] = normal_lpdf(y[n] | ...);
-  }
-}
-~~~
+fit4_brms <- brms::brm(
+  # Intercept 保留原始截距，省略号处填入压力变量。
+  formula = scontrol ~ 0 + Intercept + ...,
+  data = exercise,
+  family = stats::gaussian(link = "identity"),
+  prior = part6_priors,
+  backend = "rstan",
+  chains = 4, iter = 3000, warmup = 1000,
+  seed = 84735, refresh = 0
+)
+
+summary(fit4_brms)
+```
+
+---
+
+## 模型 4：提取后验预测与逐点对数似然
+
+**练习任务**　把模型 4 的拟合对象传给两个函数，并确认输出矩阵的列数等于练习数据中的被试人数。
+
+```{r}
+#| label: part6-brms-predictions-model4
+#| eval: false
+#| code-fold: false
+
+# 对每次后验抽样，为每位被试模拟一个自我控制分数。
+y_rep4 <- brms::posterior_predict(...)
+
+# 对每次后验抽样，计算每位被试实际得分的对数似然。
+log_lik4 <- brms::log_lik(...)
+
+dim(y_rep4)
+dim(log_lik4)
+nrow(exercise)
+```
 
 ---
 
 ## 模型 5：加入吸烟状态
 
-补全参数类型、先验和似然。R 数据列表应包含 N、y、X1、X2。
+**练习任务**　补全压力与吸烟的两个主效应，拟合后解释在相同压力分数下，吸烟组与非吸烟组的预期自我控制分数相差多少。
 
-~~~stan
-data {
-  int<lower=0> N;
-  vector[N] y;
-  vector[N] X1;                   // 连续变量: stress
-  vector[N] X2;                // 二分类变量: smoke
-}
+```{r}
+#| label: part6-brms-fit-model5
+#| eval: false
+#| code-fold: false
 
-parameters {
-  ... beta_0;                   // 截距
-  ... beta_1;                   // stress的斜率
-  ... beta_2;                   // smoke的斜率
-  ... sigma;           // 误差标准差
-}
+fit5_brms <- brms::brm(
+  # 用 + 加入两个主效应，两组共用同一个压力斜率。
+  formula = scontrol ~ 0 + Intercept + ...,
+  data = exercise,
+  family = stats::gaussian(link = "identity"),
+  prior = part6_priors,
+  backend = "rstan",
+  chains = 4, iter = 3000, warmup = 1000,
+  seed = 84735, refresh = 0
+)
 
-model {
-  ...
-
-  // 似然函数
-  ... ~ ...
-}
-~~~
+summary(fit5_brms)
+```
 
 ---
 
-## 模型 5：补全生成量
+## 模型 5：提取后验预测与逐点对数似然
 
-按该模型的线性预测式生成后验预测值并计算逐点对数似然。
+**练习任务**　参照模型 4 补全两行提取代码，再按被试计算后验预测均值。
 
-~~~stan
-generated quantities {
-  vector[N] y_rep;             // 后验预测
-  vector[N] log_lik;         // 逐点对数似然
+```{r}
+#| label: part6-brms-predictions-model5
+#| eval: false
+#| code-fold: false
 
-  for (n in 1:N) {
-    // 后验预测值
-    y_rep[n] = normal_rng(...);
-    // 逐点对数似然
-    log_lik[n] = normal_lpdf(y[n] | ...);
-  }
-}
-~~~
+# 从 fit5_brms 提取后验预测抽样。
+y_rep5 <- ...
+
+# 从 fit5_brms 计算逐点对数似然。
+log_lik5 <- ...
+
+# 对每一列取均值，得到每位被试的预测值。
+predicted5 <- colMeans(y_rep5)
+utils::head(predicted5, 4)
+```
+
+`predicted5` 可与实际分数 `exercise$scontrol` 逐一配对，用于计算 Part 5 的样本内 MedAE。
 
 ---
 
 ## 模型 6：加入压力与吸烟的交互
 
-补全参数类型、先验和似然。R 数据列表应包含 N、y、X1、X2。
+**练习任务**　补全两个主效应及其交互项，拟合后解释交互系数怎样表示两组压力斜率之差。
 
-~~~stan
-data {
-  int<lower=0> N;
-  vector[N] y;              // scontrol
-  vector[N] X1;             // 连续变量: stress
-  vector[N] X2;             // 二分类变量: smoke
-}
+```{r}
+#| label: part6-brms-fit-model6
+#| eval: false
+#| code-fold: false
 
-parameters {
-  ... beta_0;                   // 截距
-  ... beta_1;                   // stress的斜率
-  ... beta_2;                   // smoke的斜率
-  ... beta_3;                   // 压力与吸烟的交互效应
-  ... sigma;                    // 误差标准差
-}
+fit6_brms <- brms::brm(
+  # 用 * 同时纳入两个主效应和交互项。
+  formula = scontrol ~ 0 + Intercept + ...,
+  data = exercise,
+  family = stats::gaussian(link = "identity"),
+  prior = part6_priors,
+  backend = "rstan",
+  chains = 4, iter = 3000, warmup = 1000,
+  seed = 84735, refresh = 0
+)
 
-model {
-  ...
+summary(fit6_brms)
+```
 
-  // 似然函数
-  ... ~ ...
-}
-~~~
+---
 
-## 模型 6：补全生成量
+## 模型 6：提取后验预测与逐点对数似然
 
-按该模型的线性预测式生成后验预测值并计算逐点对数似然。
+**练习任务**　独立补全两行提取代码，并指出计算 MedAE 和进行留一预测评估各需要哪一种结果。
 
-~~~stan
-generated quantities {
-  vector[N] y_rep;             // 后验预测
-  vector[N] log_lik;         // 逐点对数似然
+```{r}
+#| label: part6-brms-predictions-model6
+#| eval: false
+#| code-fold: false
 
-  for (n in 1:N) {
-    // 后验预测值  (计算 MAE 需要)
-    y_rep[n] = normal_rng(...);
-    // 逐点对数似然 (计算 loo 和 DIC 需要)
-    log_lik[n] = normal_lpdf(y[n] | ...);
-  }
-}
-~~~
+# 从 fit6_brms 提取后验预测抽样。
+y_rep6 <- ...
+
+# 从 fit6_brms 计算逐点对数似然。
+log_lik6 <- ...
+```
+
+`y_rep6` 用于计算预测均值和样本内 MedAE，`log_lik6` 则提供估计 ELPD-LOO 所需的逐点对数似然。
 
 ---
 
